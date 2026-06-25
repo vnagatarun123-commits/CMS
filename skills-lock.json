@@ -1,0 +1,113 @@
+{
+  "version": 1,
+  "skills": {
+    "ai-first-engineering": {
+      "source": "affaan-m/everything-claude-code",
+      "sourceType": "github",
+      "skillPath": "skills/ai-first-engineering/SKILL.md",
+      "computedHash": "10bf415709c956966dfa4fee2d4a5fde7cc4532dca4256d2c63c013a2cfa05e0"
+    },
+    "android-clean-architecture": {
+      "source": "affaan-m/everything-claude-code",
+      "sourceType": "github",
+      "skillPath": "skills/android-clean-architecture/SKILL.md",
+      "computedHash": "8f7efca3efcc228560c39c366e846d4bf22e585f9847610634f53b7622f7795c"
+    },
+    "article-writing": {
+      "source": "affaan-m/everything-claude-code",
+      "sourceType": "github",
+      "skillPath": "skills/article-writing/SKILL.md",
+      "computedHash": "728cf7d0c32b65162d86133a8351398657207dad5d8ef68d031d4a5934a0d4df"
+    },
+    "compose-multiplatform-patterns": {
+      "source": "affaan-m/everything-claude-code",
+      "sourceType": "github",
+      "skillPath": "skills/compose-multiplatform-patterns/SKILL.md",
+      "computedHash": "fa92e0b644061d081904be32445e158d81a0bdf3b1dc95ddedb2e53d69e95609"
+    },
+    "e2e-testing": {
+      "source": "affaan-m/everything-claude-code",
+      "sourceType": "github",
+      "skillPath": "skills/e2e-testing/SKILL.md",
+      "computedHash": "98eabe06f213ad8c7f8446988f9a9603aa6e251d20e157dbdb69a5785f11fcf4"
+    },
+    "frontend-patterns": {
+      "source": "affaan-m/everything-claude-code",
+      "sourceType": "github",
+      "skillPath": "skills/frontend-patterns/SKILL.md",
+      "computedHash": "f5cc422ee17ead99553f253a83ffadade138abc4e0834aa67fb887ee66d14d63"
+    },
+    "frontend-slides": {
+      "source": "affaan-m/everything-claude-code",
+      "sourceType": "github",
+      "skillPath": "skills/frontend-slides/SKILL.md",
+      "computedHash": "afd3f7431b1d017c0f330580b2a7f94a2430ee4a32dfd46de3ba06d0634ba499"
+    },
+    "kotlin-coroutines-flows": {
+      "source": "affaan-m/everything-claude-code",
+      "sourceType": "github",
+      "skillPath": "skills/kotlin-coroutines-flows/SKILL.md",
+      "computedHash": "6a7ffc10aa82c49c9f08427a534b0538d40e3254bdbabfd93b7ce47df2673cbe"
+    },
+    "kotlin-ktor-patterns": {
+      "source": "affaan-m/everything-claude-code",
+      "sourceType": "github",
+      "skillPath": "skills/kotlin-ktor-patterns/SKILL.md",
+      "computedHash": "405ff26c08850d73d5e31a9eb64eb96c7b98d0690770313cec8244d1aae3b7d6"
+    },
+    "kotlin-patterns": {
+      "source": "affaan-m/everything-claude-code",
+      "sourceType": "github",
+      "skillPath": "skills/kotlin-patterns/SKILL.md",
+      "computedHash": "581e5e74aec1c33ba37209f24f6bca68ba6949d7549ab58c5bc6a75d0fca9d0d"
+    },
+    "kotlin-testing": {
+      "source": "affaan-m/everything-claude-code",
+      "sourceType": "github",
+      "skillPath": "skills/kotlin-testing/SKILL.md",
+      "computedHash": "c4ee26f777f74682257cecd8c0f5d7bc0bee2f0d6dd0cb4376219d3e4c946682"
+    },
+    "liquid-glass-design": {
+      "source": "affaan-m/everything-claude-code",
+      "sourceType": "github",
+      "skillPath": "skills/liquid-glass-design/SKILL.md",
+      "computedHash": "cdd47ce273b84d1e630aa6ea8086baa9b4affd9f881b3f95a7b25334b67a1dc5"
+    },
+    "swift-actor-persistence": {
+      "source": "affaan-m/everything-claude-code",
+      "sourceType": "github",
+      "skillPath": "skills/swift-actor-persistence/SKILL.md",
+      "computedHash": "61c7af5c121eb89fdd974e22758da147c1f96489fded335a96a0fc8f85c60650"
+    },
+    "swift-concurrency-6-2": {
+      "source": "affaan-m/everything-claude-code",
+      "sourceType": "github",
+      "skillPath": "skills/swift-concurrency-6-2/SKILL.md",
+      "computedHash": "494537bbbc803bd28b0a80bde5844fe82f4b334e7bcb8ba05a3b4a32b759b036"
+    },
+    "swift-protocol-di-testing": {
+      "source": "affaan-m/everything-claude-code",
+      "sourceType": "github",
+      "skillPath": "skills/swift-protocol-di-testing/SKILL.md",
+      "computedHash": "7b0344969c44d5cf31eeb80e454204bf559cae06ac79c51158e9f5b83c5c7d80"
+    },
+    "swiftui-patterns": {
+      "source": "affaan-m/everything-claude-code",
+      "sourceType": "github",
+      "skillPath": "skills/swiftui-patterns/SKILL.md",
+      "computedHash": "86aa244015049fd70bbc4359d8e6aff6b901a38c09ebfc08cee02cbc46d407e5"
+    },
+    "ui-ux-pro-max": {
+      "source": "nextlevelbuilder/ui-ux-pro-max-skill",
+      "sourceType": "github",
+      "skillPath": ".claude/skills/ui-ux-pro-max/SKILL.md",
+      "computedHash": "a2d7eab9fd29c7685e10dc0d9acca085e32e817b59b6914c0c1be28a56062fbc"
+    },
+    "video-editing": {
+      "source": "affaan-m/everything-claude-code",
+      "sourceType": "github",
+      "skillPath": "skills/video-editing/SKILL.md",
+      "computedHash": "f44c45ed71dec68cf955a316577ddd191248d0c607118c89ffc10f9f3f1ea3a0"
+    }
+  }
+}

@@ -390,7 +390,9 @@ function VideoUploadArea({ orientation, thumbnailMode, onThumbnailMode, onFile, 
   initialThumbUrl?: string | null
 }) {
   const [videoUrl, setVideoUrl]   = useState<string | null>(initialVideoUrl ?? null)
-  const [thumbUrl, setThumbUrl]   = useState<string | null>(initialThumbUrl ?? null)
+  const [firstFrameUrl, setFirstFrameUrl]       = useState<string | null>(initialThumbUrl ?? null)
+  const [capturedFrameUrl, setCapturedFrameUrl] = useState<string | null>(initialThumbUrl ?? null)
+  const [uploadedFrameUrl, setUploadedFrameUrl] = useState<string | null>(initialThumbUrl ?? null)
   const [uploading, setUploading] = useState(false)
   const [dragging, setDragging]   = useState(false)
   const [muted, setMuted]         = useState(false)
@@ -412,7 +414,10 @@ function VideoUploadArea({ orientation, thumbnailMode, onThumbnailMode, onFile, 
       const res = await fetch('/api/upload', { method: 'POST', body: fd })
       if (!res.ok) throw new Error()
       const { url } = await res.json() as { url: string }
-      setVideoUrl(url); onFile(url, thumbUrl)
+      setVideoUrl(url)
+      setFirstFrameUrl(null)
+      setCapturedFrameUrl(null)
+      onFile(url, null)
     } catch {
       toast.error('Failed to upload video. Please try again.')
     } finally {
@@ -425,7 +430,8 @@ function VideoUploadArea({ orientation, thumbnailMode, onThumbnailMode, onFile, 
     const reader = new FileReader()
     reader.onload = e => {
       const url = e.target?.result as string
-      setThumbUrl(url); onFile(videoUrl, url)
+      setUploadedFrameUrl(url)
+      onFile(videoUrl, url)
     }
     reader.readAsDataURL(file)
   }
@@ -435,19 +441,71 @@ function VideoUploadArea({ orientation, thumbnailMode, onThumbnailMode, onFile, 
     const file = e.dataTransfer.files[0]; if (file) void acceptVideo(file)
   }
 
+  function captureFirstFrame() {
+    try {
+      const video = videoRef.current; if (!video) return
+      const canvas = document.createElement('canvas')
+      canvas.width = video.videoWidth; canvas.height = video.videoHeight
+      const ctx = canvas.getContext('2d')
+      if (!ctx) return
+      ctx.drawImage(video, 0, 0)
+      const url = canvas.toDataURL('image/jpeg', 0.9)
+      setFirstFrameUrl(url)
+      if (thumbnailMode === 'default') {
+        onFile(videoUrl, url)
+      }
+    } catch (e) {
+      console.warn('Failed to capture first frame automatically:', e)
+    }
+  }
+
+  function handleLoadedData() {
+    if (!firstFrameUrl) {
+      captureFirstFrame()
+    }
+  }
+
   function captureFrame() {
-    const video = videoRef.current; if (!video) return
-    const canvas = document.createElement('canvas')
-    canvas.width = video.videoWidth; canvas.height = video.videoHeight
-    canvas.getContext('2d')?.drawImage(video, 0, 0)
-    const url = canvas.toDataURL('image/jpeg', 0.9)
-    setThumbUrl(url); onThumbnailMode('screen'); onFile(videoUrl, url)
-    toast.success('Frame captured as thumbnail')
+    try {
+      const video = videoRef.current; if (!video) return
+      const canvas = document.createElement('canvas')
+      canvas.width = video.videoWidth; canvas.height = video.videoHeight
+      const ctx = canvas.getContext('2d')
+      if (!ctx) return
+      ctx.drawImage(video, 0, 0)
+      const url = canvas.toDataURL('image/jpeg', 0.9)
+      setCapturedFrameUrl(url)
+      onThumbnailMode('screen')
+      onFile(videoUrl, url)
+      toast.success('Frame captured as thumbnail')
+    } catch (e) {
+      console.error('Failed to capture frame:', e)
+      toast.error('Failed to capture frame. Please ensure video CORS headers are correct or try uploading a custom image.')
+    }
   }
 
   function removeVideo() {
-    setVideoUrl(null); setThumbUrl(null); onFile(null, null)
+    setVideoUrl(null)
+    setFirstFrameUrl(null)
+    setCapturedFrameUrl(null)
+    setUploadedFrameUrl(null)
+    onFile(null, null)
     if (videoInputRef.current) videoInputRef.current.value = ''
+  }
+
+  function handleModeChange(mode: ThumbnailMode) {
+    onThumbnailMode(mode)
+    if (mode === 'default') {
+      onFile(videoUrl, firstFrameUrl)
+    } else if (mode === 'screen') {
+      if (capturedFrameUrl) {
+        onFile(videoUrl, capturedFrameUrl)
+      } else {
+        captureFrame()
+      }
+    } else if (mode === 'upload') {
+      onFile(videoUrl, uploadedFrameUrl)
+    }
   }
 
   if (uploading) {
@@ -466,6 +524,8 @@ function VideoUploadArea({ orientation, thumbnailMode, onThumbnailMode, onFile, 
         <div className={`relative bg-black rounded-xl overflow-hidden border border-border ${isPortrait ? 'flex justify-center' : ''}`}>
           <div className={aspectClass}>
             <video ref={videoRef} src={videoUrl} controls muted={muted}
+              crossOrigin="anonymous"
+              onLoadedData={handleLoadedData}
               className="w-full h-full object-contain" preload="metadata"
               onError={() => setVideoUrl(null)} />
           </div>
@@ -492,7 +552,7 @@ function VideoUploadArea({ orientation, thumbnailMode, onThumbnailMode, onFile, 
               const active = thumbnailMode === mode
               return (
                 <button key={mode} type="button"
-                  onClick={() => { onThumbnailMode(mode); if (mode === 'screen') captureFrame() }}
+                  onClick={() => handleModeChange(mode)}
                   className={`flex flex-col items-center gap-1.5 rounded-lg border-2 p-3 text-center transition-all
                     ${active ? 'border-primary bg-primary/10' : 'border-border bg-background hover:bg-muted/30'}`}>
                   <Icon className={`h-5 w-5 ${active ? 'text-primary' : 'text-muted-foreground'}`} />
@@ -506,11 +566,11 @@ function VideoUploadArea({ orientation, thumbnailMode, onThumbnailMode, onFile, 
             <div>
               <input ref={thumbInputRef} type="file" accept="image/*" className="sr-only"
                 onChange={e => { const f = e.target.files?.[0]; if (f) acceptThumb(f) }} />
-              {thumbUrl ? (
+              {uploadedFrameUrl ? (
                 <div className="relative rounded-lg overflow-hidden border border-border">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={thumbUrl} alt="Thumbnail" className="w-full aspect-video object-cover" />
-                  <button type="button" onClick={() => { setThumbUrl(null); onFile(videoUrl, null) }}
+                  <img src={uploadedFrameUrl} alt="Thumbnail" className="w-full aspect-video object-cover" />
+                  <button type="button" onClick={() => { setUploadedFrameUrl(null); onFile(videoUrl, null) }}
                     className="absolute top-1.5 right-1.5 h-6 w-6 rounded-full bg-black/60 flex items-center justify-center text-white">
                     <X className="h-3 w-3" />
                   </button>
@@ -525,17 +585,31 @@ function VideoUploadArea({ orientation, thumbnailMode, onThumbnailMode, onFile, 
               )}
             </div>
           )}
-          {thumbnailMode === 'screen' && thumbUrl && (
-            <div className="relative rounded-lg overflow-hidden border border-border">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={thumbUrl} alt="Captured frame" className="w-full aspect-video object-cover" />
-              <span className="absolute bottom-1.5 left-1.5 text-[10px] bg-black/60 text-white rounded px-1.5 py-0.5">Captured frame</span>
-            </div>
+          {thumbnailMode === 'screen' && (
+            capturedFrameUrl ? (
+              <div className="relative rounded-lg overflow-hidden border border-border">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={capturedFrameUrl} alt="Captured frame" className="w-full aspect-video object-cover" />
+                <span className="absolute bottom-1.5 left-1.5 text-[10px] bg-black/60 text-white rounded px-1.5 py-0.5">Captured frame</span>
+              </div>
+            ) : (
+              <div className="flex items-center justify-center rounded-xl border border-border bg-muted/10 py-4">
+                <p className="text-xs text-muted-foreground">Play the video and click "Capture" to generate a thumbnail</p>
+              </div>
+            )
           )}
           {thumbnailMode === 'default' && (
-            <div className="flex items-center justify-center rounded-xl border border-border bg-muted/10 py-2.5">
-              <p className="text-xs text-muted-foreground">First frame used as thumbnail</p>
-            </div>
+            firstFrameUrl ? (
+              <div className="relative rounded-lg overflow-hidden border border-border">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={firstFrameUrl} alt="First frame" className="w-full aspect-video object-cover" />
+                <span className="absolute bottom-1.5 left-1.5 text-[10px] bg-black/60 text-white rounded px-1.5 py-0.5">First frame</span>
+              </div>
+            ) : (
+              <div className="flex items-center justify-center rounded-xl border border-border bg-muted/10 py-2.5">
+                <p className="text-xs text-muted-foreground">First frame used as thumbnail</p>
+              </div>
+            )
           )}
         </div>
       </div>

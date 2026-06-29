@@ -21,8 +21,12 @@ function readDotEnv(): Record<string, string> {
 
 const e = readDotEnv()
 
-const migrateUrl = e.DIRECT_URL ?? e.DATABASE_URL
-if (!migrateUrl) throw new Error('Set DIRECT_URL or DATABASE_URL in .env')
+// Fall back to process.env so prisma generate works on Vercel (no .env file there)
+const migrateUrl =
+  e.DIRECT_URL ?? e.DATABASE_URL ??
+  process.env['DIRECT_URL'] ?? process.env['DATABASE_URL']
+
+if (!migrateUrl) throw new Error('Set DIRECT_URL or DATABASE_URL in .env or environment')
 
 export default defineConfig({
   schema: 'prisma/schema.prisma',

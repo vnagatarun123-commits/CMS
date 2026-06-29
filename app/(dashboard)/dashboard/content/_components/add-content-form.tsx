@@ -7,7 +7,7 @@ import {
   Image, Video, Upload, X, Zap, TrendingUp, Star,
   Mic, MicOff, Check, Monitor, ImageIcon, Smartphone,
   Calendar, Clock, MapPin, Tag, Globe, AlignLeft,
-  Play, Volume2, VolumeX, Plus,
+  Play, Volume2, VolumeX, Plus, AlertCircle,
 } from 'lucide-react'
 
 import type { Category, Location, Language, Content } from '@/types/domain'
@@ -396,6 +396,7 @@ function VideoUploadArea({ orientation, thumbnailMode, onThumbnailMode, onFile, 
   const [uploading, setUploading] = useState(false)
   const [dragging, setDragging]   = useState(false)
   const [muted, setMuted]         = useState(false)
+  const [videoError, setVideoError] = useState(false)
   const videoInputRef = useRef<HTMLInputElement>(null)
   const thumbInputRef = useRef<HTMLInputElement>(null)
   const videoRef      = useRef<HTMLVideoElement>(null)
@@ -407,6 +408,7 @@ function VideoUploadArea({ orientation, thumbnailMode, onThumbnailMode, onFile, 
     if (!file.type.startsWith('video/')) { toast.error('Please select a video file'); return }
     if (file.size > 1024 * 1024 * 1024) { toast.error('Video must be under 1 GB'); return }
     setUploading(true)
+    setVideoError(false)
     try {
       const fd = new FormData()
       fd.append('file', file)
@@ -494,6 +496,7 @@ function VideoUploadArea({ orientation, thumbnailMode, onThumbnailMode, onFile, 
     setFirstFrameUrl(null)
     setCapturedFrameUrl(null)
     setUploadedFrameUrl(null)
+    setVideoError(false)
     onFile(null, null)
     if (videoInputRef.current) videoInputRef.current.value = ''
   }
@@ -541,8 +544,20 @@ function VideoUploadArea({ orientation, thumbnailMode, onThumbnailMode, onFile, 
               crossOrigin="anonymous"
               onLoadedData={handleLoadedData}
               className="w-full h-full object-contain" preload="metadata"
-              onError={() => setVideoUrl(null)} />
+              onError={() => setVideoError(true)} />
           </div>
+          {videoError && (
+            <div className="absolute inset-0 bg-neutral-900/95 flex flex-col items-center justify-center p-4 text-center z-10">
+              <AlertCircle className="h-8 w-8 text-red-500 mb-2" />
+              <p className="text-sm font-semibold text-white">Preview Unavailable</p>
+              <p className="text-[11px] text-neutral-400 max-w-xs mt-1">
+                The browser cannot render the video preview. (CORS policies or unsupported codec).
+              </p>
+              <p className="text-[10px] text-green-400 mt-2 font-medium bg-green-950/50 border border-green-900/50 rounded px-2 py-0.5">
+                Note: The file uploaded successfully and will be saved.
+              </p>
+            </div>
+          )}
           <div className="absolute top-2 right-2 flex gap-1">
             <button type="button" onClick={() => setMuted(m => !m)}
               className="h-7 w-7 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/80 transition-colors">

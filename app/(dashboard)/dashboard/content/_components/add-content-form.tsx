@@ -1,13 +1,13 @@
 'use client'
 
-import { useState, useTransition, useRef, useCallback, KeyboardEvent } from 'react'
+import { useState, useTransition, useRef, KeyboardEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import {
-  Image, Video, Film, Upload, X, Zap, TrendingUp, Star,
-  Mic, MicOff, Check, Monitor, ImageIcon,
+  Image, Video, Upload, X, Zap, TrendingUp, Star,
+  Mic, MicOff, Check, Monitor, ImageIcon, Smartphone,
   Calendar, Clock, MapPin, Tag, Globe, AlignLeft,
-  ZoomIn, ZoomOut, RotateCcw, Play, Volume2, VolumeX,
+  Play, Volume2, VolumeX, Plus,
 } from 'lucide-react'
 
 import type { Category, Location, Language, Content } from '@/types/domain'
@@ -17,22 +17,16 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 
-// ── Post type config ──────────────────────────────────────────────────────────
-
-const POST_TYPES: { type: ContentType; label: string; icon: React.ElementType }[] = [
-  { type: ContentType.IMAGE, label: 'Image Post', icon: Image },
-  { type: ContentType.VIDEO, label: 'Video Post', icon: Video },
-  { type: ContentType.SHORT, label: 'Short',      icon: Film  },
-]
-
-// ── Step indicator ────────────────────────────────────────────────────────────
+// ── Step config ───────────────────────────────────────────────────────────────
 
 const STEPS: { label: string; sub: string }[] = [
-  { label: 'Add Content',      sub: 'Post type & media'      },
-  { label: 'Organize Content', sub: 'Category & location'    },
-  { label: 'Source & AI',      sub: 'Source & scheduling'    },
+  { label: 'Add Content',      sub: 'Post type & media'   },
+  { label: 'Organize Content', sub: 'Category & location' },
+  { label: 'Source & AI',      sub: 'Source & scheduling' },
 ]
 type Step = 1 | 2 | 3
+
+// ── Step indicator ────────────────────────────────────────────────────────────
 
 function StepIndicator({ current }: { current: Step }) {
   return (
@@ -46,14 +40,11 @@ function StepIndicator({ current }: { current: Step }) {
             <div key={label} className="flex items-center flex-1 min-w-0">
               <div className="flex items-center gap-3 min-w-0">
                 <div className={`h-9 w-9 shrink-0 rounded-full flex items-center justify-center font-semibold text-sm border-2 transition-all
-                  ${done   ? 'bg-primary border-primary text-primary-foreground'
-                  : active ? 'bg-primary border-primary text-primary-foreground'
-                           : 'bg-background border-border text-muted-foreground'}`}>
+                  ${done || active ? 'bg-primary border-primary text-primary-foreground' : 'bg-background border-border text-muted-foreground'}`}>
                   {done ? <Check className="h-4 w-4" /> : idx}
                 </div>
                 <div className="min-w-0 hidden sm:block">
-                  <p className={`text-sm font-semibold leading-tight truncate
-                    ${active ? 'text-primary' : done ? 'text-foreground' : 'text-muted-foreground'}`}>
+                  <p className={`text-sm font-semibold leading-tight truncate ${active ? 'text-primary' : done ? 'text-foreground' : 'text-muted-foreground'}`}>
                     {label}
                   </p>
                   <p className="text-xs text-muted-foreground truncate">{sub}</p>
@@ -69,7 +60,6 @@ function StepIndicator({ current }: { current: Step }) {
     </div>
   )
 }
-
 
 // ── Field wrapper ─────────────────────────────────────────────────────────────
 
@@ -87,11 +77,10 @@ function Field({ label, required, hint, children }: {
   )
 }
 
-// ── Native select ─────────────────────────────────────────────────────────────
+// ── Shared style constants ────────────────────────────────────────────────────
 
 const selectCls = 'flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50'
-
-const inputCls = 'flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring'
+const inputCls  = 'flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring'
 
 // ── Toggle ────────────────────────────────────────────────────────────────────
 
@@ -125,8 +114,7 @@ function TagInput({ tags, onChange }: { tags: string[]; onChange: (tags: string[
       {tags.map(tag => (
         <span key={tag} className="inline-flex items-center gap-1 rounded bg-muted px-2 py-0.5 text-xs font-medium">
           #{tag}
-          <button type="button" onClick={() => onChange(tags.filter(t => t !== tag))}
-            className="hover:text-destructive ml-0.5">
+          <button type="button" onClick={() => onChange(tags.filter(t => t !== tag))} className="hover:text-destructive ml-0.5">
             <X className="h-2.5 w-2.5" />
           </button>
         </span>
@@ -145,8 +133,7 @@ function Checkbox({ checked, indeterminate, onChange }: {
   checked: boolean; indeterminate?: boolean; onChange: () => void
 }) {
   return (
-    <button type="button" role="checkbox" aria-checked={checked}
-      onClick={onChange}
+    <button type="button" role="checkbox" aria-checked={checked} onClick={onChange}
       className={`h-4 w-4 rounded border-2 flex items-center justify-center shrink-0 transition-colors
         ${checked || indeterminate ? 'bg-primary border-primary' : 'border-muted-foreground/40 bg-background'}`}>
       {checked && <Check className="h-2.5 w-2.5 text-white stroke-[3]" />}
@@ -173,9 +160,7 @@ function LanguageSelect({ languages, selected, onChange }: {
         <Checkbox checked={allSelected} indeterminate={selected.length > 0 && !allSelected}
           onChange={() => onChange(allSelected ? [] : active.map(l => l.id))} />
         <span className="text-sm font-medium text-foreground">Select All</span>
-        {selected.length > 0 && (
-          <span className="ml-auto text-xs text-muted-foreground">{selected.length} selected</span>
-        )}
+        {selected.length > 0 && <span className="ml-auto text-xs text-muted-foreground">{selected.length} selected</span>}
       </label>
       <div className="divide-y divide-border max-h-48 overflow-y-auto">
         {active.map(lang => (
@@ -189,46 +174,65 @@ function LanguageSelect({ languages, selected, onChange }: {
   )
 }
 
-// ── Cascading location ────────────────────────────────────────────────────────
+// ── Cascading location (4-level: State → District → Mandal → Village) ────────
 
-function LocationCascade({ locations, stateId, districtId, locationId, onStateChange, onDistrictChange, onLocationChange }: {
-  locations: Location[]
-  stateId: string; districtId: string; locationId: string
-  onStateChange: (id: string) => void
-  onDistrictChange: (id: string) => void
-  onLocationChange: (id: string) => void
+interface LocationState {
+  stateId:    string
+  districtId: string
+  mandalId:   string
+  locationId: string
+}
+
+function LocationCascade({ locations, loc, onChange }: {
+  locations:  Location[]
+  loc:        LocationState
+  onChange:   (next: LocationState) => void
 }) {
   const states    = locations.filter(l => l.level === LocationLevel.STATE    && l.active)
-  const districts = locations.filter(l => l.level === LocationLevel.DISTRICT && l.active && l.parentId === stateId)
-  const areas     = locations.filter(l => (l.level === LocationLevel.MANDAL || l.level === LocationLevel.VILLAGE) && l.active && l.parentId === districtId)
+  const districts = locations.filter(l => l.level === LocationLevel.DISTRICT && l.active && l.parentId === loc.stateId)
+  const mandals   = locations.filter(l => l.level === LocationLevel.MANDAL   && l.active && l.parentId === loc.districtId)
+  const villages  = locations.filter(l => l.level === LocationLevel.VILLAGE  && l.active && l.parentId === loc.mandalId)
 
   return (
     <div className="flex flex-col gap-3">
-      {/* State + District in 2 columns */}
-      <div className="grid grid-cols-2 gap-3">
-        <Field label="State" required>
-          <select value={stateId}
-            onChange={e => { onStateChange(e.target.value); onDistrictChange(''); onLocationChange('') }}
+      <Field label="State" required>
+        <select value={loc.stateId}
+          onChange={e => onChange({ stateId: e.target.value, districtId: '', mandalId: '', locationId: '' })}
+          className={selectCls}>
+          <option value="">Select State</option>
+          {states.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+        </select>
+      </Field>
+
+      {loc.stateId && districts.length > 0 && (
+        <Field label="District">
+          <select value={loc.districtId}
+            onChange={e => onChange({ ...loc, districtId: e.target.value, mandalId: '', locationId: '' })}
             className={selectCls}>
-            <option value="">Select State</option>
-            {states.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-          </select>
-        </Field>
-        <Field label="District" required>
-          <select value={districtId} disabled={!stateId}
-            onChange={e => { onDistrictChange(e.target.value); onLocationChange('') }}
-            className={selectCls}>
-            <option value="">{stateId ? 'Select District' : '— select state first —'}</option>
+            <option value="">Select District</option>
             {districts.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
           </select>
         </Field>
-      </div>
-      {/* Area / Village — full width, only when data exists */}
-      {districtId && areas.length > 0 && (
-        <Field label="Area / Village">
-          <select value={locationId} onChange={e => onLocationChange(e.target.value)} className={selectCls}>
-            <option value="">Select Area (optional)</option>
-            {areas.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
+      )}
+
+      {loc.districtId && mandals.length > 0 && (
+        <Field label="Mandal">
+          <select value={loc.mandalId}
+            onChange={e => onChange({ ...loc, mandalId: e.target.value, locationId: '' })}
+            className={selectCls}>
+            <option value="">Select Mandal</option>
+            {mandals.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
+          </select>
+        </Field>
+      )}
+
+      {loc.mandalId && villages.length > 0 && (
+        <Field label="Village">
+          <select value={loc.locationId}
+            onChange={e => onChange({ ...loc, locationId: e.target.value })}
+            className={selectCls}>
+            <option value="">Select Village</option>
+            {villages.map(v => <option key={v.id} value={v.id}>{v.name}</option>)}
           </select>
         </Field>
       )}
@@ -236,14 +240,14 @@ function LocationCascade({ locations, stateId, districtId, locationId, onStateCh
   )
 }
 
-// ── Flags radio ───────────────────────────────────────────────────────────────
+// ── Flags (deselectable radio buttons) ───────────────────────────────────────
 
 type Flag = 'BREAKING_NEWS' | 'TRENDING' | 'FEATURED' | ''
 
 const FLAG_OPTIONS: { value: Flag; label: string; icon: React.ElementType; color: string }[] = [
-  { value: 'BREAKING_NEWS', label: 'Breaking News', icon: Zap,        color: 'text-red-500'    },
-  { value: 'TRENDING',      label: 'Trending',      icon: TrendingUp,  color: 'text-orange-500' },
-  { value: 'FEATURED',      label: 'Featured',      icon: Star,        color: 'text-yellow-500' },
+  { value: 'BREAKING_NEWS', label: 'Breaking News', icon: Zap,       color: 'text-red-500'    },
+  { value: 'TRENDING',      label: 'Trending',      icon: TrendingUp, color: 'text-orange-500' },
+  { value: 'FEATURED',      label: 'Featured',      icon: Star,       color: 'text-yellow-500' },
 ]
 
 function FlagRadio({ selected, onChange }: { selected: Flag; onChange: (v: Flag) => void }) {
@@ -252,169 +256,115 @@ function FlagRadio({ selected, onChange }: { selected: Flag; onChange: (v: Flag)
       {FLAG_OPTIONS.map(({ value, label, icon: Icon, color }) => {
         const active = selected === value
         return (
-          <label key={value}
-            className={`flex items-center gap-3 rounded-lg border-2 px-4 py-2.5 cursor-pointer select-none transition-all
+          <button key={value} type="button"
+            onClick={() => onChange(active ? '' : value)}
+            className={`flex items-center gap-3 rounded-lg border-2 px-4 py-2.5 text-left select-none transition-all
               ${active ? 'border-primary bg-primary/10' : 'border-border bg-background hover:bg-muted/30'}`}>
-            <input type="radio" name="content-flag" value={value} checked={active}
-              onChange={() => onChange(active ? '' : value)} className="sr-only" />
             <div className={`h-4 w-4 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors
               ${active ? 'border-primary' : 'border-muted-foreground/40'}`}>
               {active && <div className="h-2 w-2 rounded-full bg-primary" />}
             </div>
             <Icon className={`h-4 w-4 shrink-0 ${color}`} />
             <span className="text-sm font-medium text-foreground">{label}</span>
-          </label>
+            {active && <span className="ml-auto text-[10px] text-muted-foreground">click to remove</span>}
+          </button>
         )
       })}
     </div>
   )
 }
 
-// ── Image upload area ─────────────────────────────────────────────────────────
+// ── Multi-image upload ────────────────────────────────────────────────────────
 
-function ImageUploadArea({ onFile, initialUrl }: {
-  onFile: (objectUrl: string | null) => void
-  initialUrl?: string | null
+function MultiImageUploadArea({ urls, onFiles }: {
+  urls:    string[]
+  onFiles: (urls: string[]) => void
 }) {
-  const [preview, setPreview] = useState<string | null>(initialUrl ?? null)
-  const [zoom, setZoom] = useState(1)
-  const [dragging, setDragging] = useState(false)
   const [uploading, setUploading] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
 
-  function acceptFile(file: File) {
+  async function acceptFile(file: File) {
     if (!file.type.startsWith('image/')) { toast.error('Please select an image file'); return }
     if (file.size > 10 * 1024 * 1024) { toast.error('Image must be under 10 MB'); return }
-    const reader = new FileReader()
-    reader.onload = e => {
-      const img = new window.Image()
-      img.onload = () => {
-        const MAX_W = 960, MAX_H = 540
-        let { width, height } = img
-        if (width > MAX_W || height > MAX_H) {
-          const ratio = Math.min(MAX_W / width, MAX_H / height)
-          width = Math.round(width * ratio)
-          height = Math.round(height * ratio)
-        }
-        const canvas = document.createElement('canvas')
-        canvas.width = width; canvas.height = height
-        canvas.getContext('2d')?.drawImage(img, 0, 0, width, height)
-        canvas.toBlob(async (blob) => {
-          if (!blob) { toast.error('Failed to process image'); return }
-          setUploading(true)
-          try {
-            const fd = new FormData()
-            fd.append('file', new File([blob], file.name.replace(/\.[^.]+$/, '.jpg'), { type: 'image/jpeg' }))
-            fd.append('folder', 'thumbnails')
-            const res = await fetch('/api/upload', { method: 'POST', body: fd })
-            if (!res.ok) throw new Error()
-            const { url } = await res.json() as { url: string }
-            setPreview(url); setZoom(1); onFile(url)
-          } catch {
-            toast.error('Failed to upload image. Please try again.')
-          } finally {
-            setUploading(false)
-          }
-        }, 'image/jpeg', 0.82)
-      }
-      img.src = e.target?.result as string
+    if (urls.length >= 10) { toast.error('Maximum 10 images'); return }
+    setUploading(true)
+    try {
+      const fd = new FormData()
+      fd.append('file', file)
+      fd.append('folder', 'thumbnails')
+      const res = await fetch('/api/upload', { method: 'POST', body: fd })
+      if (!res.ok) throw new Error()
+      const { url } = await res.json() as { url: string }
+      onFiles([...urls, url])
+    } catch {
+      toast.error('Failed to upload image. Please try again.')
+    } finally {
+      setUploading(false)
+      if (inputRef.current) inputRef.current.value = ''
     }
-    reader.readAsDataURL(file)
   }
 
-  function handleInputChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0]; if (file) acceptFile(file)
+  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]; if (file) void acceptFile(file)
   }
 
-  function handleDrop(e: React.DragEvent) {
-    e.preventDefault(); setDragging(false)
-    const file = e.dataTransfer.files[0]; if (file) acceptFile(file)
-  }
-
-  function handleRemove() {
-    setPreview(null); setZoom(1); onFile(null)
-    if (inputRef.current) inputRef.current.value = ''
-  }
-
-  const adjustZoom = useCallback((delta: number) =>
-    setZoom(z => Math.max(1, Math.min(4, Math.round((z + delta) * 10) / 10))), [])
-
-  if (uploading) {
-    return (
-      <div className="flex flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed border-red-300 bg-red-50 py-12 text-center">
-        <div className="h-10 w-10 rounded-full border-2 border-red-400 border-t-transparent animate-spin" />
-        <p className="text-sm font-medium text-red-600">Uploading image…</p>
-      </div>
-    )
-  }
-
-  if (preview) {
-    return (
-      <div className="flex flex-col gap-2">
-        <div className="relative rounded-xl overflow-hidden border border-border bg-black group"
-          style={{ aspectRatio: '16/9' }}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={preview} alt="Preview"
-            className="w-full h-full object-contain select-none transition-transform duration-200"
-            style={{ transform: `scale(${zoom})` }}
-            onWheel={e => { e.preventDefault(); adjustZoom(e.deltaY < 0 ? 0.1 : -0.1) }}
-            draggable={false}
-          />
-          {/* Zoom controls */}
-          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex items-center gap-1 bg-black/70 backdrop-blur-sm rounded-full px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity">
-            <button type="button" onClick={() => adjustZoom(-0.25)}
-              className="h-5 w-5 flex items-center justify-center text-white hover:text-white/70 transition-colors">
-              <ZoomOut className="h-3 w-3" />
-            </button>
-            <span className="text-white text-[10px] tabular-nums w-8 text-center">{Math.round(zoom * 100)}%</span>
-            <button type="button" onClick={() => adjustZoom(0.25)}
-              className="h-5 w-5 flex items-center justify-center text-white hover:text-white/70 transition-colors">
-              <ZoomIn className="h-3 w-3" />
-            </button>
-            <div className="w-px h-3 bg-white/30 mx-0.5" />
-            <button type="button" onClick={() => setZoom(1)}
-              className="h-5 w-5 flex items-center justify-center text-white hover:text-white/70 transition-colors">
-              <RotateCcw className="h-3 w-3" />
-            </button>
-          </div>
-          {/* Remove */}
-          <button type="button" onClick={handleRemove}
-            className="absolute top-2 right-2 h-7 w-7 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/80 transition-colors">
-            <X className="h-3.5 w-3.5" />
-          </button>
-          {/* Zoom hint */}
-          <div className="absolute top-2 left-2 text-[10px] text-white/70 bg-black/40 rounded px-1.5 py-0.5 opacity-0 group-hover:opacity-100 transition-opacity select-none">
-            Scroll to zoom
-          </div>
-        </div>
-        <p className="text-[11px] text-muted-foreground text-center">Image selected · scroll or use controls to zoom preview</p>
-      </div>
-    )
+  function remove(idx: number) {
+    onFiles(urls.filter((_, i) => i !== idx))
   }
 
   return (
-    <div
-      onDragOver={e => { e.preventDefault(); setDragging(true) }}
-      onDragLeave={() => setDragging(false)}
-      onDrop={handleDrop}
-      className={`flex flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed py-12 text-center transition-colors cursor-pointer
-        ${dragging ? 'border-red-400 bg-red-50' : 'border-border bg-muted/20 hover:border-muted-foreground/40 hover:bg-muted/30'}`}
-      onClick={() => inputRef.current?.click()}
-    >
-      <input ref={inputRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif"
-        className="sr-only" onChange={handleInputChange} />
-      <div className={`h-14 w-14 rounded-full border flex items-center justify-center shadow-sm transition-colors
-        ${dragging ? 'bg-red-100 border-red-300' : 'bg-background border-border'}`}>
-        <Upload className={`h-6 w-6 ${dragging ? 'text-red-500' : 'text-muted-foreground'}`} />
-      </div>
-      <div>
-        <p className="text-sm font-medium text-foreground">Drag &amp; drop image here</p>
-        <p className="text-xs text-muted-foreground mt-0.5">or click to browse</p>
-      </div>
-      <Button type="button" variant="outline" size="sm" onClick={e => { e.stopPropagation(); inputRef.current?.click() }}>
-        Upload Image
-      </Button>
-      <p className="text-[11px] text-muted-foreground">JPG, PNG, WebP · Max 10 MB</p>
+    <div className="flex flex-col gap-3">
+      <input ref={inputRef} type="file" accept="image/jpeg,image/png,image/webp"
+        className="sr-only" onChange={handleChange} />
+
+      {urls.length === 0 && !uploading ? (
+        <div
+          onClick={() => inputRef.current?.click()}
+          className="flex flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed border-border bg-muted/20 py-10 text-center cursor-pointer hover:border-muted-foreground/40 hover:bg-muted/30 transition-colors">
+          <div className="h-12 w-12 rounded-full border border-border bg-background flex items-center justify-center shadow-sm">
+            <ImageIcon className="h-5 w-5 text-muted-foreground" />
+          </div>
+          <div>
+            <p className="text-sm font-medium text-foreground">Drag &amp; drop or click to upload</p>
+            <p className="text-xs text-muted-foreground mt-0.5">Up to 10 images · JPG, PNG, WebP · Max 10 MB each</p>
+          </div>
+          <Button type="button" variant="outline" size="sm">Upload Image</Button>
+        </div>
+      ) : (
+        <div className="flex flex-wrap gap-2">
+          {urls.map((url, idx) => (
+            <div key={url} className="relative h-20 w-20 rounded-lg overflow-hidden border border-border bg-muted group">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={url} alt={`Image ${idx + 1}`} className="h-full w-full object-cover" />
+              {idx === 0 && (
+                <span className="absolute bottom-0 left-0 right-0 text-center text-[8px] font-semibold bg-primary/80 text-primary-foreground py-0.5">
+                  Cover
+                </span>
+              )}
+              <button type="button" onClick={() => remove(idx)}
+                className="absolute top-1 right-1 h-5 w-5 rounded-full bg-black/60 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity">
+                <X className="h-3 w-3" />
+              </button>
+            </div>
+          ))}
+          {uploading && (
+            <div className="h-20 w-20 rounded-lg border-2 border-dashed border-border bg-muted/30 flex items-center justify-center">
+              <div className="h-5 w-5 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+            </div>
+          )}
+          {!uploading && urls.length < 10 && (
+            <button type="button" onClick={() => inputRef.current?.click()}
+              className="h-20 w-20 rounded-lg border-2 border-dashed border-border bg-muted/20 flex flex-col items-center justify-center gap-1 hover:bg-muted/40 transition-colors text-muted-foreground hover:text-foreground">
+              <Plus className="h-5 w-5" />
+              <span className="text-[10px] font-medium">Add</span>
+            </button>
+          )}
+        </div>
+      )}
+
+      {urls.length > 0 && (
+        <p className="text-[11px] text-muted-foreground">{urls.length}/10 image{urls.length > 1 ? 's' : ''} · first image is the cover</p>
+      )}
     </div>
   )
 }
@@ -423,22 +373,25 @@ function ImageUploadArea({ onFile, initialUrl }: {
 
 type ThumbnailMode = 'default' | 'screen' | 'upload'
 
-function VideoUploadArea({ isShort = false, thumbnailMode, onThumbnailMode, onFile, initialVideoUrl, initialThumbUrl }: {
-  isShort?: boolean
-  thumbnailMode: ThumbnailMode
+function VideoUploadArea({ orientation, thumbnailMode, onThumbnailMode, onFile, initialVideoUrl, initialThumbUrl }: {
+  orientation:     'PORTRAIT' | 'LANDSCAPE' | ''
+  thumbnailMode:   ThumbnailMode
   onThumbnailMode: (m: ThumbnailMode) => void
-  onFile: (videoUrl: string | null, thumbUrl: string | null) => void
+  onFile:          (videoUrl: string | null, thumbUrl: string | null) => void
   initialVideoUrl?: string | null
   initialThumbUrl?: string | null
 }) {
-  const [videoUrl, setVideoUrl] = useState<string | null>(initialVideoUrl ?? null)
-  const [thumbUrl, setThumbUrl] = useState<string | null>(initialThumbUrl ?? null)
+  const [videoUrl, setVideoUrl]   = useState<string | null>(initialVideoUrl ?? null)
+  const [thumbUrl, setThumbUrl]   = useState<string | null>(initialThumbUrl ?? null)
   const [uploading, setUploading] = useState(false)
-  const [dragging, setDragging] = useState(false)
-  const [muted, setMuted] = useState(false)
+  const [dragging, setDragging]   = useState(false)
+  const [muted, setMuted]         = useState(false)
   const videoInputRef = useRef<HTMLInputElement>(null)
   const thumbInputRef = useRef<HTMLInputElement>(null)
-  const videoRef = useRef<HTMLVideoElement>(null)
+  const videoRef      = useRef<HTMLVideoElement>(null)
+
+  const isPortrait  = orientation === 'PORTRAIT'
+  const aspectClass = isPortrait ? 'aspect-[9/16] max-w-[180px]' : 'aspect-video w-full'
 
   async function acceptVideo(file: File) {
     if (!file.type.startsWith('video/')) { toast.error('Please select a video file'); return }
@@ -475,8 +428,7 @@ function VideoUploadArea({ isShort = false, thumbnailMode, onThumbnailMode, onFi
   }
 
   function captureFrame() {
-    const video = videoRef.current
-    if (!video) return
+    const video = videoRef.current; if (!video) return
     const canvas = document.createElement('canvas')
     canvas.width = video.videoWidth; canvas.height = video.videoHeight
     canvas.getContext('2d')?.drawImage(video, 0, 0)
@@ -490,13 +442,11 @@ function VideoUploadArea({ isShort = false, thumbnailMode, onThumbnailMode, onFi
     if (videoInputRef.current) videoInputRef.current.value = ''
   }
 
-  const aspectClass = isShort ? 'aspect-[9/16] max-w-[180px]' : 'aspect-video w-full'
-
   if (uploading) {
     return (
-      <div className="flex flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed border-red-300 bg-red-50 py-12 text-center">
-        <div className="h-10 w-10 rounded-full border-2 border-red-400 border-t-transparent animate-spin" />
-        <p className="text-sm font-medium text-red-600">Uploading video…</p>
+      <div className="flex flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed border-primary/30 bg-primary/5 py-12 text-center">
+        <div className="h-10 w-10 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+        <p className="text-sm font-medium text-foreground">Uploading video…</p>
         <p className="text-xs text-muted-foreground">This may take a moment for large files</p>
       </div>
     )
@@ -505,20 +455,12 @@ function VideoUploadArea({ isShort = false, thumbnailMode, onThumbnailMode, onFi
   if (videoUrl) {
     return (
       <div className="flex flex-col gap-3">
-        {/* Video player */}
-        <div className={`relative bg-black rounded-xl overflow-hidden border border-border ${isShort ? 'flex justify-center' : ''}`}>
+        <div className={`relative bg-black rounded-xl overflow-hidden border border-border ${isPortrait ? 'flex justify-center' : ''}`}>
           <div className={aspectClass}>
-            <video
-              ref={videoRef}
-              src={videoUrl}
-              controls
-              muted={muted}
-              className="w-full h-full object-contain"
-              preload="metadata"
-              onError={() => setVideoUrl(null)}
-            />
+            <video ref={videoRef} src={videoUrl} controls muted={muted}
+              className="w-full h-full object-contain" preload="metadata"
+              onError={() => setVideoUrl(null)} />
           </div>
-          {/* Controls overlay */}
           <div className="absolute top-2 right-2 flex gap-1">
             <button type="button" onClick={() => setMuted(m => !m)}
               className="h-7 w-7 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/80 transition-colors">
@@ -531,14 +473,13 @@ function VideoUploadArea({ isShort = false, thumbnailMode, onThumbnailMode, onFi
           </div>
         </div>
 
-        {/* Thumbnail section */}
         <div>
           <p className="text-xs font-medium text-foreground mb-2">Thumbnail</p>
           <div className="grid grid-cols-3 gap-2 mb-2">
             {([
-              { mode: 'default' as ThumbnailMode, label: 'Auto',    icon: ImageIcon, desc: 'First frame'  },
+              { mode: 'default' as ThumbnailMode, label: 'Auto',    icon: ImageIcon, desc: 'First frame'   },
               { mode: 'screen'  as ThumbnailMode, label: 'Capture', icon: Monitor,   desc: 'Current frame' },
-              { mode: 'upload'  as ThumbnailMode, label: 'Upload',  icon: Upload,    desc: 'Custom image' },
+              { mode: 'upload'  as ThumbnailMode, label: 'Upload',  icon: Upload,    desc: 'Custom image'  },
             ] as const).map(({ mode, label, icon: Icon, desc }) => {
               const active = thumbnailMode === mode
               return (
@@ -547,7 +488,7 @@ function VideoUploadArea({ isShort = false, thumbnailMode, onThumbnailMode, onFi
                   className={`flex flex-col items-center gap-1.5 rounded-lg border-2 p-3 text-center transition-all
                     ${active ? 'border-primary bg-primary/10' : 'border-border bg-background hover:bg-muted/30'}`}>
                   <Icon className={`h-5 w-5 ${active ? 'text-primary' : 'text-muted-foreground'}`} />
-                  <span className={`text-xs font-medium ${active ? 'text-red-700' : 'text-foreground'}`}>{label}</span>
+                  <span className={`text-xs font-medium ${active ? 'text-primary' : 'text-foreground'}`}>{label}</span>
                   <span className="text-[10px] text-muted-foreground">{desc}</span>
                 </button>
               )
@@ -561,7 +502,7 @@ function VideoUploadArea({ isShort = false, thumbnailMode, onThumbnailMode, onFi
                 <div className="relative rounded-lg overflow-hidden border border-border">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={thumbUrl} alt="Thumbnail" className="w-full aspect-video object-cover" />
-                  <button type="button" onClick={() => { if (thumbUrl) URL.revokeObjectURL(thumbUrl); setThumbUrl(null); onFile(videoUrl, null) }}
+                  <button type="button" onClick={() => { setThumbUrl(null); onFile(videoUrl, null) }}
                     className="absolute top-1.5 right-1.5 h-6 w-6 rounded-full bg-black/60 flex items-center justify-center text-white">
                     <X className="h-3 w-3" />
                   </button>
@@ -571,9 +512,7 @@ function VideoUploadArea({ isShort = false, thumbnailMode, onThumbnailMode, onFi
                   onClick={() => thumbInputRef.current?.click()}>
                   <Upload className="h-4 w-4 text-muted-foreground" />
                   <p className="text-xs text-muted-foreground">JPG, PNG · Max 2 MB</p>
-                  <Button type="button" variant="outline" size="sm" onClick={e => { e.stopPropagation(); thumbInputRef.current?.click() }}>
-                    Browse
-                  </Button>
+                  <Button type="button" variant="outline" size="sm" onClick={e => { e.stopPropagation(); thumbInputRef.current?.click() }}>Browse</Button>
                 </div>
               )}
             </div>
@@ -596,119 +535,112 @@ function VideoUploadArea({ isShort = false, thumbnailMode, onThumbnailMode, onFi
   }
 
   return (
-    <div className="flex flex-col gap-4">
-      <div
-        onDragOver={e => { e.preventDefault(); setDragging(true) }}
-        onDragLeave={() => setDragging(false)}
-        onDrop={handleVideoDrop}
-        onClick={() => videoInputRef.current?.click()}
-        className={`flex flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed py-8 text-center cursor-pointer transition-colors
-          ${dragging ? 'border-red-400 bg-red-50' : 'border-border bg-muted/20 hover:border-muted-foreground/40 hover:bg-muted/30'}`}
-      >
-        <input ref={videoInputRef} type="file" accept="video/mp4,video/mov,video/quicktime,video/webm"
-          className="sr-only" onChange={e => { const f = e.target.files?.[0]; if (f) void acceptVideo(f) }} />
-        <div className={`h-12 w-12 rounded-full border flex items-center justify-center shadow-sm transition-colors
-          ${dragging ? 'bg-red-100 border-red-300' : 'bg-background border-border'}`}>
-          {isShort ? <Film className={`h-5 w-5 ${dragging ? 'text-red-500' : 'text-muted-foreground'}`} />
-                   : <Video className={`h-5 w-5 ${dragging ? 'text-red-500' : 'text-muted-foreground'}`} />}
-        </div>
-        <div>
-          <p className="text-sm font-medium text-foreground">{isShort ? 'Upload Short Video' : 'Upload Video'}</p>
-          <p className="text-xs text-muted-foreground mt-0.5">{isShort ? 'Vertical format (9:16) · ' : ''}MP4, MOV · Max 1 GB</p>
-        </div>
-        <Button type="button" variant="outline" size="sm" onClick={e => { e.stopPropagation(); videoInputRef.current?.click() }}>
-          Choose File
-        </Button>
+    <div
+      onDragOver={e => { e.preventDefault(); setDragging(true) }}
+      onDragLeave={() => setDragging(false)}
+      onDrop={handleVideoDrop}
+      onClick={() => videoInputRef.current?.click()}
+      className={`flex flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed py-10 text-center cursor-pointer transition-colors
+        ${dragging ? 'border-primary/60 bg-primary/5' : 'border-border bg-muted/20 hover:border-muted-foreground/40 hover:bg-muted/30'}`}>
+      <input ref={videoInputRef} type="file" accept="video/mp4,video/mov,video/quicktime,video/webm"
+        className="sr-only" onChange={e => { const f = e.target.files?.[0]; if (f) void acceptVideo(f) }} />
+      <div className={`h-12 w-12 rounded-full border flex items-center justify-center shadow-sm transition-colors
+        ${dragging ? 'bg-primary/10 border-primary/40' : 'bg-background border-border'}`}>
+        {isPortrait
+          ? <Smartphone className={`h-5 w-5 ${dragging ? 'text-primary' : 'text-muted-foreground'}`} />
+          : <Video className={`h-5 w-5 ${dragging ? 'text-primary' : 'text-muted-foreground'}`} />}
       </div>
+      <div>
+        <p className="text-sm font-medium text-foreground">
+          {isPortrait ? 'Upload Portrait Video' : 'Upload Video'}
+        </p>
+        <p className="text-xs text-muted-foreground mt-0.5">
+          {isPortrait ? '9:16 vertical · ' : '16:9 landscape · '}MP4, MOV · Max 1 GB
+        </p>
+      </div>
+      <Button type="button" variant="outline" size="sm" onClick={e => { e.stopPropagation(); videoInputRef.current?.click() }}>
+        Choose File
+      </Button>
     </div>
   )
 }
 
 // ── Preview card (Step 3 right panel) ────────────────────────────────────────
 
-function PreviewCard({
-  form, categories, locations, resolvedLocationId, scheduleEnabled, scheduleDate, scheduleTime,
-}: {
-  form: FormState
-  categories: Category[]
-  locations: Location[]
-  resolvedLocationId: string
-  scheduleEnabled: boolean
-  scheduleDate: string
-  scheduleTime: string
+const TYPE_COLORS: Record<ContentType, string> = {
+  [ContentType.IMAGE]:   'bg-blue-100 text-blue-700',
+  [ContentType.VIDEO]:   'bg-purple-100 text-purple-700',
+  [ContentType.SHORT]:   'bg-pink-100 text-pink-700',
+  [ContentType.LIVE]:    'bg-red-100 text-red-700',
+  [ContentType.YOUTUBE]: 'bg-red-100 text-red-700',
+}
+
+function PreviewCard({ form, categories, locations, resolvedLocationId, scheduleEnabled, scheduleDate, scheduleTime }: {
+  form:                FormState
+  categories:          Category[]
+  locations:           Location[]
+  resolvedLocationId:  string
+  scheduleEnabled:     boolean
+  scheduleDate:        string
+  scheduleTime:        string
 }) {
-  const typeLabel    = POST_TYPES.find(p => p.type === form.type)?.label ?? form.type
-  const TypeIcon     = POST_TYPES.find(p => p.type === form.type)?.icon ?? Image
   const categoryName = categories.find(c => c.id === form.categoryId)?.name
   const locationName = locations.find(l => l.id === resolvedLocationId)?.name
   const flagOption   = FLAG_OPTIONS.find(f => f.value === form.flag)
-  const isVideoType  = form.type === ContentType.VIDEO || form.type === ContentType.SHORT
-
-  const typeColors: Record<ContentType, string> = {
-    [ContentType.IMAGE]:   'bg-blue-100 text-blue-700',
-    [ContentType.VIDEO]:   'bg-purple-100 text-purple-700',
-    [ContentType.SHORT]:   'bg-pink-100 text-pink-700',
-    [ContentType.LIVE]:    'bg-red-100 text-red-700',
-    [ContentType.YOUTUBE]: 'bg-red-100 text-red-700',
-  }
+  const isVideo      = form.type === ContentType.VIDEO || form.type === ContentType.SHORT
+  const coverUrl     = form.type === ContentType.IMAGE ? (form.imageUrls[0] ?? null) : form.thumbnailUrl || null
+  const typeLabel    = form.type === ContentType.SHORT
+    ? (form.orientation === 'PORTRAIT' ? 'Short · Portrait' : form.orientation === 'LANDSCAPE' ? 'Short · Landscape' : 'Short')
+    : form.type === ContentType.IMAGE ? 'Image Post' : 'Video Post'
 
   return (
     <div className="flex flex-col gap-3 h-full">
       <p className="text-xs font-semibold text-foreground uppercase tracking-wide">Live Preview</p>
-
-      {/* Card */}
       <div className="rounded-xl border border-border bg-background shadow-sm overflow-hidden flex flex-col">
-        {/* Thumbnail / media preview */}
-        <div className={`relative bg-muted flex items-center justify-center ${form.type === ContentType.SHORT ? 'aspect-[9/16] max-h-48 overflow-hidden' : 'aspect-video'}`}>
-          {form.thumbnailUrl ? (
+        <div className={`relative bg-muted flex items-center justify-center ${form.type === ContentType.SHORT && form.orientation === 'PORTRAIT' ? 'aspect-[9/16] max-h-52 overflow-hidden' : 'aspect-video'}`}>
+          {coverUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={form.thumbnailUrl} alt={form.title || 'Preview'}
-              className="w-full h-full object-cover" />
+            <img src={coverUrl} alt={form.title || 'Preview'} className="w-full h-full object-cover" />
           ) : (
-            <TypeIcon className="h-10 w-10 text-muted-foreground/40" />
+            <Image className="h-10 w-10 text-muted-foreground/40" />
           )}
-          {/* Type badge */}
-          <span className={`absolute top-2 left-2 text-[10px] font-semibold px-2 py-0.5 rounded-full ${typeColors[form.type]}`}>
+          <span className={`absolute top-2 left-2 text-[10px] font-semibold px-2 py-0.5 rounded-full ${TYPE_COLORS[form.type]}`}>
             {typeLabel}
           </span>
-          {/* Flag badge */}
           {flagOption && (
             <span className="absolute top-2 right-2 flex items-center gap-1 text-[10px] font-semibold bg-background/90 rounded-full px-2 py-0.5 border border-border">
               <flagOption.icon className={`h-2.5 w-2.5 ${flagOption.color}`} />
               {flagOption.label}
             </span>
           )}
-          {/* Video indicator overlay */}
-          {isVideoType && form.mediaUrl && (
+          {isVideo && form.mediaUrl && (
             <div className="absolute inset-0 flex items-center justify-center bg-black/20">
               <div className="h-10 w-10 rounded-full bg-black/50 flex items-center justify-center">
                 <Play className="h-5 w-5 text-white ml-0.5" />
               </div>
             </div>
           )}
+          {form.type === ContentType.IMAGE && form.imageUrls.length > 1 && (
+            <span className="absolute bottom-2 right-2 text-[10px] font-semibold bg-black/60 text-white rounded-full px-2 py-0.5">
+              +{form.imageUrls.length - 1} more
+            </span>
+          )}
         </div>
 
-        {/* Meta */}
         <div className="p-4 flex flex-col gap-2.5">
           <h3 className="text-sm font-semibold text-foreground leading-snug line-clamp-2">
             {form.title || <span className="text-muted-foreground italic">No title yet…</span>}
           </h3>
-
-          {form.excerpt && (
-            <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">{form.excerpt}</p>
-          )}
-
+          {form.excerpt && <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">{form.excerpt}</p>}
           <div className="flex flex-col gap-1.5 pt-1">
             {categoryName && (
               <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                <AlignLeft className="h-3 w-3 shrink-0" />
-                <span>{categoryName}</span>
+                <AlignLeft className="h-3 w-3 shrink-0" /><span>{categoryName}</span>
               </div>
             )}
             {locationName && (
               <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                <MapPin className="h-3 w-3 shrink-0" />
-                <span>{locationName}</span>
+                <MapPin className="h-3 w-3 shrink-0" /><span>{locationName}</span>
               </div>
             )}
             {form.languageIds.length > 0 && (
@@ -720,9 +652,7 @@ function PreviewCard({
             {form.tags.length > 0 && (
               <div className="flex items-center gap-1.5 text-xs text-muted-foreground flex-wrap">
                 <Tag className="h-3 w-3 shrink-0" />
-                {form.tags.slice(0, 3).map(t => (
-                  <span key={t} className="bg-muted rounded px-1.5 py-0.5">#{t}</span>
-                ))}
+                {form.tags.slice(0, 3).map(t => <span key={t} className="bg-muted rounded px-1.5 py-0.5">#{t}</span>)}
                 {form.tags.length > 3 && <span>+{form.tags.length - 3}</span>}
               </div>
             )}
@@ -735,29 +665,25 @@ function PreviewCard({
           </div>
         </div>
 
-        {/* Status pill */}
         <div className="px-4 pb-4">
           <span className={`inline-flex items-center text-[10px] font-semibold uppercase tracking-wide rounded-full px-2.5 py-1
-            ${scheduleEnabled && scheduleDate
-              ? 'bg-amber-100 text-amber-700'
-              : 'bg-yellow-50 text-yellow-700 border border-yellow-200'}`}>
+            ${scheduleEnabled && scheduleDate ? 'bg-amber-100 text-amber-700' : 'bg-yellow-50 text-yellow-700 border border-yellow-200'}`}>
             {scheduleEnabled && scheduleDate ? 'Scheduled' : 'Draft'}
           </span>
         </div>
       </div>
 
-      {/* Checklist */}
       <div className="rounded-lg border border-border bg-muted/10 p-3 flex flex-col gap-1.5">
         <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide mb-0.5">Checklist</p>
         {[
-          { label: 'Title',     ok: form.title.trim().length > 0 },
-          { label: 'Category',  ok: !!form.categoryId },
-          { label: 'Location',  ok: !!resolvedLocationId },
-          { label: 'Language',  ok: form.languageIds.length > 0 },
+          { label: 'Title',    ok: form.title.trim().length > 0 },
+          { label: 'Media',    ok: form.type === ContentType.IMAGE ? form.imageUrls.length > 0 : form.mediaUrl !== '' },
+          { label: 'Category', ok: !!form.categoryId },
+          { label: 'Location', ok: !!resolvedLocationId },
+          { label: 'Language', ok: form.languageIds.length > 0 },
         ].map(({ label, ok }) => (
           <div key={label} className="flex items-center gap-2 text-xs">
-            <div className={`h-3.5 w-3.5 rounded-full flex items-center justify-center shrink-0
-              ${ok ? 'bg-emerald-500' : 'bg-muted-foreground/20'}`}>
+            <div className={`h-3.5 w-3.5 rounded-full flex items-center justify-center shrink-0 ${ok ? 'bg-emerald-500' : 'bg-muted-foreground/20'}`}>
               {ok && <Check className="h-2 w-2 text-white stroke-[3]" />}
             </div>
             <span className={ok ? 'text-foreground' : 'text-muted-foreground'}>{label}</span>
@@ -772,6 +698,7 @@ function PreviewCard({
 
 interface FormState {
   type:            ContentType
+  orientation:     'PORTRAIT' | 'LANDSCAPE' | ''
   title:           string
   excerpt:         string
   categoryId:      string
@@ -783,16 +710,12 @@ interface FormState {
   voice:           string
   mediaUrl:        string
   thumbnailUrl:    string
-}
-
-interface LocationState {
-  stateId:    string
-  districtId: string
-  locationId: string
+  imageUrls:       string[]
 }
 
 const initialForm: FormState = {
   type:            ContentType.IMAGE,
+  orientation:     '',
   title:           '',
   excerpt:         '',
   categoryId:      '',
@@ -804,38 +727,47 @@ const initialForm: FormState = {
   voice:           '',
   mediaUrl:        '',
   thumbnailUrl:    '',
+  imageUrls:       [],
 }
 
-// ── Location cascade resolver (for edit pre-population) ───────────────────────
+// ── Resolve location cascade for edit pre-population ─────────────────────────
 
 function resolveLocationCascade(locationId: string | null | undefined, locations: Location[]): LocationState {
-  if (!locationId) return { stateId: '', districtId: '', locationId: '' }
+  if (!locationId) return { stateId: '', districtId: '', mandalId: '', locationId: '' }
   const loc = locations.find(l => l.id === locationId)
-  if (!loc) return { stateId: '', districtId: '', locationId: '' }
-  if (loc.level === LocationLevel.STATE) return { stateId: loc.id, districtId: '', locationId: '' }
-  if (loc.level === LocationLevel.DISTRICT) return { stateId: loc.parentId ?? '', districtId: loc.id, locationId: '' }
-  // MANDAL / VILLAGE
-  const district = locations.find(l => l.id === loc.parentId)
-  return { stateId: district?.parentId ?? '', districtId: loc.parentId ?? '', locationId: loc.id }
+  if (!loc) return { stateId: '', districtId: '', mandalId: '', locationId: '' }
+  if (loc.level === LocationLevel.STATE)    return { stateId: loc.id, districtId: '', mandalId: '', locationId: '' }
+  if (loc.level === LocationLevel.DISTRICT) {
+    return { stateId: loc.parentId ?? '', districtId: loc.id, mandalId: '', locationId: '' }
+  }
+  if (loc.level === LocationLevel.MANDAL) {
+    const district = locations.find(l => l.id === loc.parentId)
+    return { stateId: district?.parentId ?? '', districtId: loc.parentId ?? '', mandalId: loc.id, locationId: '' }
+  }
+  // VILLAGE
+  const mandal   = locations.find(l => l.id === loc.parentId)
+  const district = locations.find(l => l.id === mandal?.parentId)
+  return { stateId: district?.parentId ?? '', districtId: mandal?.parentId ?? '', mandalId: loc.parentId ?? '', locationId: loc.id }
 }
 
 // ── Props ─────────────────────────────────────────────────────────────────────
 
 interface AddContentFormProps {
-  categories:  Category[]
-  locations:   Location[]
-  languages:   Language[]
+  categories:   Category[]
+  locations:    Location[]
+  languages:    Language[]
   editContent?: Content
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export function AddContentForm({ categories, locations, languages, editContent }: AddContentFormProps) {
-  const router  = useRouter()
-  const isEdit  = Boolean(editContent)
+  const router = useRouter()
+  const isEdit = Boolean(editContent)
 
   const initForm = (): FormState => editContent ? {
     type:            editContent.type,
+    orientation:     (editContent.orientation ?? '') as 'PORTRAIT' | 'LANDSCAPE' | '',
     title:           editContent.title,
     excerpt:         editContent.excerpt ?? '',
     categoryId:      editContent.categoryId ?? '',
@@ -847,34 +779,48 @@ export function AddContentForm({ categories, locations, languages, editContent }
     voice:           '',
     mediaUrl:        editContent.mediaUrl ?? '',
     thumbnailUrl:    editContent.thumbnailUrl ?? '',
+    imageUrls:       editContent.imageUrls ?? [],
   } : initialForm
 
   const initSchedule = () => {
     if (!editContent?.scheduledAt) return { enabled: false, date: '', time: '09:00' }
     const d = new Date(editContent.scheduledAt)
     const pad = (n: number) => String(n).padStart(2, '0')
-    return {
-      enabled: true,
-      date:    `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`,
-      time:    `${pad(d.getHours())}:${pad(d.getMinutes())}`,
-    }
+    return { enabled: true, date: `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`, time: `${pad(d.getHours())}:${pad(d.getMinutes())}` }
   }
 
-  const [form, setForm]     = useState<FormState>(initForm)
-  const [loc, setLoc]       = useState<LocationState>(() => resolveLocationCascade(editContent?.locationId, locations))
+  const [form, setForm]           = useState<FormState>(initForm)
+  const [loc, setLoc]             = useState<LocationState>(() => resolveLocationCascade(editContent?.locationId, locations))
   const [thumbMode, setThumbMode] = useState<ThumbnailMode>('default')
-  const [step, setStep]     = useState<Step>(1)
+  const [step, setStep]           = useState<Step>(1)
+  // 'home' tab = IMAGE | VIDEO; 'shorts' tab = SHORT
+  const [activeTab, setActiveTab] = useState<'home' | 'shorts'>(
+    editContent?.type === ContentType.SHORT ? 'shorts' : 'home'
+  )
+
   const initSched = initSchedule()
   const [scheduleEnabled, setScheduleEnabled] = useState(initSched.enabled)
   const [scheduleDate, setScheduleDate]       = useState(initSched.date)
   const [scheduleTime, setScheduleTime]       = useState(initSched.time)
-  const [pending, start]    = useTransition()
+  const [pending, start] = useTransition()
 
   function set<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm(prev => ({ ...prev, [key]: value }))
   }
 
-  const canAdvance = step === 1 ? form.title.trim().length > 0 : true
+  function selectType(type: ContentType, orientation: 'PORTRAIT' | 'LANDSCAPE' | '') {
+    setForm(prev => ({ ...prev, type, orientation, mediaUrl: '', thumbnailUrl: '', imageUrls: [] }))
+  }
+
+  const resolvedLocationId = loc.locationId || loc.mandalId || loc.districtId || loc.stateId
+
+  const mediaOk = form.type === ContentType.IMAGE
+    ? form.imageUrls.length > 0
+    : form.mediaUrl !== ''
+
+  const canAdvance = step === 1
+    ? form.title.trim().length > 0 && mediaOk
+    : true
 
   function next() { if (step < 3) setStep((step + 1) as Step) }
   function back() {
@@ -882,10 +828,12 @@ export function AddContentForm({ categories, locations, languages, editContent }
     else router.push('/dashboard/content')
   }
 
-  const resolvedLocationId = loc.locationId || loc.districtId || loc.stateId
-
   function submit(submitStatus: ContentStatus) {
     start(async () => {
+      const thumbnailUrl = form.type === ContentType.IMAGE
+        ? form.imageUrls[0]
+        : form.thumbnailUrl || undefined
+
       const payload = {
         title:          form.title.trim(),
         excerpt:        form.excerpt.trim() || undefined,
@@ -897,43 +845,31 @@ export function AddContentForm({ categories, locations, languages, editContent }
         isTrending:     form.flag === 'TRENDING',
         isFeatured:     form.flag === 'FEATURED',
         mediaUrl:       form.mediaUrl || undefined,
-        thumbnailUrl:   form.thumbnailUrl || undefined,
-        scheduledAt:    scheduleEnabled && scheduleDate
-          ? `${scheduleDate}T${scheduleTime}` : undefined,
+        thumbnailUrl,
+        imageUrls:      form.imageUrls.length ? form.imageUrls : undefined,
+        orientation:    form.orientation || undefined,
+        scheduledAt:    scheduleEnabled && scheduleDate ? `${scheduleDate}T${scheduleTime}` : undefined,
       }
 
       if (isEdit && editContent) {
         const result = await updateContent(editContent.id, payload)
-        if (result.ok) {
-          toast.success(`"${result.data.title}" updated`)
-          router.push('/dashboard/content')
-        } else {
-          toast.error(result.error.message)
-        }
+        if (result.ok) { toast.success(`"${result.data.title}" updated`); router.push('/dashboard/content') }
+        else toast.error(result.error.message)
         return
       }
 
-      const result = await createContent({
-        ...payload,
-        type:   form.type,
-        source: ContentSource.CMS,
-        status: submitStatus,
-      })
+      const result = await createContent({ ...payload, type: form.type, source: ContentSource.CMS, status: submitStatus })
       if (result.ok) {
-        const msg = submitStatus === ContentStatus.DRAFT
-          ? `"${result.data.title}" saved as draft`
-          : submitStatus === ContentStatus.SCHEDULED
-            ? `"${result.data.title}" scheduled`
-            : `"${result.data.title}" submitted for review`
-        toast.success(msg)
-        router.push('/dashboard/content')
+        const msg = submitStatus === ContentStatus.DRAFT ? `"${result.data.title}" saved as draft`
+          : submitStatus === ContentStatus.SCHEDULED ? `"${result.data.title}" scheduled`
+          : `"${result.data.title}" submitted for review`
+        toast.success(msg); router.push('/dashboard/content')
       } else {
         toast.error(result.error.message)
       }
     })
   }
 
-  const isVideo     = form.type === ContentType.VIDEO || form.type === ContentType.SHORT
   const titleLeft   = 120 - form.title.length
   const excerptLeft = 600 - form.excerpt.length
 
@@ -941,22 +877,15 @@ export function AddContentForm({ categories, locations, languages, editContent }
     <div className="min-h-screen bg-muted/30">
       <div className="max-w-5xl mx-auto w-full px-6 py-10">
 
-        {/* Page title */}
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-foreground">
-            {isEdit ? 'Edit Content' : 'Add Content'}
-          </h1>
+          <h1 className="text-2xl font-bold text-foreground">{isEdit ? 'Edit Content' : 'Add Content'}</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            {isEdit
-              ? 'Update the details of your content.'
-              : 'Fill in the details to publish your content.'}
+            {isEdit ? 'Update the details of your content.' : 'Fill in the details to publish your content.'}
           </p>
         </div>
 
-        {/* Step indicator card */}
         <StepIndicator current={step} />
 
-        {/* Form card */}
         <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
 
           {/* Card header */}
@@ -972,36 +901,90 @@ export function AddContentForm({ categories, locations, languages, editContent }
             </div>
           </div>
 
-          {/* Card body */}
           <form onSubmit={e => e.preventDefault()}>
             <div className="p-6">
 
-              {/* ══ STEP 1: Add Content ══ */}
+              {/* ══ STEP 1 ══ */}
               {step === 1 && (
                 <div className="animate-in fade-in slide-in-from-right-4 duration-300">
                   <div className="flex flex-col gap-6">
-                    <Field label="Post Type" required>
-                      <div className="flex flex-wrap gap-2 pt-0.5">
-                        {POST_TYPES.map(({ type, label, icon: Icon }) => {
-                          const active = form.type === type
-                          return (
-                            <button key={type} type="button" onClick={() => { set('type', type); set('mediaUrl', ''); set('thumbnailUrl', '') }}
-                              className={`flex items-center gap-2 rounded-lg border-2 px-4 py-2.5 text-sm font-medium transition-all
-                                ${active
-                                  ? 'border-primary bg-primary/10 text-primary'
-                                  : 'border-border bg-background text-foreground hover:border-muted-foreground/40 hover:bg-muted/20'}`}>
-                              <div className={`h-4 w-4 rounded-full border-2 flex items-center justify-center shrink-0
-                                ${active ? 'border-primary' : 'border-muted-foreground/40'}`}>
-                                {active && <div className="h-2 w-2 rounded-full bg-primary" />}
-                              </div>
-                              <Icon className="h-4 w-4" />
-                              {label}
-                            </button>
-                          )
-                        })}
-                      </div>
-                    </Field>
 
+                    {/* Tab toggle — Home / Shorts */}
+                    {!isEdit && (
+                      <div className="flex flex-col gap-3">
+                        <div className="flex gap-1 rounded-lg border border-border bg-muted/20 p-1 w-fit">
+                          {(['home', 'shorts'] as const).map(tab => (
+                            <button key={tab} type="button"
+                              onClick={() => {
+                                setActiveTab(tab)
+                                if (tab === 'home') selectType(ContentType.IMAGE, '')
+                                else selectType(ContentType.SHORT, 'PORTRAIT')
+                              }}
+                              className={`px-5 py-1.5 rounded-md text-sm font-semibold transition-all
+                                ${activeTab === tab
+                                  ? 'bg-primary text-primary-foreground shadow-sm'
+                                  : 'text-muted-foreground hover:text-foreground'}`}>
+                              {tab === 'home' ? 'Home' : 'Shorts'}
+                            </button>
+                          ))}
+                        </div>
+
+                        {/* Type cards */}
+                        <div className="flex flex-wrap gap-3">
+                          {activeTab === 'home' ? (
+                            <>
+                              {[
+                                { type: ContentType.IMAGE, orientation: '' as const, label: 'Image Post', icon: ImageIcon, desc: 'Single or multiple images' },
+                                { type: ContentType.VIDEO, orientation: '' as const, label: 'Video Post',  icon: Video,     desc: 'Landscape video content' },
+                              ].map(opt => {
+                                const active = form.type === opt.type
+                                return (
+                                  <button key={opt.type} type="button"
+                                    onClick={() => selectType(opt.type, opt.orientation)}
+                                    className={`flex items-center gap-3 rounded-xl border-2 px-5 py-3.5 text-left transition-all min-w-[180px]
+                                      ${active ? 'border-primary bg-primary/10' : 'border-border bg-background hover:border-muted-foreground/40 hover:bg-muted/20'}`}>
+                                    <div className={`h-9 w-9 rounded-full flex items-center justify-center border-2 shrink-0 transition-colors
+                                      ${active ? 'border-primary bg-primary/10' : 'border-border bg-muted/20'}`}>
+                                      <opt.icon className={`h-4 w-4 ${active ? 'text-primary' : 'text-muted-foreground'}`} />
+                                    </div>
+                                    <div>
+                                      <p className={`text-sm font-semibold ${active ? 'text-primary' : 'text-foreground'}`}>{opt.label}</p>
+                                      <p className="text-[11px] text-muted-foreground">{opt.desc}</p>
+                                    </div>
+                                  </button>
+                                )
+                              })}
+                            </>
+                          ) : (
+                            <>
+                              {[
+                                { orientation: 'PORTRAIT'  as const, label: 'Portrait',  icon: Smartphone, desc: '9:16 vertical · like Reels' },
+                                { orientation: 'LANDSCAPE' as const, label: 'Landscape', icon: Monitor,    desc: '16:9 horizontal video'     },
+                              ].map(opt => {
+                                const active = form.type === ContentType.SHORT && form.orientation === opt.orientation
+                                return (
+                                  <button key={opt.orientation} type="button"
+                                    onClick={() => selectType(ContentType.SHORT, opt.orientation)}
+                                    className={`flex items-center gap-3 rounded-xl border-2 px-5 py-3.5 text-left transition-all min-w-[180px]
+                                      ${active ? 'border-primary bg-primary/10' : 'border-border bg-background hover:border-muted-foreground/40 hover:bg-muted/20'}`}>
+                                    <div className={`h-9 w-9 rounded-full flex items-center justify-center border-2 shrink-0 transition-colors
+                                      ${active ? 'border-primary bg-primary/10' : 'border-border bg-muted/20'}`}>
+                                      <opt.icon className={`h-4 w-4 ${active ? 'text-primary' : 'text-muted-foreground'}`} />
+                                    </div>
+                                    <div>
+                                      <p className={`text-sm font-semibold ${active ? 'text-primary' : 'text-foreground'}`}>{opt.label}</p>
+                                      <p className="text-[11px] text-muted-foreground">{opt.desc}</p>
+                                    </div>
+                                  </button>
+                                )
+                              })}
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Title + Description + Media */}
                     <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
                       <div className="flex flex-col gap-4">
                         <Field label="Title" required>
@@ -1018,7 +1001,7 @@ export function AddContentForm({ categories, locations, languages, editContent }
 
                         <Field label="Description">
                           <div className="relative">
-                            <textarea rows={isVideo ? 5 : 7}
+                            <textarea rows={7}
                               placeholder="Enter description (max 600 characters)"
                               value={form.excerpt} onChange={e => set('excerpt', e.target.value.slice(0, 600))}
                               className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring resize-none pb-7" />
@@ -1034,9 +1017,13 @@ export function AddContentForm({ categories, locations, languages, editContent }
                         <Label className="text-xs font-medium text-foreground mb-2 block">
                           Upload Media <span className="text-red-500">*</span>
                         </Label>
-                        {isVideo
-                          ? <VideoUploadArea
-                              isShort={form.type === ContentType.SHORT}
+                        {form.type === ContentType.IMAGE
+                          ? <MultiImageUploadArea
+                              urls={form.imageUrls}
+                              onFiles={urls => set('imageUrls', urls)}
+                            />
+                          : <VideoUploadArea
+                              orientation={form.orientation}
                               thumbnailMode={thumbMode}
                               onThumbnailMode={setThumbMode}
                               initialVideoUrl={form.mediaUrl || null}
@@ -1046,10 +1033,6 @@ export function AddContentForm({ categories, locations, languages, editContent }
                                 set('thumbnailUrl', tUrl ?? '')
                               }}
                             />
-                          : <ImageUploadArea
-                              initialUrl={form.thumbnailUrl || null}
-                              onFile={url => set('thumbnailUrl', url ?? '')}
-                            />
                         }
                       </div>
                     </div>
@@ -1057,12 +1040,12 @@ export function AddContentForm({ categories, locations, languages, editContent }
                 </div>
               )}
 
-              {/* ══ STEP 2: Organize Content ══ */}
+              {/* ══ STEP 2 ══ */}
               {step === 2 && (
                 <div className="animate-in fade-in slide-in-from-right-4 duration-300">
                   <div className="grid grid-cols-2 gap-x-8 gap-y-5">
 
-                    {/* ── LEFT COLUMN ── */}
+                    {/* LEFT */}
                     <div className="flex flex-col gap-5">
                       <Field label="Category" required>
                         <select value={form.categoryId} onChange={e => set('categoryId', e.target.value)} className={selectCls}>
@@ -1079,22 +1062,16 @@ export function AddContentForm({ categories, locations, languages, editContent }
                         </Label>
                         <LocationCascade
                           locations={locations}
-                          stateId={loc.stateId} districtId={loc.districtId} locationId={loc.locationId}
-                          onStateChange={id => setLoc({ stateId: id, districtId: '', locationId: '' })}
-                          onDistrictChange={id => setLoc(prev => ({ ...prev, districtId: id, locationId: '' }))}
-                          onLocationChange={id => setLoc(prev => ({ ...prev, locationId: id }))}
+                          loc={loc}
+                          onChange={setLoc}
                         />
                       </div>
                     </div>
 
-                    {/* ── RIGHT COLUMN ── */}
+                    {/* RIGHT */}
                     <div className="flex flex-col gap-5">
                       <Field label="Language" required hint="Select all languages this content is available in">
-                        <LanguageSelect
-                          languages={languages}
-                          selected={form.languageIds}
-                          onChange={ids => set('languageIds', ids)}
-                        />
+                        <LanguageSelect languages={languages} selected={form.languageIds} onChange={ids => set('languageIds', ids)} />
                       </Field>
 
                       <Field label="Tags" hint="Press Enter or comma to add · max 20 tags">
@@ -1103,7 +1080,7 @@ export function AddContentForm({ categories, locations, languages, editContent }
 
                       <div>
                         <Label className="text-xs font-medium text-foreground mb-2.5 block">
-                          Flag <span className="text-muted-foreground font-normal">(select one)</span>
+                          Flag <span className="text-muted-foreground font-normal">(select one, click again to remove)</span>
                         </Label>
                         <FlagRadio selected={form.flag} onChange={v => set('flag', v)} />
                       </div>
@@ -1113,19 +1090,19 @@ export function AddContentForm({ categories, locations, languages, editContent }
                 </div>
               )}
 
-              {/* ══ STEP 3: Source & AI ══ */}
+              {/* ══ STEP 3 ══ */}
               {step === 3 && (
                 <div className="animate-in fade-in slide-in-from-right-4 duration-300">
                   <div className="grid grid-cols-[1fr_340px] gap-8 items-start">
 
-                    {/* ── LEFT: controls ── */}
+                    {/* LEFT */}
                     <div className="flex flex-col gap-5">
 
                       <Field label="Account" required>
                         <div className="flex items-center gap-2.5 h-9 rounded-md border border-input bg-muted/30 px-3">
                           <div className="h-5 w-5 rounded-full bg-primary flex items-center justify-center text-[10px] text-primary-foreground font-bold shrink-0">P</div>
                           <span className="text-sm font-medium flex-1">PuraLocal Official</span>
-                          <span className="text-[10px] font-semibold text-amber-700 bg-amber-100 rounded px-1.5 py-0.5 uppercase tracking-wide">Loader</span>
+                          <span className="text-[10px] font-semibold text-amber-700 bg-amber-100 rounded px-1.5 py-0.5 uppercase tracking-wide">Org</span>
                         </div>
                       </Field>
 
@@ -1183,49 +1160,36 @@ export function AddContentForm({ categories, locations, languages, editContent }
                           <div className="border-t border-border px-4 py-4 flex flex-col gap-3 animate-in fade-in duration-200">
                             <div className="grid grid-cols-2 gap-3">
                               <Field label="Publish Date" required>
-                                <input
-                                  type="date"
-                                  value={scheduleDate}
+                                <input type="date" value={scheduleDate}
                                   min={new Date().toISOString().split('T')[0]}
                                   onChange={e => setScheduleDate(e.target.value)}
-                                  className={inputCls}
-                                />
+                                  className={inputCls} />
                               </Field>
                               <Field label="Publish Time" required>
                                 <div className="relative flex items-center">
                                   <Clock className="absolute left-3 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
-                                  <input
-                                    type="time"
-                                    value={scheduleTime}
+                                  <input type="time" value={scheduleTime}
                                     onChange={e => setScheduleTime(e.target.value)}
-                                    className={inputCls + ' pl-9'}
-                                  />
+                                    className={inputCls + ' pl-9'} />
                                 </div>
                               </Field>
                             </div>
                             {scheduleDate && (
                               <p className="text-xs text-amber-700 font-medium flex items-center gap-1.5">
                                 <Calendar className="h-3 w-3" />
-                                Will publish on {new Date(`${scheduleDate}T${scheduleTime}`).toLocaleString('en-IN', {
-                                  dateStyle: 'medium', timeStyle: 'short',
-                                })}
+                                Will publish on {new Date(`${scheduleDate}T${scheduleTime}`).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}
                               </p>
                             )}
                           </div>
                         )}
                       </div>
-
                     </div>
 
-                    {/* ── RIGHT: preview ── */}
+                    {/* RIGHT: preview */}
                     <PreviewCard
-                      form={form}
-                      categories={categories}
-                      locations={locations}
+                      form={form} categories={categories} locations={locations}
                       resolvedLocationId={resolvedLocationId}
-                      scheduleEnabled={scheduleEnabled}
-                      scheduleDate={scheduleDate}
-                      scheduleTime={scheduleTime}
+                      scheduleEnabled={scheduleEnabled} scheduleDate={scheduleDate} scheduleTime={scheduleTime}
                     />
 
                   </div>
@@ -1234,13 +1198,16 @@ export function AddContentForm({ categories, locations, languages, editContent }
 
             </div>
 
-            {/* Card footer — buttons live inside the card */}
+            {/* Footer */}
             <div className="flex items-center justify-between gap-4 px-6 py-4 border-t border-border bg-muted/10">
               <Button type="button" variant="outline" onClick={back} disabled={pending}>
                 {step === 1 ? 'Cancel' : '← Back'}
               </Button>
 
               <div className="flex items-center gap-3">
+                {step === 1 && !canAdvance && form.title.trim().length > 0 && (
+                  <span className="text-xs text-muted-foreground">Upload required media to continue</span>
+                )}
                 {step < 3 ? (
                   <Button type="button" onClick={next} disabled={!canAdvance}
                     className="bg-primary text-primary-foreground hover:bg-primary/90 min-w-[120px] gap-1">

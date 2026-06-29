@@ -369,6 +369,8 @@ function toContent(r: ContentWithJoins): Content {
     excerpt: r.excerpt,
     mediaUrl: r.mediaUrl,
     thumbnailUrl: r.thumbnailUrl ?? null,
+    imageUrls: r.imageUrls ?? [],
+    orientation: r.orientation ?? null,
     youtubeUrl: r.youtubeUrl,
     categoryId: r.categoryId,
     locationId: r.locationId,
@@ -386,6 +388,7 @@ function toContent(r: ContentWithJoins): Content {
     locationName: r.location?.name ?? null,
     languageName: r.language?.name ?? null,
     reporterName: r.reporter?.name ?? null,
+    reporterRole: (r.reporter as { roleAssignments?: { role: string }[] } | null)?.roleAssignments?.[0]?.role ?? null,
   }
 }
 
@@ -406,7 +409,7 @@ const contentIncludes = {
   category: true,
   location: true,
   language: true,
-  reporter: true,
+  reporter: { include: { roleAssignments: true } },
 } as const
 
 // ── SupabaseCategoryRepository ────────────────────────────────────────────────
@@ -755,6 +758,8 @@ export class SupabaseContentRepository implements ContentRepository {
           excerpt: params.excerpt ?? null,
           mediaUrl: params.mediaUrl ?? null,
           thumbnailUrl: params.thumbnailUrl ?? null,
+          imageUrls: params.imageUrls ?? [],
+          orientation: params.orientation ?? null,
           youtubeUrl: params.youtubeUrl ?? null,
           categoryId: params.categoryId ?? null,
           locationId: params.locationId ?? null,

@@ -819,7 +819,7 @@ const PAGE_SIZE = 10
 
 // ── Column configuration ──────────────────────────────────────────────────────
 
-type ColId = 'sno' | 'content' | 'type' | 'category' | 'location' | 'reporter' | 'status' | 'reason' | 'scheduled' | 'uploaded' | 'actions'
+type ColId = 'sno' | 'content' | 'type' | 'category' | 'location' | 'contributor' | 'status' | 'reason' | 'scheduled' | 'uploaded' | 'actions'
 interface ColDef { id: ColId; label: string; visible: boolean }
 
 const DEFAULT_COLS: ColDef[] = [
@@ -828,7 +828,7 @@ const DEFAULT_COLS: ColDef[] = [
   { id: 'type',      label: 'Type',         visible: true },
   { id: 'category',  label: 'Category',     visible: true },
   { id: 'location',  label: 'Location',     visible: true },
-  { id: 'reporter',  label: 'Reporter',     visible: true },
+  { id: 'contributor', label: 'Contributor',  visible: true },
   { id: 'status',    label: 'Status',       visible: true },
   { id: 'reason',    label: 'Reason',       visible: true },
   { id: 'scheduled', label: 'Scheduled At', visible: true },
@@ -1182,7 +1182,7 @@ export function ContentListClient({ initialContent, categories, locations, langu
                         case 'type':      return <th key={col.id} className={`${base} whitespace-nowrap`}>Type</th>
                         case 'category':  return <th key={col.id} className={`${base} whitespace-nowrap`}>Category</th>
                         case 'location':  return <th key={col.id} className={base}>Location</th>
-                        case 'reporter':  return <th key={col.id} className={base}>Reporter</th>
+                        case 'contributor': return <th key={col.id} className={base}>Contributor</th>
                         case 'status':    return <th key={col.id} className={`${base} whitespace-nowrap`}>Status</th>
                         case 'reason':    return <th key={col.id} className={base}>Reason</th>
                         case 'scheduled': return <th key={col.id} className={`${base} whitespace-nowrap`}>Scheduled At</th>
@@ -1379,12 +1379,16 @@ function ContentRow({ item, locations, columns, pageIndex, onEdit, onApprove, on
           </td>
         )
 
-      case 'reporter':
+      case 'contributor':
         return (
-          <td key="reporter" className="py-3 px-3">
+          <td key="contributor" className="py-3 px-3">
             {item.reporterName
               ? <ReporterCell name={item.reporterName} photoUrl={item.reporterPhotoUrl} role={item.reporterRole} />
-              : <span className="text-xs text-muted-foreground">—</span>}
+              : <div className="flex items-center gap-1.5">
+                  <div className="h-5 w-5 rounded-full bg-primary/20 flex items-center justify-center text-[9px] font-bold text-primary shrink-0">P</div>
+                  <span className="text-xs text-foreground font-medium">PuraLocal Official</span>
+                  <span className="text-[9px] font-semibold bg-blue-100 text-blue-700 rounded px-1.5 py-px uppercase tracking-wide">ORG</span>
+                </div>}
           </td>
         )
 

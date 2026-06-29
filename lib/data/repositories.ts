@@ -251,6 +251,8 @@ export interface CreateContentParams {
   excerpt?: string | null
   mediaUrl?: string | null
   thumbnailUrl?: string | null
+  imageUrls?: string[]
+  orientation?: string | null
   youtubeUrl?: string | null
   categoryId?: string | null
   locationId?: string | null
@@ -270,6 +272,9 @@ export interface UpdateContentParams {
   body?: string | null
   excerpt?: string | null
   mediaUrl?: string | null
+  thumbnailUrl?: string | null
+  imageUrls?: string[]
+  orientation?: string | null
   youtubeUrl?: string | null
   categoryId?: string | null
   locationId?: string | null

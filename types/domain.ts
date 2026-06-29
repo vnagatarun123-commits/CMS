@@ -195,6 +195,12 @@ export const ContentSource = {
 } as const
 export type ContentSource = (typeof ContentSource)[keyof typeof ContentSource]
 
+export const ContentOrientation = {
+  PORTRAIT:  'PORTRAIT',
+  LANDSCAPE: 'LANDSCAPE',
+} as const
+export type ContentOrientation = (typeof ContentOrientation)[keyof typeof ContentOrientation]
+
 export interface Content {
   id: string
   organizationId: string
@@ -206,6 +212,9 @@ export interface Content {
   body: string | null
   excerpt: string | null
   mediaUrl: string | null
+  thumbnailUrl?: string | null
+  imageUrls: string[]
+  orientation?: string | null
   youtubeUrl: string | null
   categoryId: string | null
   locationId: string | null
@@ -227,7 +236,6 @@ export interface Content {
   reporterName?: string | null
   reporterPhotoUrl?: string | null
   reporterRole?: string | null
-  thumbnailUrl?: string | null
   rejectionNote?: string | null
 }
 

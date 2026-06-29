@@ -600,6 +600,8 @@ export class MockContentRepository implements ContentRepository {
       excerpt: params.excerpt ?? null,
       mediaUrl: params.mediaUrl ?? null,
       thumbnailUrl: params.thumbnailUrl ?? null,
+      imageUrls: params.imageUrls ?? [],
+      orientation: params.orientation ?? null,
       youtubeUrl: params.youtubeUrl ?? null,
       categoryId: params.categoryId ?? null,
       locationId: params.locationId ?? null,

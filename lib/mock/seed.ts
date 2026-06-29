@@ -14,17 +14,17 @@ export const SEEDED_ORG: Organization = {
 const joined = new Date('2024-01-15T00:00:00Z')
 
 export const SEEDED_USERS: UserWithRole[] = [
-  { id: 'user_super_admin',       email: 'superadmin@platform.local',  name: 'Platform Super Admin', role: Role.SUPER_ADMIN,       organizationId: PURALOCAL_ORG_ID, invitedAt: joined, joinedAt: joined, photoUrl: 'https://i.pravatar.cc/150?img=33' },
-  { id: 'user_org_admin',         email: 'admin@puralocal.com',        name: 'Org Admin',            role: Role.ORG_ADMIN,         organizationId: PURALOCAL_ORG_ID, invitedAt: joined, joinedAt: joined, photoUrl: 'https://i.pravatar.cc/150?img=11' },
-  { id: 'user_editor',            email: 'editor@puralocal.com',       name: 'Editor',               role: Role.EDITOR,            organizationId: PURALOCAL_ORG_ID, invitedAt: joined, joinedAt: joined, photoUrl: 'https://i.pravatar.cc/150?img=12' },
-  { id: 'user_content_reviewer',  email: 'reviewer@puralocal.com',     name: 'Content Reviewer',     role: Role.CONTENT_REVIEWER,  organizationId: PURALOCAL_ORG_ID, invitedAt: joined, joinedAt: joined, photoUrl: 'https://i.pravatar.cc/150?img=3' },
-  { id: 'user_reporter_manager',  email: 'reportermgr@puralocal.com',  name: 'Reporter Manager',     role: Role.REPORTER_MANAGER,  organizationId: PURALOCAL_ORG_ID, invitedAt: joined, joinedAt: joined, photoUrl: 'https://i.pravatar.cc/150?img=4' },
-  { id: 'user_ad_manager',        email: 'ads@puralocal.com',          name: 'Ad Manager',           role: Role.AD_MANAGER,        organizationId: PURALOCAL_ORG_ID, invitedAt: joined, joinedAt: joined, photoUrl: 'https://i.pravatar.cc/150?img=5' },
-  { id: 'user_marketing_manager', email: 'marketing@puralocal.com',    name: 'Marketing Manager',    role: Role.MARKETING_MANAGER, organizationId: PURALOCAL_ORG_ID, invitedAt: joined, joinedAt: joined, photoUrl: 'https://i.pravatar.cc/150?img=6' },
-  { id: 'user_finance_manager',   email: 'finance@puralocal.com',      name: 'Finance Manager',      role: Role.FINANCE_MANAGER,   organizationId: PURALOCAL_ORG_ID, invitedAt: joined, joinedAt: joined, photoUrl: 'https://i.pravatar.cc/150?img=7' },
-  { id: 'user_support_executive', email: 'support@puralocal.com',      name: 'Support Executive',    role: Role.SUPPORT_EXECUTIVE, organizationId: PURALOCAL_ORG_ID, invitedAt: joined, joinedAt: joined, photoUrl: 'https://i.pravatar.cc/150?img=8' },
-  { id: 'user_analytics_viewer',  email: 'analytics@puralocal.com',    name: 'Analytics Viewer',     role: Role.ANALYTICS_VIEWER,  organizationId: PURALOCAL_ORG_ID, invitedAt: joined, joinedAt: joined, photoUrl: 'https://i.pravatar.cc/150?img=9' },
-  { id: 'user_reporter',          email: 'reporter@puralocal.com',     name: 'Reporter',             role: Role.REPORTER,          organizationId: PURALOCAL_ORG_ID, invitedAt: joined, joinedAt: joined, photoUrl: 'https://i.pravatar.cc/150?img=10' },
+  { id: 'user_super_admin',       email: 'superadmin@platform.local',  name: 'Rajesh Sekhar',        role: Role.SUPER_ADMIN,       organizationId: PURALOCAL_ORG_ID, invitedAt: joined, joinedAt: joined, photoUrl: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&h=150&q=80' },
+  { id: 'user_org_admin',         email: 'admin@puralocal.com',        name: 'Venkatesh Rao',        role: Role.ORG_ADMIN,         organizationId: PURALOCAL_ORG_ID, invitedAt: joined, joinedAt: joined, photoUrl: 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&w=150&h=150&q=80' },
+  { id: 'user_editor',            email: 'editor@puralocal.com',       name: 'Priya Reddy',          role: Role.EDITOR,            organizationId: PURALOCAL_ORG_ID, invitedAt: joined, joinedAt: joined, photoUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&h=150&q=80' },
+  { id: 'user_content_reviewer',  email: 'reviewer@puralocal.com',     name: 'Sai Kiran Reddy',      role: Role.CONTENT_REVIEWER,  organizationId: PURALOCAL_ORG_ID, invitedAt: joined, joinedAt: joined, photoUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&h=150&q=80' },
+  { id: 'user_reporter_manager',  email: 'reportermgr@puralocal.com',  name: 'Lakshmi Devi',         role: Role.REPORTER_MANAGER,  organizationId: PURALOCAL_ORG_ID, invitedAt: joined, joinedAt: joined, photoUrl: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=150&h=150&q=80' },
+  { id: 'user_ad_manager',        email: 'ads@puralocal.com',          name: 'Vijay Kumar',          role: Role.AD_MANAGER,        organizationId: PURALOCAL_ORG_ID, invitedAt: joined, joinedAt: joined, photoUrl: 'https://images.unsplash.com/photo-1628157582853-a796fa650a6a?auto=format&fit=crop&w=150&h=150&q=80' },
+  { id: 'user_marketing_manager', email: 'marketing@puralocal.com',    name: 'Preethi Mehta',        role: Role.MARKETING_MANAGER, organizationId: PURALOCAL_ORG_ID, invitedAt: joined, joinedAt: joined, photoUrl: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&h=150&q=80' },
+  { id: 'user_finance_manager',   email: 'finance@puralocal.com',      name: 'Suresh Gowda',         role: Role.FINANCE_MANAGER,   organizationId: PURALOCAL_ORG_ID, invitedAt: joined, joinedAt: joined, photoUrl: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=150&h=150&q=80' },
+  { id: 'user_support_executive', email: 'support@puralocal.com',      name: 'Anitha Rajan',         role: Role.SUPPORT_EXECUTIVE, organizationId: PURALOCAL_ORG_ID, invitedAt: joined, joinedAt: joined, photoUrl: 'https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=150&h=150&q=80' },
+  { id: 'user_analytics_viewer',  email: 'analytics@puralocal.com',    name: 'Kiran Babu',           role: Role.ANALYTICS_VIEWER,  organizationId: PURALOCAL_ORG_ID, invitedAt: joined, joinedAt: joined, photoUrl: 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?auto=format&fit=crop&w=150&h=150&q=80' },
+  { id: 'user_reporter',          email: 'reporter@puralocal.com',     name: 'Ravi Kumar',           role: Role.REPORTER,          organizationId: PURALOCAL_ORG_ID, invitedAt: joined, joinedAt: joined, photoUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&h=150&q=80' },
 ]
 
 export const MOCK_USER_PASSWORDS: Record<string, string> = Object.fromEntries(
@@ -511,7 +511,7 @@ export const SEEDED_CONTENT: Content[] = [
     scheduledAt: null, publishedAt: new Date('2024-06-20T10:00:00Z'),
     createdAt: new Date('2024-06-19T09:00:00Z'), updatedAt: new Date('2024-06-20T10:00:00Z'),
     categoryName: 'Local News', locationName: 'Hyderabad', languageName: 'Telugu',
-    reporterName: 'Ravi Kumar', reporterPhotoUrl: 'https://i.pravatar.cc/150?img=12', reporterRole: 'Senior Reporter',
+    reporterName: 'Ravi Kumar', reporterPhotoUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&h=150&q=80', reporterRole: 'Senior Reporter',
   },
 
   // ── 2. English · Sports · Under Review ────────────────────────────────────
@@ -533,7 +533,7 @@ export const SEEDED_CONTENT: Content[] = [
     scheduledAt: null, publishedAt: null,
     createdAt: new Date('2024-06-21T14:00:00Z'), updatedAt: new Date('2024-06-21T14:00:00Z'),
     categoryName: 'Sports', locationName: 'Hyderabad', languageName: 'English',
-    reporterName: 'Sai Kiran Reddy', reporterPhotoUrl: 'https://i.pravatar.cc/150?img=33', reporterRole: 'Staff Reporter',
+    reporterName: 'Sai Kiran Reddy', reporterPhotoUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&h=150&q=80', reporterRole: 'Staff Reporter',
   },
 
   // ── 3. Telugu · Politics · Draft ──────────────────────────────────────────
@@ -555,7 +555,7 @@ export const SEEDED_CONTENT: Content[] = [
     scheduledAt: null, publishedAt: null,
     createdAt: new Date('2024-06-22T11:00:00Z'), updatedAt: new Date('2024-06-22T11:00:00Z'),
     categoryName: 'Politics', locationName: 'Hyderabad', languageName: 'Telugu',
-    reporterName: 'Priya Reddy', reporterPhotoUrl: 'https://i.pravatar.cc/150?img=5', reporterRole: 'Contributor',
+    reporterName: 'Priya Reddy', reporterPhotoUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&h=150&q=80', reporterRole: 'Contributor',
   },
 
   // ── 4. English · Local News · Needs Clarification ─────────────────────────
@@ -577,7 +577,7 @@ export const SEEDED_CONTENT: Content[] = [
     scheduledAt: null, publishedAt: null,
     createdAt: new Date('2024-06-23T08:00:00Z'), updatedAt: new Date('2024-06-23T09:30:00Z'),
     categoryName: 'Local News', locationName: 'Bengaluru Urban', languageName: 'English',
-    reporterName: 'Vijay Kumar', reporterPhotoUrl: 'https://i.pravatar.cc/150?img=52', reporterRole: 'Staff Reporter',
+    reporterName: 'Vijay Kumar', reporterPhotoUrl: 'https://images.unsplash.com/photo-1628157582853-a796fa650a6a?auto=format&fit=crop&w=150&h=150&q=80', reporterRole: 'Staff Reporter',
     rejectionNote: 'Video quality is below broadcast standard. Please re-shoot in 1080p and ensure no shaky footage.',
   },
 
@@ -600,7 +600,7 @@ export const SEEDED_CONTENT: Content[] = [
     scheduledAt: new Date('2024-06-25T06:00:00Z'), publishedAt: null,
     createdAt: new Date('2024-06-24T16:00:00Z'), updatedAt: new Date('2024-06-24T16:30:00Z'),
     categoryName: 'Local News', locationName: 'Mumbai', languageName: 'English',
-    reporterName: 'Preethi Mehta', reporterPhotoUrl: 'https://i.pravatar.cc/150?img=47', reporterRole: 'Senior Reporter',
+    reporterName: 'Preethi Mehta', reporterPhotoUrl: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&h=150&q=80', reporterRole: 'Senior Reporter',
   },
 
   // ── 6. Telugu · Entertainment · Published ─────────────────────────────────
@@ -622,7 +622,7 @@ export const SEEDED_CONTENT: Content[] = [
     scheduledAt: null, publishedAt: new Date('2024-06-22T12:00:00Z'),
     createdAt: new Date('2024-06-22T10:00:00Z'), updatedAt: new Date('2024-06-22T12:00:00Z'),
     categoryName: 'Entertainment', locationName: 'Charminar', languageName: 'Telugu',
-    reporterName: 'Lakshmi Devi', reporterPhotoUrl: 'https://i.pravatar.cc/150?img=25', reporterRole: 'Contributor',
+    reporterName: 'Lakshmi Devi', reporterPhotoUrl: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=150&h=150&q=80', reporterRole: 'Contributor',
   },
 
   // ── 7. Tamil · Local News · Under Review ──────────────────────────────────
@@ -644,7 +644,7 @@ export const SEEDED_CONTENT: Content[] = [
     scheduledAt: null, publishedAt: null,
     createdAt: new Date('2024-06-24T09:00:00Z'), updatedAt: new Date('2024-06-24T09:00:00Z'),
     categoryName: 'Local News', locationName: 'Chennai', languageName: 'Tamil',
-    reporterName: 'Anitha Rajan', reporterPhotoUrl: 'https://i.pravatar.cc/150?img=35', reporterRole: 'Contributor',
+    reporterName: 'Anitha Rajan', reporterPhotoUrl: 'https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=150&h=150&q=80', reporterRole: 'Contributor',
   },
 
   // ── 8. Hindi · Local News · Published ─────────────────────────────────────
@@ -666,7 +666,7 @@ export const SEEDED_CONTENT: Content[] = [
     scheduledAt: null, publishedAt: new Date('2024-06-23T18:00:00Z'),
     createdAt: new Date('2024-06-23T14:00:00Z'), updatedAt: new Date('2024-06-23T18:00:00Z'),
     categoryName: 'Local News', locationName: 'New Delhi', languageName: 'Hindi',
-    reporterName: 'Meera Singh', reporterPhotoUrl: 'https://i.pravatar.cc/150?img=44', reporterRole: 'Staff Reporter',
+    reporterName: 'Meera Singh', reporterPhotoUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&h=150&q=80', reporterRole: 'Staff Reporter',
   },
 
   // ── 9. Kannada · Technology · Published ───────────────────────────────────
@@ -688,7 +688,7 @@ export const SEEDED_CONTENT: Content[] = [
     scheduledAt: null, publishedAt: new Date('2024-06-21T08:00:00Z'),
     createdAt: new Date('2024-06-20T15:00:00Z'), updatedAt: new Date('2024-06-21T08:00:00Z'),
     categoryName: 'Technology', locationName: 'Bengaluru Urban', languageName: 'Kannada',
-    reporterName: 'Suresh Gowda', reporterPhotoUrl: 'https://i.pravatar.cc/150?img=62', reporterRole: 'Senior Reporter',
+    reporterName: 'Suresh Gowda', reporterPhotoUrl: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=150&h=150&q=80', reporterRole: 'Senior Reporter',
   },
 
   // ── 10. Telugu · Local News · Draft ───────────────────────────────────────
@@ -710,7 +710,7 @@ export const SEEDED_CONTENT: Content[] = [
     scheduledAt: null, publishedAt: null,
     createdAt: new Date('2024-06-25T07:00:00Z'), updatedAt: new Date('2024-06-25T07:30:00Z'),
     categoryName: 'Local News', locationName: 'Hyderabad', languageName: 'Telugu',
-    reporterName: 'Kiran Babu', reporterPhotoUrl: 'https://i.pravatar.cc/150?img=8', reporterRole: 'Contributor',
+    reporterName: 'Kiran Babu', reporterPhotoUrl: 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?auto=format&fit=crop&w=150&h=150&q=80', reporterRole: 'Contributor',
   },
 
   // ── 11. Hindi · Business · Scheduled ──────────────────────────────────────
@@ -732,7 +732,7 @@ export const SEEDED_CONTENT: Content[] = [
     scheduledAt: new Date('2024-06-26T09:00:00Z'), publishedAt: null,
     createdAt: new Date('2024-06-25T12:00:00Z'), updatedAt: new Date('2024-06-25T12:00:00Z'),
     categoryName: 'Business', locationName: 'Hyderabad', languageName: 'Hindi',
-    reporterName: 'Ramesh Gupta', reporterPhotoUrl: 'https://i.pravatar.cc/150?img=20', reporterRole: 'Freelancer',
+    reporterName: 'Ramesh Gupta', reporterPhotoUrl: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=150&h=150&q=80', reporterRole: 'Freelancer',
   },
 
   // ── 12. English · Health · Under Review ───────────────────────────────────
@@ -754,7 +754,7 @@ export const SEEDED_CONTENT: Content[] = [
     scheduledAt: null, publishedAt: null,
     createdAt: new Date('2024-06-25T10:00:00Z'), updatedAt: new Date('2024-06-25T10:30:00Z'),
     categoryName: 'Health', locationName: 'Hyderabad', languageName: 'English',
-    reporterName: 'Arun Sharma', reporterPhotoUrl: 'https://i.pravatar.cc/150?img=10', reporterRole: 'Contributor',
+    reporterName: 'Arun Sharma', reporterPhotoUrl: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=150&h=150&q=80', reporterRole: 'Contributor',
   },
 ]
 

@@ -51,6 +51,7 @@ import type {
 } from '@/types/domain'
 import { setRolePermissions, deleteRolePermissions } from '@/lib/rbac/permissions'
 import { MissingOrgContextError, WrongOrgError, NotFoundError } from '@/lib/errors'
+import { SEEDED_USERS } from './seed'
 
 // ── Guard ─────────────────────────────────────────────────────────────────────
 
@@ -588,6 +589,7 @@ export class MockContentRepository implements ContentRepository {
   async create(params: CreateContentParams): Promise<Content> {
     assertOrg(params.organizationId)
     const now = new Date()
+    const reporter = SEEDED_USERS.find(u => u.id === params.reporterId)
     const item: Content = {
       id: `content_${this.nextContentSeq++}`,
       organizationId: params.organizationId,
@@ -616,6 +618,9 @@ export class MockContentRepository implements ContentRepository {
       publishedAt: null,
       createdAt: now,
       updatedAt: now,
+      reporterName: reporter ? reporter.name : null,
+      reporterPhotoUrl: reporter ? reporter.photoUrl : null,
+      reporterRole: reporter ? (reporter.role === 'REPORTER' ? 'Senior Reporter' : reporter.role) : null,
     }
     this.items.set(item.id, item)
     return item

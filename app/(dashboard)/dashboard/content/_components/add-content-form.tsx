@@ -285,8 +285,8 @@ function MultiImageUploadArea({ urls, onFiles }: {
 
   async function acceptFiles(fileList: FileList) {
     const MAX_AT_ONCE = 4
-    const remaining = 10 - urls.length
-    if (remaining <= 0) { toast.error('Maximum 10 images'); return }
+    const remaining = 4 - urls.length
+    if (remaining <= 0) { toast.error('Maximum 4 images'); return }
     const files = Array.from(fileList)
       .filter(f => f.type.startsWith('image/'))
       .slice(0, Math.min(MAX_AT_ONCE, remaining))
@@ -334,7 +334,7 @@ function MultiImageUploadArea({ urls, onFiles }: {
           </div>
           <div>
             <p className="text-sm font-medium text-foreground">Drag &amp; drop or click to upload</p>
-            <p className="text-xs text-muted-foreground mt-0.5">Select up to 4 at once · Max 10 images total · JPG, PNG, WebP</p>
+            <p className="text-xs text-muted-foreground mt-0.5">Select up to 4 at once · Max 4 images total · JPG, PNG, WebP</p>
           </div>
           <Button type="button" variant="outline" size="sm">Upload Image</Button>
         </div>
@@ -360,7 +360,7 @@ function MultiImageUploadArea({ urls, onFiles }: {
               <div className="h-5 w-5 rounded-full border-2 border-primary border-t-transparent animate-spin" />
             </div>
           )}
-          {!uploading && urls.length < 10 && (
+          {!uploading && urls.length < 4 && (
             <button type="button" onClick={() => inputRef.current?.click()}
               className="h-20 w-20 rounded-lg border-2 border-dashed border-border bg-muted/20 flex flex-col items-center justify-center gap-1 hover:bg-muted/40 transition-colors text-muted-foreground hover:text-foreground">
               <Plus className="h-5 w-5" />
@@ -371,7 +371,7 @@ function MultiImageUploadArea({ urls, onFiles }: {
       )}
 
       {urls.length > 0 && (
-        <p className="text-[11px] text-muted-foreground">{urls.length}/10 image{urls.length > 1 ? 's' : ''} · first image is the cover</p>
+        <p className="text-[11px] text-muted-foreground">{urls.length}/4 image{urls.length > 1 ? 's' : ''} · first image is the cover</p>
       )}
     </div>
   )

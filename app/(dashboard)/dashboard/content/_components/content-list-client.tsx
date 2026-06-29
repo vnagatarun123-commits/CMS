@@ -14,7 +14,7 @@ import {
 
 import type { Content, Category, Location, Language, AuditEntry } from '@/types/domain'
 import { ContentStatus, ContentType } from '@/types/domain'
-import { listContent, transitionContent, toggleContentVisibility } from '@/app/actions/content'
+import { listContent, transitionContent, toggleContentVisibility, deleteContent } from '@/app/actions/content'
 import { getContentActivity } from '@/app/actions/audit-log'
 import { StatusBadge, contentStatusLabel } from '@/components/shared/status-badge'
 import { Button } from '@/components/ui/button'
@@ -1026,6 +1026,26 @@ export function ContentListClient({ initialContent, categories, locations, langu
     })
   }
 
+  function handleDelete(item: Content) {
+    toast(`Delete "${item.title}"?`, {
+      action: {
+        label: 'Delete',
+        onClick: () => {
+          startRefreshTransition(async () => {
+            const result = await deleteContent(item.id)
+            if (result.ok) {
+              toast.success('Draft deleted')
+              setContent(prev => prev.filter(c => c.id !== item.id))
+            } else {
+              toast.error(result.error.message)
+            }
+          })
+        },
+      },
+      cancel: { label: 'Cancel', onClick: () => {} },
+    })
+  }
+
   function openReject(item: Content) {
     const toStatus = item.status === ContentStatus.NEEDS_CLARIFICATION
       ? ContentStatus.DRAFT
@@ -1210,6 +1230,7 @@ export function ContentListClient({ initialContent, categories, locations, langu
                       onActivity={() => setActivityTarget({ id: item.id, title: item.title })}
                       onSubmitReview={() => handleSubmitReview(item)}
                       onDirectPublish={() => handleDirectPublish(item)}
+                      onDelete={() => handleDelete(item)}
                     />
                   ))}
                 </tbody>
@@ -1310,9 +1331,10 @@ interface ContentRowProps {
   onActivity: () => void
   onSubmitReview: () => void
   onDirectPublish: () => void
+  onDelete: () => void
 }
 
-function ContentRow({ item, locations, columns, pageIndex, onEdit, onApprove, onReject, onPreview, onSocialPublish, onToggleVisibility, onActivity, onSubmitReview, onDirectPublish }: ContentRowProps) {
+function ContentRow({ item, locations, columns, pageIndex, onEdit, onApprove, onReject, onPreview, onSocialPublish, onToggleVisibility, onActivity, onSubmitReview, onDirectPublish, onDelete }: ContentRowProps) {
   const d    = new Date(item.createdAt)
   const date = d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: '2-digit' })
   const time = d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })
@@ -1386,8 +1408,10 @@ function ContentRow({ item, locations, columns, pageIndex, onEdit, onApprove, on
               ? <ReporterCell name={item.reporterName} photoUrl={item.reporterPhotoUrl} role={item.reporterRole} />
               : <div className="flex items-center gap-1.5">
                   <div className="h-5 w-5 rounded-full bg-primary/20 flex items-center justify-center text-[9px] font-bold text-primary shrink-0">P</div>
-                  <span className="text-xs text-foreground font-medium">PuraLocal Official</span>
-                  <span className="text-[9px] font-semibold bg-blue-100 text-blue-700 rounded px-1.5 py-px uppercase tracking-wide">ORG</span>
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-xs text-foreground font-medium leading-none">PuraLocal Official</span>
+                    <span className="text-[9px] font-semibold bg-blue-100 text-blue-700 rounded px-1.5 py-px uppercase tracking-wide w-fit">ORG</span>
+                  </div>
                 </div>}
           </td>
         )
@@ -1443,6 +1467,7 @@ function ContentRow({ item, locations, columns, pageIndex, onEdit, onApprove, on
                 <ActionIcon onClick={onSubmitReview} title="Submit for Review" icon={<SendHorizonal className="h-3.5 w-3.5" />} cls="text-primary hover:bg-primary/10" />
                 <ActionIcon onClick={onActivity} title="Activity" icon={<History className="h-3.5 w-3.5" />} cls="text-violet-500 hover:bg-violet-50" />
                 <ActionIcon onClick={onDirectPublish} title="Publish Directly" icon={<CheckCircle className="h-3.5 w-3.5" />} cls="text-emerald-500 hover:bg-emerald-50" />
+                <ActionIcon onClick={onDelete} title="Delete Draft" icon={<Trash2 className="h-3.5 w-3.5" />} cls="text-red-400 hover:bg-red-50 hover:text-red-600" />
               </>}
               {isReview && <>
                 <ActionIcon onClick={onPreview} title="Preview" icon={<Eye className="h-3.5 w-3.5" />} cls="text-muted-foreground hover:text-foreground hover:bg-muted" />

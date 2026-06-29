@@ -283,29 +283,37 @@ function MultiImageUploadArea({ urls, onFiles }: {
   const [uploading, setUploading] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
 
-  async function acceptFile(file: File) {
-    if (!file.type.startsWith('image/')) { toast.error('Please select an image file'); return }
-    if (file.size > 10 * 1024 * 1024) { toast.error('Image must be under 10 MB'); return }
-    if (urls.length >= 10) { toast.error('Maximum 10 images'); return }
+  async function acceptFiles(fileList: FileList) {
+    const MAX_AT_ONCE = 4
+    const remaining = 10 - urls.length
+    if (remaining <= 0) { toast.error('Maximum 10 images'); return }
+    const files = Array.from(fileList)
+      .filter(f => f.type.startsWith('image/'))
+      .slice(0, Math.min(MAX_AT_ONCE, remaining))
+    if (!files.length) { toast.error('Please select image files (JPG, PNG, WebP)'); return }
     setUploading(true)
-    try {
-      const fd = new FormData()
-      fd.append('file', file)
-      fd.append('folder', 'thumbnails')
-      const res = await fetch('/api/upload', { method: 'POST', body: fd })
-      if (!res.ok) throw new Error()
-      const { url } = await res.json() as { url: string }
-      onFiles([...urls, url])
-    } catch {
-      toast.error('Failed to upload image. Please try again.')
-    } finally {
-      setUploading(false)
-      if (inputRef.current) inputRef.current.value = ''
+    const newUrls: string[] = []
+    for (const file of files) {
+      if (file.size > 10 * 1024 * 1024) { toast.error(`${file.name} exceeds 10 MB, skipped`); continue }
+      try {
+        const fd = new FormData()
+        fd.append('file', file)
+        fd.append('folder', 'thumbnails')
+        const res = await fetch('/api/upload', { method: 'POST', body: fd })
+        if (!res.ok) throw new Error()
+        const { url } = await res.json() as { url: string }
+        newUrls.push(url)
+      } catch {
+        toast.error(`Failed to upload ${file.name}`)
+      }
     }
+    if (newUrls.length) onFiles([...urls, ...newUrls])
+    setUploading(false)
+    if (inputRef.current) inputRef.current.value = ''
   }
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0]; if (file) void acceptFile(file)
+    if (e.target.files?.length) void acceptFiles(e.target.files)
   }
 
   function remove(idx: number) {
@@ -315,7 +323,7 @@ function MultiImageUploadArea({ urls, onFiles }: {
   return (
     <div className="flex flex-col gap-3">
       <input ref={inputRef} type="file" accept="image/jpeg,image/png,image/webp"
-        className="sr-only" onChange={handleChange} />
+        multiple className="sr-only" onChange={handleChange} />
 
       {urls.length === 0 && !uploading ? (
         <div
@@ -326,7 +334,7 @@ function MultiImageUploadArea({ urls, onFiles }: {
           </div>
           <div>
             <p className="text-sm font-medium text-foreground">Drag &amp; drop or click to upload</p>
-            <p className="text-xs text-muted-foreground mt-0.5">Up to 10 images · JPG, PNG, WebP · Max 10 MB each</p>
+            <p className="text-xs text-muted-foreground mt-0.5">Select up to 4 at once · Max 10 images total · JPG, PNG, WebP</p>
           </div>
           <Button type="button" variant="outline" size="sm">Upload Image</Button>
         </div>
@@ -901,7 +909,7 @@ export function AddContentForm({ categories, locations, languages, editContent }
             </div>
           </div>
 
-          <form onSubmit={e => e.preventDefault()}>
+          <div>
             <div className="p-6">
 
               {/* ══ STEP 1 ══ */}
@@ -910,79 +918,68 @@ export function AddContentForm({ categories, locations, languages, editContent }
                   <div className="flex flex-col gap-6">
 
                     {/* Tab toggle — Home / Shorts */}
-                    {!isEdit && (
-                      <div className="flex flex-col gap-3">
-                        <div className="flex gap-1 rounded-lg border border-border bg-muted/20 p-1 w-fit">
-                          {(['home', 'shorts'] as const).map(tab => (
-                            <button key={tab} type="button"
-                              onClick={() => {
-                                setActiveTab(tab)
-                                if (tab === 'home') selectType(ContentType.IMAGE, '')
-                                else selectType(ContentType.SHORT, 'PORTRAIT')
-                              }}
-                              className={`px-5 py-1.5 rounded-md text-sm font-semibold transition-all
-                                ${activeTab === tab
-                                  ? 'bg-primary text-primary-foreground shadow-sm'
-                                  : 'text-muted-foreground hover:text-foreground'}`}>
-                              {tab === 'home' ? 'Home' : 'Shorts'}
-                            </button>
-                          ))}
-                        </div>
-
-                        {/* Type cards */}
-                        <div className="flex flex-wrap gap-3">
-                          {activeTab === 'home' ? (
-                            <>
-                              {[
-                                { type: ContentType.IMAGE, orientation: '' as const, label: 'Image Post', icon: ImageIcon, desc: 'Single or multiple images' },
-                                { type: ContentType.VIDEO, orientation: '' as const, label: 'Video Post',  icon: Video,     desc: 'Landscape video content' },
-                              ].map(opt => {
-                                const active = form.type === opt.type
-                                return (
-                                  <button key={opt.type} type="button"
-                                    onClick={() => selectType(opt.type, opt.orientation)}
-                                    className={`flex items-center gap-3 rounded-xl border-2 px-5 py-3.5 text-left transition-all min-w-[180px]
-                                      ${active ? 'border-primary bg-primary/10' : 'border-border bg-background hover:border-muted-foreground/40 hover:bg-muted/20'}`}>
-                                    <div className={`h-9 w-9 rounded-full flex items-center justify-center border-2 shrink-0 transition-colors
-                                      ${active ? 'border-primary bg-primary/10' : 'border-border bg-muted/20'}`}>
-                                      <opt.icon className={`h-4 w-4 ${active ? 'text-primary' : 'text-muted-foreground'}`} />
-                                    </div>
-                                    <div>
-                                      <p className={`text-sm font-semibold ${active ? 'text-primary' : 'text-foreground'}`}>{opt.label}</p>
-                                      <p className="text-[11px] text-muted-foreground">{opt.desc}</p>
-                                    </div>
-                                  </button>
-                                )
-                              })}
-                            </>
-                          ) : (
-                            <>
-                              {[
-                                { orientation: 'PORTRAIT'  as const, label: 'Portrait',  icon: Smartphone, desc: '9:16 vertical · like Reels' },
-                                { orientation: 'LANDSCAPE' as const, label: 'Landscape', icon: Monitor,    desc: '16:9 horizontal video'     },
-                              ].map(opt => {
-                                const active = form.type === ContentType.SHORT && form.orientation === opt.orientation
-                                return (
-                                  <button key={opt.orientation} type="button"
-                                    onClick={() => selectType(ContentType.SHORT, opt.orientation)}
-                                    className={`flex items-center gap-3 rounded-xl border-2 px-5 py-3.5 text-left transition-all min-w-[180px]
-                                      ${active ? 'border-primary bg-primary/10' : 'border-border bg-background hover:border-muted-foreground/40 hover:bg-muted/20'}`}>
-                                    <div className={`h-9 w-9 rounded-full flex items-center justify-center border-2 shrink-0 transition-colors
-                                      ${active ? 'border-primary bg-primary/10' : 'border-border bg-muted/20'}`}>
-                                      <opt.icon className={`h-4 w-4 ${active ? 'text-primary' : 'text-muted-foreground'}`} />
-                                    </div>
-                                    <div>
-                                      <p className={`text-sm font-semibold ${active ? 'text-primary' : 'text-foreground'}`}>{opt.label}</p>
-                                      <p className="text-[11px] text-muted-foreground">{opt.desc}</p>
-                                    </div>
-                                  </button>
-                                )
-                              })}
-                            </>
-                          )}
-                        </div>
+                    <div className="flex flex-col gap-3">
+                      <div className="flex gap-1 rounded-lg border border-border bg-muted/20 p-1 w-fit">
+                        {(['home', 'shorts'] as const).map(tab => (
+                          <button key={tab} type="button"
+                            disabled={isEdit}
+                            onClick={() => {
+                              setActiveTab(tab)
+                              if (tab === 'home') selectType(ContentType.IMAGE, '')
+                              else selectType(ContentType.SHORT, 'PORTRAIT')
+                            }}
+                            className={`px-5 py-1.5 rounded-md text-sm font-semibold transition-all
+                              ${activeTab === tab
+                                ? 'bg-primary text-primary-foreground shadow-sm'
+                                : 'text-muted-foreground hover:text-foreground'}
+                              ${isEdit ? 'opacity-80 cursor-default' : ''}`}>
+                            {tab === 'home' ? 'Home' : 'Shorts'}
+                          </button>
+                        ))}
                       </div>
-                    )}
+
+                      {/* Type cards — Home tab only (Shorts goes straight to upload) */}
+                      {activeTab === 'home' && (
+                        <div className="flex flex-wrap gap-3">
+                          {[
+                            { type: ContentType.IMAGE, label: 'Image Post', icon: ImageIcon, desc: 'Single or multiple images' },
+                            { type: ContentType.VIDEO, label: 'Video Post',  icon: Video,     desc: 'Landscape video content'  },
+                          ].map(opt => {
+                            const active = form.type === opt.type
+                            return (
+                              <button key={opt.type} type="button"
+                                disabled={isEdit}
+                                onClick={() => selectType(opt.type, '')}
+                                className={`flex items-center gap-3 rounded-xl border-2 px-5 py-3.5 text-left transition-all min-w-[180px]
+                                  ${active ? 'border-primary bg-primary/10' : 'border-border bg-background hover:border-muted-foreground/40 hover:bg-muted/20'}
+                                  ${isEdit ? 'opacity-80 cursor-default' : ''}`}>
+                                <div className={`h-9 w-9 rounded-full flex items-center justify-center border-2 shrink-0 transition-colors
+                                  ${active ? 'border-primary bg-primary/10' : 'border-border bg-muted/20'}`}>
+                                  <opt.icon className={`h-4 w-4 ${active ? 'text-primary' : 'text-muted-foreground'}`} />
+                                </div>
+                                <div>
+                                  <p className={`text-sm font-semibold ${active ? 'text-primary' : 'text-foreground'}`}>{opt.label}</p>
+                                  <p className="text-[11px] text-muted-foreground">{opt.desc}</p>
+                                </div>
+                              </button>
+                            )
+                          })}
+                        </div>
+                      )}
+
+                      {/* Shorts tab — show info pill instead of sub-type cards */}
+                      {activeTab === 'shorts' && (
+                        <div className="flex items-center gap-3 rounded-xl border border-border bg-pink-50/50 px-4 py-3">
+                          <div className="h-9 w-9 rounded-full bg-pink-100 flex items-center justify-center border border-pink-200 shrink-0">
+                            <Smartphone className="h-4 w-4 text-pink-600" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-semibold text-foreground">Short Video</p>
+                            <p className="text-[11px] text-muted-foreground">Plays in 9:16 portrait container · 16:9 videos get letterboxed</p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
 
                     {/* Title + Description + Media */}
                     <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
@@ -1029,8 +1026,7 @@ export function AddContentForm({ categories, locations, languages, editContent }
                               initialVideoUrl={form.mediaUrl || null}
                               initialThumbUrl={form.thumbnailUrl || null}
                               onFile={(vUrl, tUrl) => {
-                                set('mediaUrl', vUrl ?? '')
-                                set('thumbnailUrl', tUrl ?? '')
+                                setForm(prev => ({ ...prev, mediaUrl: vUrl ?? '', thumbnailUrl: tUrl ?? '' }))
                               }}
                             />
                         }
@@ -1205,8 +1201,14 @@ export function AddContentForm({ categories, locations, languages, editContent }
               </Button>
 
               <div className="flex items-center gap-3">
-                {step === 1 && !canAdvance && form.title.trim().length > 0 && (
-                  <span className="text-xs text-muted-foreground">Upload required media to continue</span>
+                {step === 1 && !canAdvance && (
+                  <span className="text-xs text-muted-foreground">
+                    {!form.title.trim() && !mediaOk
+                      ? 'Enter a title and upload media to continue'
+                      : !form.title.trim()
+                        ? 'Enter a title to continue'
+                        : 'Upload required media to continue'}
+                  </span>
                 )}
                 {step < 3 ? (
                   <Button type="button" onClick={next} disabled={!canAdvance}
@@ -1242,7 +1244,7 @@ export function AddContentForm({ categories, locations, languages, editContent }
                 )}
               </div>
             </div>
-          </form>
+          </div>
         </div>
 
       </div>

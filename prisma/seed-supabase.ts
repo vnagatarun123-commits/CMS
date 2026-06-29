@@ -1,7 +1,8 @@
 /**
  * Seed script for the Supabase (real DB) backend.
- * Creates the PuraLocal org, 11 auth users, profiles, role assignments, and
- * an initial audit log entry — mirroring the mock seed data.
+ * Creates the PuraLocal org, 11 auth users, profiles, role assignments,
+ * reference data (categories, locations, languages), 12 content items,
+ * and audit log entries — mirroring the mock seed data.
  *
  * Run with:
  *   DATA_BACKEND=supabase pnpm tsx prisma/seed-supabase.ts
@@ -32,7 +33,15 @@ import { join } from 'node:path'
 import { createClient } from '@supabase/supabase-js'
 import { PrismaClient } from '@prisma/client'
 import { PrismaPg } from '@prisma/adapter-pg'
-import { SEEDED_ORG, SEEDED_USERS } from '../lib/mock/seed'
+import {
+  SEEDED_ORG,
+  SEEDED_USERS,
+  SEEDED_CATEGORIES,
+  SEEDED_LOCATIONS,
+  SEEDED_LANGUAGES,
+  SEEDED_CONTENT,
+  SEEDED_AUDIT_ENTRIES,
+} from '../lib/mock/seed'
 
 // ── Bootstrap ─────────────────────────────────────────────────────────────────
 
@@ -109,38 +118,195 @@ async function upsertUser(user: (typeof SEEDED_USERS)[number]) {
   return authId
 }
 
-// ── Main ──────────────────────────────────────────────────────────────────────
+// ── Reference data seeders ────────────────────────────────────────────────────
 
-async function main() {
-  console.log('Seeding Supabase with PuraLocal data…')
+async function seedCategories() {
+  const existing = await prisma.category.count({ where: { organizationId: SEEDED_ORG.id } })
+  if (existing >= SEEDED_CATEGORIES.length) {
+    console.log(`  ✓ categories: already seeded (${existing})`)
+    return
+  }
+  for (const cat of SEEDED_CATEGORIES) {
+    await prisma.category.upsert({
+      where: { id: cat.id },
+      update: { name: cat.name, slug: cat.slug, active: cat.active, code: cat.code },
+      create: {
+        id: cat.id,
+        organizationId: cat.organizationId,
+        code: cat.code,
+        name: cat.name,
+        slug: cat.slug,
+        active: cat.active,
+        deletedAt: cat.deletedAt,
+        createdAt: cat.createdAt,
+      },
+    })
+  }
+  console.log(`  ✓ categories: ${SEEDED_CATEGORIES.length} seeded`)
+}
 
-  await upsertOrg()
+async function seedLocations() {
+  const existing = await prisma.location.count({ where: { organizationId: SEEDED_ORG.id } })
+  if (existing >= SEEDED_LOCATIONS.length) {
+    console.log(`  ✓ locations: already seeded (${existing})`)
+    return
+  }
+  // Insert in level order so parent rows exist before child rows reference them
+  const levels = ['STATE', 'DISTRICT', 'MANDAL', 'VILLAGE']
+  for (const level of levels) {
+    const items = SEEDED_LOCATIONS.filter(l => l.level === level)
+    for (const loc of items) {
+      await prisma.location.upsert({
+        where: { id: loc.id },
+        update: { name: loc.name, active: loc.active, parentId: loc.parentId ?? null },
+        create: {
+          id: loc.id,
+          organizationId: loc.organizationId,
+          name: loc.name,
+          slug: loc.slug,
+          level: loc.level,
+          parentId: loc.parentId ?? null,
+          active: loc.active,
+          deletedAt: loc.deletedAt,
+          createdAt: loc.createdAt,
+        },
+      })
+    }
+    console.log(`    ✓ ${level}: ${items.length}`)
+  }
+  console.log(`  ✓ locations: ${SEEDED_LOCATIONS.length} total`)
+}
 
-  console.log('Users:')
-  const allIds = await Promise.all(SEEDED_USERS.map((u) => upsertUser(u)))
-  const orgAdminIdx = SEEDED_USERS.findIndex((u) => u.role === 'ORG_ADMIN')
-  const orgAdminId = allIds[orgAdminIdx]
-  if (!orgAdminId) throw new Error('ORG_ADMIN not found in seeded users')
+async function seedLanguages() {
+  const existing = await prisma.language.count({ where: { organizationId: SEEDED_ORG.id } })
+  if (existing >= SEEDED_LANGUAGES.length) {
+    console.log(`  ✓ languages: already seeded (${existing})`)
+    return
+  }
+  for (const lang of SEEDED_LANGUAGES) {
+    await prisma.language.upsert({
+      where: { id: lang.id },
+      update: { name: lang.name, slug: lang.slug, active: lang.active, code: lang.code },
+      create: {
+        id: lang.id,
+        organizationId: lang.organizationId,
+        code: lang.code,
+        name: lang.name,
+        slug: lang.slug,
+        active: lang.active,
+        deletedAt: lang.deletedAt,
+        createdAt: lang.createdAt,
+      },
+    })
+  }
+  console.log(`  ✓ languages: ${SEEDED_LANGUAGES.length} seeded`)
+}
 
-  // Initial audit log entry so the audit log table is non-empty.
-  const existingLogs = await prisma.auditLog.count({ where: { organizationId: SEEDED_ORG.id } })
-  if (existingLogs === 0) {
+async function seedContent(userIdMap: Record<string, string>) {
+  const existing = await prisma.content.count({ where: { organizationId: SEEDED_ORG.id } })
+  if (existing >= SEEDED_CONTENT.length) {
+    console.log(`  ✓ content: already seeded (${existing})`)
+    return
+  }
+
+  const resolveReporterId = (mockId: string | null | undefined): string | null => {
+    if (!mockId) return null
+    const user = SEEDED_USERS.find(u => u.id === mockId)
+    if (!user) return null
+    return userIdMap[user.email] ?? null
+  }
+
+  for (const item of SEEDED_CONTENT) {
+    const reporterId = resolveReporterId(item.reporterId)
+    await prisma.content.upsert({
+      where: { id: item.id },
+      update: {},
+      create: {
+        id: item.id,
+        organizationId: item.organizationId,
+        type: item.type,
+        status: item.status,
+        source: item.source,
+        title: item.title,
+        slug: item.slug,
+        body: item.body ?? null,
+        excerpt: item.excerpt ?? null,
+        mediaUrl: item.mediaUrl ?? null,
+        youtubeUrl: item.youtubeUrl ?? null,
+        categoryId: item.categoryId ?? null,
+        locationId: item.locationId ?? null,
+        languageId: item.languageId ?? null,
+        reporterId: reporterId,
+        tags: item.tags ?? [],
+        isBreakingNews: item.isBreakingNews ?? false,
+        isTrending: item.isTrending ?? false,
+        isFeatured: item.isFeatured ?? false,
+        scheduledAt: item.scheduledAt ?? null,
+        publishedAt: item.publishedAt ?? null,
+        deletedAt: null,
+        createdAt: item.createdAt,
+        updatedAt: item.updatedAt,
+      },
+    })
+  }
+  console.log(`  ✓ content: ${SEEDED_CONTENT.length} seeded`)
+}
+
+async function seedAuditLog(orgAdminId: string) {
+  const existing = await prisma.auditLog.count({ where: { organizationId: SEEDED_ORG.id } })
+  if (existing > 1) {
+    console.log(`  ✓ audit log: already seeded (${existing})`)
+    return
+  }
+
+  const entries = SEEDED_AUDIT_ENTRIES.slice(0, 10)
+  for (const entry of entries) {
     await prisma.auditLog.create({
       data: {
         organizationId: SEEDED_ORG.id,
         actorId: orgAdminId,
-        actorName: 'Org Admin',
-        action: 'org.settings_updated',
-        targetType: 'organization',
-        targetId: SEEDED_ORG.id,
-        targetLabel: SEEDED_ORG.name,
-        metadata: { note: 'Initial seed' },
+        actorName: entry.actorName,
+        action: entry.action,
+        targetType: entry.targetType ?? null,
+        targetId: entry.targetId ?? null,
+        targetLabel: entry.targetLabel ?? null,
+        metadata: entry.metadata ?? undefined,
+        createdAt: entry.createdAt,
       },
     })
-    console.log('✓ initial audit log entry created')
+  }
+  console.log(`  ✓ audit log: ${entries.length} entries seeded`)
+}
+
+// ── Main ──────────────────────────────────────────────────────────────────────
+
+async function main() {
+  console.log('Seeding Supabase with PuraLocal data…\n')
+
+  await upsertOrg()
+
+  console.log('\nUsers:')
+  const userIdMap: Record<string, string> = {}
+  for (const u of SEEDED_USERS) {
+    const id = await upsertUser(u)
+    userIdMap[u.email] = id
   }
 
-  console.log('\nDone.')
+  const orgAdminEmail = SEEDED_USERS.find(u => u.role === 'ORG_ADMIN')!.email
+  const orgAdminId = userIdMap[orgAdminEmail]!
+
+  console.log('\nReference data:')
+  await seedCategories()
+  await seedLocations()
+  await seedLanguages()
+
+  console.log('\nContent:')
+  await seedContent(userIdMap)
+
+  console.log('\nAudit log:')
+  await seedAuditLog(orgAdminId)
+
+  console.log('\n✅ Done.')
 }
 
 main()

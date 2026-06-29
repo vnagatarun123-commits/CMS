@@ -903,6 +903,7 @@ export function AddContentForm({ categories, locations, languages, editContent }
   const [scheduleDate, setScheduleDate]       = useState(initSched.date)
   const [scheduleTime, setScheduleTime]       = useState(initSched.time)
   const [pending, start] = useTransition()
+  const [submittingTo, setSubmittingTo] = useState<ContentStatus | null>(null)
 
   function set<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm(prev => ({ ...prev, [key]: value }))
@@ -929,43 +930,48 @@ export function AddContentForm({ categories, locations, languages, editContent }
   }
 
   function submit(submitStatus: ContentStatus) {
+    setSubmittingTo(submitStatus)
     start(async () => {
-      const thumbnailUrl = form.type === ContentType.IMAGE
-        ? form.imageUrls[0]
-        : form.thumbnailUrl || undefined
+      try {
+        const thumbnailUrl = form.type === ContentType.IMAGE
+          ? form.imageUrls[0]
+          : form.thumbnailUrl || undefined
 
-      const payload = {
-        title:          form.title.trim(),
-        excerpt:        form.excerpt.trim() || undefined,
-        categoryId:     form.categoryId || undefined,
-        locationId:     resolvedLocationId || undefined,
-        languageId:     form.languageIds[0] || undefined,
-        tags:           form.tags.length ? form.tags : undefined,
-        isBreakingNews: form.flag === 'BREAKING_NEWS',
-        isTrending:     form.flag === 'TRENDING',
-        isFeatured:     form.flag === 'FEATURED',
-        mediaUrl:       form.mediaUrl || undefined,
-        thumbnailUrl,
-        imageUrls:      form.imageUrls.length ? form.imageUrls : undefined,
-        orientation:    form.orientation || undefined,
-        scheduledAt:    scheduleEnabled && scheduleDate ? `${scheduleDate}T${scheduleTime}` : undefined,
-      }
+        const payload = {
+          title:          form.title.trim(),
+          excerpt:        form.excerpt.trim() || undefined,
+          categoryId:     form.categoryId || undefined,
+          locationId:     resolvedLocationId || undefined,
+          languageId:     form.languageIds[0] || undefined,
+          tags:           form.tags.length ? form.tags : undefined,
+          isBreakingNews: form.flag === 'BREAKING_NEWS',
+          isTrending:     form.flag === 'TRENDING',
+          isFeatured:     form.flag === 'FEATURED',
+          mediaUrl:       form.mediaUrl || undefined,
+          thumbnailUrl,
+          imageUrls:      form.imageUrls.length ? form.imageUrls : undefined,
+          orientation:    form.orientation || undefined,
+          scheduledAt:    scheduleEnabled && scheduleDate ? `${scheduleDate}T${scheduleTime}` : undefined,
+        }
 
-      if (isEdit && editContent) {
-        const result = await updateContent(editContent.id, payload)
-        if (result.ok) { toast.success(`"${result.data.title}" updated`); router.push('/dashboard/content') }
-        else toast.error(result.error.message)
-        return
-      }
+        if (isEdit && editContent) {
+          const result = await updateContent(editContent.id, payload)
+          if (result.ok) { toast.success(`"${result.data.title}" updated`); router.push('/dashboard/content') }
+          else toast.error(result.error.message)
+          return
+        }
 
-      const result = await createContent({ ...payload, type: form.type, source: ContentSource.CMS, status: submitStatus })
-      if (result.ok) {
-        const msg = submitStatus === ContentStatus.DRAFT ? `"${result.data.title}" saved as draft`
-          : submitStatus === ContentStatus.SCHEDULED ? `"${result.data.title}" scheduled`
-          : `"${result.data.title}" submitted for review`
-        toast.success(msg); router.push('/dashboard/content')
-      } else {
-        toast.error(result.error.message)
+        const result = await createContent({ ...payload, type: form.type, source: ContentSource.CMS, status: submitStatus })
+        if (result.ok) {
+          const msg = submitStatus === ContentStatus.DRAFT ? `"${result.data.title}" saved as draft`
+            : submitStatus === ContentStatus.SCHEDULED ? `"${result.data.title}" scheduled`
+            : `"${result.data.title}" submitted for review`
+          toast.success(msg); router.push('/dashboard/content')
+        } else {
+          toast.error(result.error.message)
+        }
+      } finally {
+        setSubmittingTo(null)
       }
     })
   }
@@ -1317,19 +1323,19 @@ export function AddContentForm({ categories, locations, languages, editContent }
                   <>
                     <Button type="button" variant="outline" disabled={pending || !form.title.trim()}
                       onClick={() => submit(ContentStatus.DRAFT)}>
-                      {pending ? 'Saving…' : 'Save as Draft'}
+                      {pending && submittingTo === ContentStatus.DRAFT ? 'Saving…' : 'Save as Draft'}
                     </Button>
                     {scheduleEnabled && scheduleDate ? (
                       <Button type="button" disabled={pending || !form.title.trim()}
                         onClick={() => submit(ContentStatus.SCHEDULED)}
                         className="bg-amber-600 hover:bg-amber-700 text-white">
-                        {pending ? 'Scheduling…' : `Schedule · ${scheduleDate}`}
+                        {pending && submittingTo === ContentStatus.SCHEDULED ? 'Scheduling…' : `Schedule · ${scheduleDate}`}
                       </Button>
                     ) : (
                       <Button type="button" disabled={pending || !form.title.trim()}
                         onClick={() => submit(ContentStatus.UNDER_REVIEW)}
                         className="bg-primary text-primary-foreground hover:bg-primary/90">
-                        {pending ? 'Submitting…' : 'Submit for Review'}
+                        {pending && submittingTo === ContentStatus.UNDER_REVIEW ? 'Submitting…' : 'Submit for Review'}
                       </Button>
                     )}
                   </>

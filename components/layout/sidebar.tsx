@@ -1,5 +1,6 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { ChevronRight, PanelLeftClose, PanelLeftOpen } from 'lucide-react'
@@ -22,14 +23,35 @@ interface SidebarProps {
 export function Sidebar({ user }: SidebarProps) {
   const pathname = usePathname()
   const { collapsed, toggle } = useSidebar()
+  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({})
 
   function isActive(href: string, exact?: boolean) {
     if (exact) return pathname === href
     return pathname === href || pathname.startsWith(href + '/')
   }
 
-  function isGroupOpen(href: string) {
-    return pathname === href || pathname.startsWith(href + '/')
+  // Auto-expand group if any of its children are active on mount or pathname change
+  useEffect(() => {
+    NAV_SECTIONS.forEach(section => {
+      section.items.forEach(item => {
+        if (item.children) {
+          const hasActiveChild = item.children.some(c => isActive(c.href, c.exactMatch))
+          if (hasActiveChild) {
+            setExpandedGroups(prev => {
+              if (prev[item.href]) return prev // keep open
+              return { ...prev, [item.href]: true }
+            })
+          }
+        }
+      })
+    })
+  }, [pathname])
+
+  function toggleGroup(href: string) {
+    setExpandedGroups(prev => ({
+      ...prev,
+      [href]: !prev[href]
+    }))
   }
 
   return (
@@ -93,7 +115,7 @@ export function Sidebar({ user }: SidebarProps) {
                   // ── Group (has children) ────────────────────────────────
                   if (hasChildren) {
                     const anyChildActive = item.children!.some(c => isActive(c.href, c.exactMatch))
-                    const isOpen = isGroupOpen(item.href)
+                    const isOpen = !!expandedGroups[item.href]
 
                     if (collapsed) {
                       return (
@@ -122,10 +144,11 @@ export function Sidebar({ user }: SidebarProps) {
 
                     return (
                       <div key={item.href}>
-                        <Link
-                          href={item.children![0]!.href}
+                        <button
+                          type="button"
+                          onClick={() => toggleGroup(item.href)}
                           className={cn(
-                            'group flex items-center gap-2.5 rounded-md px-3 py-2 text-[13px] font-medium transition-all duration-150',
+                            'group flex w-full items-center gap-2.5 rounded-md px-3 py-2 text-[13px] font-medium transition-all duration-150 text-left focus:outline-none',
                             isOpen
                               ? 'text-foreground bg-white/[0.04]'
                               : 'text-sidebar-foreground hover:bg-white/[0.04] hover:text-foreground',
@@ -139,7 +162,7 @@ export function Sidebar({ user }: SidebarProps) {
                               isOpen ? 'rotate-90' : 'rotate-0',
                             )}
                           />
-                        </Link>
+                        </button>
 
                         {isOpen && (
                           <div className="ml-4 mt-0.5 mb-1 space-y-0.5 border-l border-sidebar-border/60 pl-3">

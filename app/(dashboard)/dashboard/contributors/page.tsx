@@ -1,5 +1,5 @@
-import { redirect } from 'next/navigation'
+import { AllContributorsClient } from './_components/all-contributors-client'
 
 export default function ContributorsPage() {
-  redirect('/dashboard/contributors/approvals')
+  return <AllContributorsClient />
 }

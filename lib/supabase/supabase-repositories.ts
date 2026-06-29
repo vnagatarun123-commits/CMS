@@ -62,32 +62,20 @@ function assertOrg(organizationId: string): void {
 }
 
 // ── Path B: withOrgContext ────────────────────────────────────────────────────
-// Every mutating/reading query runs inside a transaction where:
-//   SET LOCAL ROLE prisma_app       → activates RESTRICTIVE RLS policies TO prisma_app
-//   set_config('app.organization_id', orgId, true) → scopes RLS to current org
-// "true" makes set_config transaction-local; connection returns to pool clean.
+// Runs the callback with the org ID asserted. Every query also carries an
+// explicit `organizationId` WHERE clause as the primary isolation fence.
 //
-// SET LOCAL ROLE is attempted but caught: Supabase's connection-pooler user
-// (postgres.<project-ref>) may not have the role granted. App-layer assertOrg +
-// explicit where-clause filters remain the primary isolation fence in that case.
-
-type TxClient = Parameters<Parameters<PrismaClient['$transaction']>[0]>[0]
+// NOTE: PgBouncer transaction mode (port 6543) does NOT support Prisma
+// interactive transactions ($transaction callback form). We therefore skip
+// SET LOCAL ROLE / set_config here and rely on the app-layer WHERE filter.
+// RLS via set_config can be re-enabled when the direct connection is used.
 
 async function withOrgContext<T>(
   prisma: PrismaClient,
   organizationId: string,
-  fn: (tx: TxClient) => Promise<T>,
+  fn: (tx: PrismaClient) => Promise<T>,
 ): Promise<T> {
-  return prisma.$transaction(async (tx) => {
-    try {
-      await tx.$executeRaw`SET LOCAL ROLE prisma_app`
-    } catch {
-      // Pooler connecting user may not have prisma_app granted yet — safe to
-      // continue because app-layer guards still enforce tenant isolation.
-    }
-    await tx.$executeRaw`SELECT set_config('app.organization_id', ${organizationId}, true)`
-    return fn(tx)
-  })
+  return fn(prisma)
 }
 
 // ── Domain mappers ────────────────────────────────────────────────────────────

@@ -62,7 +62,7 @@ export function Sidebar({ user }: SidebarProps) {
         </div>
 
         {/* ── Navigation ──────────────────────────────────────────────────── */}
-        <nav className="flex-1 overflow-y-auto overflow-x-hidden py-3 space-y-4">
+        <nav className="flex-1 overflow-y-auto overflow-x-hidden py-2 space-y-1">
           {NAV_SECTIONS.map((section, si) => {
             const visibleItems = section.items.filter(
               item => item.permission === null || can(user, item.permission),
@@ -92,7 +92,7 @@ export function Sidebar({ user }: SidebarProps) {
 
                   // ── Group (has children) ────────────────────────────────
                   if (hasChildren) {
-                    const anyChildActive = item.children!.some(c => isActive(c.href))
+                    const anyChildActive = item.children!.some(c => isActive(c.href, c.exactMatch))
                     const isOpen = isGroupOpen(item.href)
 
                     if (collapsed) {
@@ -126,12 +126,12 @@ export function Sidebar({ user }: SidebarProps) {
                           href={item.children![0]!.href}
                           className={cn(
                             'group flex items-center gap-2.5 rounded-md px-3 py-2 text-[13px] font-medium transition-all duration-150',
-                            anyChildActive
-                              ? 'bg-primary/10 text-primary'
+                            isOpen
+                              ? 'text-foreground bg-white/[0.04]'
                               : 'text-sidebar-foreground hover:bg-white/[0.04] hover:text-foreground',
                           )}
                         >
-                          <Icon className={cn('h-4 w-4 shrink-0', anyChildActive ? 'text-primary' : 'text-sidebar-foreground group-hover:text-foreground')} />
+                          <Icon className={cn('h-4 w-4 shrink-0', isOpen ? 'text-foreground' : 'text-sidebar-foreground group-hover:text-foreground')} />
                           <span className="flex-1 truncate">{item.label}</span>
                           <ChevronRight
                             className={cn(
@@ -145,7 +145,7 @@ export function Sidebar({ user }: SidebarProps) {
                           <div className="ml-4 mt-0.5 mb-1 space-y-0.5 border-l border-sidebar-border/60 pl-3">
                             {item.children!.map(child => {
                               const ChildIcon = child.icon
-                              const childActive = isActive(child.href)
+                              const childActive = isActive(child.href, child.exactMatch)
                               return (
                                 <Link key={child.href} href={child.href}
                                   className={cn(

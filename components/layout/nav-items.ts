@@ -28,6 +28,7 @@ export interface NavChild {
   label: string
   href: string
   icon: LucideIcon
+  exactMatch?: boolean
 }
 
 export interface NavItem {
@@ -60,7 +61,7 @@ export const NAV_SECTIONS: NavSection[] = [
         permission: Permission.CONTENT_EDIT,
         icon: FileText,
         children: [
-          { label: 'All Content',     href: '/dashboard/content',      icon: LayoutList },
+          { label: 'All Content',     href: '/dashboard/content',      icon: LayoutList, exactMatch: true },
           { label: 'Live Management', href: '/dashboard/content/live', icon: Radio },
         ],
       },
@@ -76,7 +77,7 @@ export const NAV_SECTIONS: NavSection[] = [
         permission: Permission.REPORTERS_MANAGE,
         icon: Users2,
         children: [
-          { label: 'All Contributors',     href: '/dashboard/contributors',            icon: Users2 },
+          { label: 'All Contributors',     href: '/dashboard/contributors',            icon: Users2, exactMatch: true },
           { label: 'Approval Management',  href: '/dashboard/contributors/approvals',  icon: CheckSquare },
           { label: 'Earnings Management',  href: '/dashboard/contributors/earnings',   icon: DollarSign },
           { label: 'Commission Rules',     href: '/dashboard/contributors/commission', icon: Percent },

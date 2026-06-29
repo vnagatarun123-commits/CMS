@@ -460,8 +460,21 @@ function VideoUploadArea({ orientation, thumbnailMode, onThumbnailMode, onFile, 
   }
 
   function handleLoadedData() {
+    if (!firstFrameUrl && videoRef.current) {
+      // Seek slightly forward (0.2s) to get a decoded, non-black frame
+      videoRef.current.currentTime = 0.2
+    }
+  }
+
+  function handleSeeked() {
+    const video = videoRef.current
+    if (!video) return
+
+    // If firstFrameUrl is still null, it means we seeked to 0.2s to capture it
     if (!firstFrameUrl) {
       captureFirstFrame()
+      // Seek back to start for the user's playback experience
+      video.currentTime = 0
     }
   }
 
@@ -526,6 +539,7 @@ function VideoUploadArea({ orientation, thumbnailMode, onThumbnailMode, onFile, 
             <video ref={videoRef} src={videoUrl} controls muted={muted}
               crossOrigin="anonymous"
               onLoadedData={handleLoadedData}
+              onSeeked={handleSeeked}
               className="w-full h-full object-contain" preload="metadata"
               onError={() => setVideoUrl(null)} />
           </div>

@@ -32,6 +32,7 @@ model Profile {
   email          String    @unique
   name           String
   organizationId String    @map("organization_id")
+  photoUrl       String?   @map("photo_url")
   invitedAt      DateTime  @map("invited_at")
   joinedAt       DateTime? @map("joined_at")
 

@@ -1406,11 +1406,15 @@ function ContentRow({ item, locations, columns, pageIndex, onEdit, onApprove, on
           <td key="contributor" className="py-3 px-3">
             {item.reporterName
               ? <ReporterCell name={item.reporterName} photoUrl={item.reporterPhotoUrl} role={item.reporterRole} />
-              : <div className="flex items-center gap-1.5">
-                  <div className="h-5 w-5 rounded-full bg-primary/20 flex items-center justify-center text-[9px] font-bold text-primary shrink-0">P</div>
-                  <div className="flex flex-col gap-0.5">
-                    <span className="text-xs text-foreground font-medium leading-none">PuraLocal Official</span>
-                    <span className="text-[9px] font-semibold bg-blue-100 text-blue-700 rounded px-1.5 py-px uppercase tracking-wide w-fit">ORG</span>
+              : <div className="flex items-center gap-2 min-w-[130px]">
+                  <div className="h-7 w-7 shrink-0 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-semibold text-primary border border-border">
+                    P
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-xs font-medium text-foreground truncate max-w-[90px]">PuraLocal Official</p>
+                    <span className="inline-block text-[9px] font-semibold rounded bg-blue-100 text-blue-700 px-1.5 py-0 leading-4 mt-0.5 uppercase tracking-wide w-fit text-center">
+                      ORG
+                    </span>
                   </div>
                 </div>}
           </td>

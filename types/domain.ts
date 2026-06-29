@@ -22,6 +22,7 @@ export interface UserWithRole {
   name: string
   role: string           // role ID — built-in or custom
   organizationId: string
+  photoUrl?: string | null
   invitedAt: Date
   joinedAt: Date | null
 }

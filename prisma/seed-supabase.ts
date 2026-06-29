@@ -92,7 +92,7 @@ async function upsertUser(user: (typeof SEEDED_USERS)[number]) {
   // 2. Upsert profile (id = Supabase auth.users.id).
   await prisma.profile.upsert({
     where: { id: authId },
-    update: { email: user.email, name: user.name },
+    update: { email: user.email, name: user.name, photoUrl: (user as { photoUrl?: string | null }).photoUrl ?? null },
     create: {
       id: authId,
       email: user.email,
@@ -100,6 +100,7 @@ async function upsertUser(user: (typeof SEEDED_USERS)[number]) {
       organizationId: SEEDED_ORG.id,
       invitedAt: user.invitedAt,
       joinedAt: user.joinedAt,
+      photoUrl: (user as { photoUrl?: string | null }).photoUrl ?? null,
     },
   })
 

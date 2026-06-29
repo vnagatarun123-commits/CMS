@@ -89,6 +89,7 @@ function toUserWithRole(p: ProfileWithRole): UserWithRole {
     name: p.name,
     role: (p.roleAssignments[0]?.role ?? 'REPORTER') as Role,
     organizationId: p.organizationId,
+    photoUrl: p.photoUrl ?? null,
     invitedAt: p.invitedAt,
     joinedAt: p.joinedAt,
   }
@@ -388,6 +389,7 @@ function toContent(r: ContentWithJoins): Content {
     locationName: r.location?.name ?? null,
     languageName: r.language?.name ?? null,
     reporterName: r.reporter?.name ?? null,
+    reporterPhotoUrl: r.reporter?.photoUrl ?? null,
     reporterRole: (r.reporter as { roleAssignments?: { role: string }[] } | null)?.roleAssignments?.[0]?.role ?? null,
   }
 }

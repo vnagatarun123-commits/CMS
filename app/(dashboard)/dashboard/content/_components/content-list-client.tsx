@@ -390,6 +390,52 @@ function RejectDialog({ content, toStatus, pending, onConfirm, onCancel }: Rejec
   )
 }
 
+interface DeleteDialogProps {
+  content: Content
+  pending: boolean
+  onConfirm: () => void
+  onCancel: () => void
+}
+
+function DeleteDialog({ content, pending, onConfirm, onCancel }: DeleteDialogProps) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-150"
+      onClick={e => { if (e.target === e.currentTarget) onCancel() }}>
+      <div className="w-full max-w-md bg-background rounded-2xl shadow-2xl border border-border overflow-hidden animate-in zoom-in-95 duration-200">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+          <div className="flex items-center gap-2">
+            <div className="h-7 w-7 rounded-full bg-red-50 flex items-center justify-center">
+              <Trash2 className="h-4 w-4 text-red-600" />
+            </div>
+            <h3 className="text-sm font-semibold text-foreground">Delete Content</h3>
+          </div>
+          <button onClick={onCancel}
+            className="h-7 w-7 flex items-center justify-center rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors">
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+        <div className="px-5 py-6 space-y-4">
+          <p className="text-sm text-foreground font-medium">Are you sure you want to delete this draft?</p>
+          <div className="bg-muted/40 border border-border/60 rounded-xl p-3.5 italic">
+            <p className="text-xs text-muted-foreground line-clamp-3">"{content.title}"</p>
+          </div>
+          <p className="text-[11px] text-red-600 font-semibold bg-red-50 rounded px-2.5 py-1.5 w-fit border border-red-100">
+            This action is permanent and cannot be undone.
+          </p>
+        </div>
+        <div className="flex items-center justify-end gap-2 px-5 py-4 border-t border-border bg-muted/20">
+          <Button variant="outline" size="sm" onClick={onCancel} disabled={pending}>Cancel</Button>
+          <Button size="sm" className="bg-red-600 text-white hover:bg-red-700 focus-visible:ring-red-600"
+            disabled={pending}
+            onClick={onConfirm}>
+            {pending ? 'Deleting…' : 'Delete'}
+          </Button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ── Preview modal ─────────────────────────────────────────────────────────────
 
 interface PreviewItem {
@@ -934,6 +980,8 @@ export function ContentListClient({ initialContent, categories, locations, langu
 
   const [rejectTarget, setRejectTarget] = useState<{ item: Content; toStatus: ContentStatus } | null>(null)
   const [rejectPending, startRejectTransition] = useTransition()
+  const [deleteTarget, setDeleteTarget] = useState<Content | null>(null)
+  const [deletePending, startDeleteTransition] = useTransition()
   const [, startRefreshTransition] = useTransition()
 
   const [columns, setColumns]             = useState<ColDef[]>([...DEFAULT_COLS])
@@ -1027,22 +1075,20 @@ export function ContentListClient({ initialContent, categories, locations, langu
   }
 
   function handleDelete(item: Content) {
-    toast(`Delete "${item.title}"?`, {
-      action: {
-        label: 'Delete',
-        onClick: () => {
-          startRefreshTransition(async () => {
-            const result = await deleteContent(item.id)
-            if (result.ok) {
-              toast.success('Draft deleted')
-              setContent(prev => prev.filter(c => c.id !== item.id))
-            } else {
-              toast.error(result.error.message)
-            }
-          })
-        },
-      },
-      cancel: { label: 'Cancel', onClick: () => {} },
+    setDeleteTarget(item)
+  }
+
+  function handleDeleteConfirm() {
+    if (!deleteTarget) return
+    startDeleteTransition(async () => {
+      const result = await deleteContent(deleteTarget.id)
+      if (result.ok) {
+        toast.success('Draft deleted')
+        setContent(prev => prev.filter(c => c.id !== deleteTarget.id))
+        setDeleteTarget(null)
+      } else {
+        toast.error(result.error.message)
+      }
     })
   }
 
@@ -1280,6 +1326,15 @@ export function ContentListClient({ initialContent, categories, locations, langu
           pending={rejectPending}
           onConfirm={handleRejectConfirm}
           onCancel={() => setRejectTarget(null)}
+        />
+      )}
+
+      {deleteTarget && (
+        <DeleteDialog
+          content={deleteTarget}
+          pending={deletePending}
+          onConfirm={handleDeleteConfirm}
+          onCancel={() => setDeleteTarget(null)}
         />
       )}
 

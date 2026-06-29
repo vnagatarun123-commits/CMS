@@ -499,17 +499,26 @@ function VideoUploadArea({ orientation, thumbnailMode, onThumbnailMode, onFile, 
   }
 
   function handleModeChange(mode: ThumbnailMode) {
-    onThumbnailMode(mode)
-    if (mode === 'default') {
-      onFile(videoUrl, firstFrameUrl)
-    } else if (mode === 'screen') {
-      if (capturedFrameUrl) {
-        onFile(videoUrl, capturedFrameUrl)
-      } else {
+    if (mode === 'screen') {
+      if (thumbnailMode === 'screen') {
+        // Already in screen mode -> recapture current frame
         captureFrame()
+      } else {
+        // Switching to screen mode
+        onThumbnailMode('screen')
+        if (capturedFrameUrl) {
+          onFile(videoUrl, capturedFrameUrl)
+        } else {
+          captureFrame()
+        }
       }
-    } else if (mode === 'upload') {
-      onFile(videoUrl, uploadedFrameUrl)
+    } else {
+      onThumbnailMode(mode)
+      if (mode === 'default') {
+        onFile(videoUrl, firstFrameUrl)
+      } else if (mode === 'upload') {
+        onFile(videoUrl, uploadedFrameUrl)
+      }
     }
   }
 
@@ -596,6 +605,10 @@ function VideoUploadArea({ orientation, thumbnailMode, onThumbnailMode, onFile, 
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={capturedFrameUrl} alt="Captured frame" className="w-full aspect-video object-cover" />
                 <span className="absolute bottom-1.5 left-1.5 text-[10px] bg-black/60 text-white rounded px-1.5 py-0.5">Captured frame</span>
+                <button type="button" onClick={captureFrame}
+                  className="absolute bottom-1.5 right-1.5 text-[10px] bg-primary text-primary-foreground rounded px-2 py-0.5 font-medium hover:bg-primary/90 transition-colors">
+                  Recapture Frame
+                </button>
               </div>
             ) : (
               <div className="flex items-center justify-center rounded-xl border border-border bg-muted/10 py-4">

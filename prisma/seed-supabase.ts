@@ -220,7 +220,7 @@ async function seedContent(userIdMap: Record<string, string>) {
     const reporterId = resolveReporterId(item.reporterId)
     await prisma.content.upsert({
       where: { id: item.id },
-      update: {},
+      update: { thumbnailUrl: item.thumbnailUrl ?? null },
       create: {
         id: item.id,
         organizationId: item.organizationId,
@@ -232,6 +232,7 @@ async function seedContent(userIdMap: Record<string, string>) {
         body: item.body ?? null,
         excerpt: item.excerpt ?? null,
         mediaUrl: item.mediaUrl ?? null,
+        thumbnailUrl: item.thumbnailUrl ?? null,
         youtubeUrl: item.youtubeUrl ?? null,
         categoryId: item.categoryId ?? null,
         locationId: item.locationId ?? null,

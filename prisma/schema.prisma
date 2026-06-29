@@ -166,6 +166,7 @@ model Content {
   body           String?
   excerpt        String?
   mediaUrl       String?   @map("media_url")
+  thumbnailUrl   String?   @map("thumbnail_url")
   youtubeUrl     String?   @map("youtube_url")
   categoryId     String?   @map("category_id")
   locationId     String?   @map("location_id")

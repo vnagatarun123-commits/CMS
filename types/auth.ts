@@ -1,10 +1,8 @@
-import type { Role } from '@/lib/rbac/permissions'
-
 export interface User {
   id: string
   email: string
   name: string
-  role: Role
+  role: string   // role ID — built-in or custom
   organizationId: string
 }
 

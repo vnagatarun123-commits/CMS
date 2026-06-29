@@ -15,7 +15,7 @@ describe('can()', () => {
   it('returns true for every permission granted to a role', () => {
     for (const role of allRoles) {
       const user = makeUser(role)
-      for (const permission of ROLE_PERMISSIONS[role]) {
+      for (const permission of ROLE_PERMISSIONS[role] ?? []) {
         expect(can(user, permission), `${role} → ${permission} should be true`).toBe(true)
       }
     }
@@ -24,7 +24,7 @@ describe('can()', () => {
   it('returns false for every permission NOT granted to a role', () => {
     for (const role of allRoles) {
       const user = makeUser(role)
-      const granted = new Set<string>(ROLE_PERMISSIONS[role])
+      const granted = new Set<string>(ROLE_PERMISSIONS[role] ?? [])
       for (const permission of allPermissions) {
         if (!granted.has(permission)) {
           expect(can(user, permission), `${role} → ${permission} should be false`).toBe(false)
@@ -61,8 +61,8 @@ describe('can()', () => {
     expect(allRoles).toHaveLength(11)
   })
 
-  it('covers all 11 permissions', () => {
-    expect(allPermissions).toHaveLength(11)
+  it('covers all 13 permissions', () => {
+    expect(allPermissions).toHaveLength(13)
   })
 })
 

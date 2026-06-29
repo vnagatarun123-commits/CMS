@@ -103,12 +103,11 @@ describe('inviteUser()', () => {
     expect(result.error.code).toBe('FORBIDDEN')
   })
 
-  it('returns VALIDATION_ERROR for invalid role', async () => {
+  it('accepts any non-empty role string (custom roles supported)', async () => {
     setMockSession(orgAdmin)
-    const result = await inviteUser({ email: 'x@test.com', name: 'X', role: 'NOT_A_ROLE' })
-    expect(result.ok).toBe(false)
-    if (result.ok) return
-    expect(result.error.code).toBe('VALIDATION_ERROR')
+    // role is now a free-form string so custom role IDs are valid at the boundary
+    const result = await inviteUser({ email: 'x@test.com', name: 'X', role: 'CUSTOM_REGIONAL' })
+    expect(result.ok).toBe(true)
   })
 })
 
@@ -149,12 +148,13 @@ describe('removeUser()', () => {
 // ── Audit log ─────────────────────────────────────────────────────────────────
 
 describe('getAuditLog()', () => {
-  it('returns empty log for a fresh org', async () => {
+  it('returns seeded audit entries for the org', async () => {
     setMockSession(orgAdmin)
     const result = await getAuditLog({})
     expect(result.ok).toBe(true)
     if (!result.ok) return
-    expect(result.data).toHaveLength(0)
+    expect(result.data.length).toBeGreaterThan(0)
+    expect(result.data.every(e => e.organizationId === orgAdmin.organizationId)).toBe(true)
   })
 
   it('returns FORBIDDEN for a role without ORG_CONFIGURE', async () => {

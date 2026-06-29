@@ -1,0 +1,214 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ── Organization ──────────────────────────────────────────────────────────────
+
+model Organization {
+  id        String   @id
+  name      String
+  slug      String   @unique
+  createdAt DateTime @default(now()) @map("created_at")
+
+  profiles        Profile[]
+  roleAssignments RoleAssignment[]
+  auditLogs       AuditLog[]
+  categories      Category[]
+  locations       Location[]
+  languages       Language[]
+  content         Content[]
+
+  @@map("organizations")
+}
+
+// ── Profile ───────────────────────────────────────────────────────────────────
+
+model Profile {
+  id             String    @id
+  email          String    @unique
+  name           String
+  organizationId String    @map("organization_id")
+  invitedAt      DateTime  @map("invited_at")
+  joinedAt       DateTime? @map("joined_at")
+
+  organization    Organization @relation(fields: [organizationId], references: [id])
+  roleAssignments RoleAssignment[]
+  content         Content[]
+
+  @@index([organizationId])
+  @@map("profiles")
+}
+
+// ── RoleAssignment ────────────────────────────────────────────────────────────
+
+model RoleAssignment {
+  id             String   @id @default(cuid())
+  userId         String   @map("user_id")
+  organizationId String   @map("organization_id")
+  role           String
+  assignedById   String?  @map("assigned_by_id")
+  assignedAt     DateTime @default(now()) @map("assigned_at")
+
+  profile      Profile      @relation(fields: [userId], references: [id])
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@unique([userId, organizationId])
+  @@index([organizationId])
+  @@map("role_assignments")
+}
+
+// ── AuditLog ──────────────────────────────────────────────────────────────────
+
+model AuditLog {
+  id             String   @id @default(cuid())
+  organizationId String   @map("organization_id")
+  actorId        String   @map("actor_id")
+  actorName      String   @map("actor_name")
+  action         String
+  targetType     String?  @map("target_type")
+  targetId       String?  @map("target_id")
+  targetLabel    String?  @map("target_label")
+  metadata       Json?
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@index([organizationId])
+  @@map("audit_logs")
+}
+
+// ── Category ──────────────────────────────────────────────────────────────────
+// Per-org content categories (e.g. Local News, Sports). Soft-deletable.
+
+model Category {
+  id             String    @id @default(cuid())
+  organizationId String    @map("organization_id")
+  code           String    // Short code, e.g. LOC, SPT — unique per org
+  name           String
+  slug           String
+  active         Boolean   @default(true)
+  deletedAt      DateTime? @map("deleted_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  content      Content[]
+
+  @@unique([organizationId, code])
+  @@unique([organizationId, slug])
+  @@index([organizationId])
+  @@map("categories")
+}
+
+// ── Location ──────────────────────────────────────────────────────────────────
+// Hierarchical: STATE → DISTRICT → MANDAL → VILLAGE.
+// parentId is null for top-level (STATE). Unique slug per org+level.
+
+model Location {
+  id             String    @id @default(cuid())
+  organizationId String    @map("organization_id")
+  name           String
+  slug           String
+  level          String    // LocationLevel: STATE | DISTRICT | MANDAL | VILLAGE
+  parentId       String?   @map("parent_id")
+  active         Boolean   @default(true)
+  deletedAt      DateTime? @map("deleted_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  parent       Location?    @relation("LocationParent", fields: [parentId], references: [id])
+  children     Location[]   @relation("LocationParent")
+  content      Content[]
+
+  @@unique([organizationId, level, slug])
+  @@index([organizationId])
+  @@index([organizationId, level])
+  @@index([parentId])
+  @@map("locations")
+}
+
+// ── Language ──────────────────────────────────────────────────────────────────
+// Per-org languages. code = ISO 639-1 (en, te, hi, kn, ta). Soft-deletable.
+
+model Language {
+  id             String    @id @default(cuid())
+  organizationId String    @map("organization_id")
+  code           String    // ISO 639-1, e.g. en, te, hi — unique per org
+  name           String
+  slug           String
+  active         Boolean   @default(true)
+  deletedAt      DateTime? @map("deleted_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  content      Content[]
+
+  @@unique([organizationId, code])
+  @@unique([organizationId, slug])
+  @@index([organizationId])
+  @@map("languages")
+}
+
+// ── Content ───────────────────────────────────────────────────────────────────
+// Single model for all content types. Type-specific fields are nullable.
+
+model Content {
+  id             String    @id @default(cuid())
+  organizationId String    @map("organization_id")
+  type           String    // ContentType: IMAGE | VIDEO | SHORT | LIVE | YOUTUBE
+  status         String    // ContentStatus: DRAFT | UNDER_REVIEW | NEEDS_CLARIFICATION | SCHEDULED | PUBLISHED
+  source         String    // ContentSource: APP | CMS
+  title          String
+  slug           String
+  body           String?
+  excerpt        String?
+  mediaUrl       String?   @map("media_url")
+  youtubeUrl     String?   @map("youtube_url")
+  categoryId     String?   @map("category_id")
+  locationId     String?   @map("location_id")
+  languageId     String?   @map("language_id")
+  reporterId     String?   @map("reporter_id")
+  tags           String[]  @default([])
+  isBreakingNews Boolean   @default(false) @map("is_breaking_news")
+  isTrending     Boolean   @default(false) @map("is_trending")
+  isFeatured     Boolean   @default(false) @map("is_featured")
+  scheduledAt    DateTime? @map("scheduled_at")
+  publishedAt    DateTime? @map("published_at")
+  deletedAt      DateTime? @map("deleted_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  category     Category?    @relation(fields: [categoryId], references: [id])
+  location     Location?    @relation(fields: [locationId], references: [id])
+  language     Language?    @relation(fields: [languageId], references: [id])
+  reporter     Profile?     @relation(fields: [reporterId], references: [id])
+  transitions  ContentTransition[]
+
+  @@index([organizationId])
+  @@index([organizationId, status])
+  @@index([organizationId, type])
+  @@map("content")
+}
+
+// ── ContentTransition ─────────────────────────────────────────────────────────
+// Append-only history of every status change.
+
+model ContentTransition {
+  id         String   @id @default(cuid())
+  contentId  String   @map("content_id")
+  fromStatus String?  @map("from_status")
+  toStatus   String   @map("to_status")
+  actorId    String   @map("actor_id")
+  actorName  String   @map("actor_name")
+  note       String?
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  content Content @relation(fields: [contentId], references: [id], onDelete: Cascade)
+
+  @@index([contentId])
+  @@map("content_transitions")
+}

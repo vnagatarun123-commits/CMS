@@ -1,82 +1,92 @@
 # Database Schema
 
-> **Status:** Partially Implemented — Phase 0 (planned model below; confirm against `prisma/schema.prisma` once written).
+> **Status:** Implemented — Supabase swap slice.
 
 ## Conventions
 
-- PostgreSQL via Prisma. Schema lives in `prisma/schema.prisma`.
-- **Every tenant-owned table has a non-null, indexed `organizationId`.** (`CLAUDE.md` §3)
+- PostgreSQL via Supabase. Schema lives in [prisma/schema.prisma](../../prisma/schema.prisma).
+- **Every tenant-owned table has a non-null, indexed `organization_id`.** (`CLAUDE.md` §3)
 - Migrations: one per schema change, committed together; never edit a shipped migration. See [Migrations](./Migrations.md).
-- The Prisma tenant-scoping extension injects `organizationId` on every tenant-owned query — see [Authorization](../Security/Authorization.md).
+- The `withOrgContext` helper in `lib/supabase/supabase-repositories.ts` injects `SET LOCAL ROLE prisma_app` + `set_config('app.organization_id', ...)` on every repository query — see [Authorization](../Security/Authorization.md).
 
-## Phase 0 model (planned)
+## Phase 0 schema
 
-> Confirm field names/types against the actual `prisma/schema.prisma` after Phase 0 and flip this to **Implemented**.
+Four tables. All tenant-owned tables carry a non-null `organization_id` (CLAUDE.md §3 invariant).
 
 ```mermaid
 erDiagram
-    Organization ||--o{ User : "has"
-    Organization ||--o{ AuditLog : "scopes"
-    User ||--o{ RoleAssignment : "has"
-    User ||--o{ AuditLog : "acts in"
-    RoleAssignment }o--|| Organization : "scoped to"
+    organizations ||--o{ profiles : "has"
+    organizations ||--o{ role_assignments : "scopes"
+    organizations ||--o{ audit_logs : "scopes"
+    profiles ||--o{ role_assignments : "has"
 
-    Organization {
-        string id PK
-        string name
-        string slug UK
-        string status
-        datetime createdAt
+    organizations {
+        text id PK
+        text name
+        text slug UK
+        timestamp created_at
     }
-    User {
-        string id PK
-        string organizationId FK "nullable only for platform SUPER_ADMIN"
-        string email
-        string name
-        string passwordHash
-        string status
-        datetime createdAt
+    profiles {
+        text id PK "mirrors auth.users.id"
+        text email UK
+        text name
+        text organization_id FK
+        timestamp invited_at
+        timestamp joined_at "nullable"
     }
-    RoleAssignment {
-        string id PK
-        string userId FK
-        string organizationId FK
-        enum role
+    role_assignments {
+        text id PK "cuid"
+        text user_id FK
+        text organization_id FK
+        text role "Role enum as TEXT"
+        text assigned_by_id "nullable"
+        timestamp assigned_at
     }
-    AuditLog {
-        string id PK
-        string organizationId FK "nullable for platform events"
-        string actorUserId FK
-        string action
-        string targetType
-        string targetId
-        json metadata
-        datetime createdAt
+    audit_logs {
+        text id PK "cuid"
+        text organization_id FK
+        text actor_id
+        text actor_name
+        text action
+        text target_type "nullable"
+        text target_id "nullable"
+        text target_label "nullable"
+        jsonb metadata "nullable"
+        timestamp created_at
     }
 ```
 
-Notes:
-- `User.email` is unique **per org** (composite uniqueness), not globally.
-- `AuditLog` indexed by `(organizationId, createdAt)`.
-- Auth.js session/account tables exist as required by the adapter.
+### Key design decisions
 
-## Models added in later phases (planned — stubs)
+- `profiles.id` is TEXT (not a serial integer) — it mirrors `auth.users.id` (UUID) from Supabase Auth.
+- `role_assignments` has `@@unique([userId, organizationId])` — one active role per user per org; `upsert` replaces on reassign.
+- `role` is TEXT not a Prisma enum so role values can be added without a DB migration.
+- `audit_logs.metadata` is JSONB — flexible per-action payload.
 
-| Phase | Models (intended) |
+### Indexes
+
+| Table | Index | Type |
+|---|---|---|
+| `organizations` | `slug` | UNIQUE |
+| `profiles` | `email` | UNIQUE |
+| `profiles` | `organization_id` | Regular |
+| `role_assignments` | `(user_id, organization_id)` | UNIQUE |
+| `role_assignments` | `organization_id` | Regular |
+| `audit_logs` | `organization_id` | Regular |
+
+## Models added in later phases (stubs)
+
+| Phase | Models |
 |---|---|
-| 1 | `Content` (type discriminator, status, language/category/location/reporter FKs, scheduledAt, publishedAt), `Category`, `Location`, `Language` |
-| 2 | Media/asset records, job-tracking rows if needed |
-| 3 | `Reporter`, verification docs, assignments, `EarningsLedger` |
-| 4 | `AppUser`, `EngagementEvent` (+ rollup tables) |
-| 5 | `AdUnit`, `AdCampaign`, `SubscriptionPlan`, `Subscriber` |
-| 6 | Analytics read models / materialized views |
-| 8 | (No new core columns — `organizationId` already present; RLS policies + per-tenant config tables) |
-
-## Risks / notes
-- The single largest schema risk is any tenant-owned table shipping **without** `organizationId`. The cross-org denial test (every resource) is the guard against this.
+| 1 | `Content`, `Category`, `Location`, `Language` |
+| 2 | Media/asset records |
+| 3 | `Reporter`, `EarningsLedger` |
+| 4 | `AppUser`, `EngagementEvent` |
+| 5 | `AdUnit`, `AdCampaign`, `SubscriptionPlan` |
+| 8 | (No new core columns — `organization_id` already present; per-tenant config tables) |
 
 ## Related docs
-[Entities](./Entities.md) · [Relationships](./Relationships.md) · [Migrations](./Migrations.md) · [Authorization](../Security/Authorization.md)
+[Migrations](./Migrations.md) · [Authorization](../Security/Authorization.md)
 
 ---
-_Last updated: Phase 0 scaffold (planned model — verify against code)._
+_Last updated: Supabase swap slice complete (2026-06-26)._

@@ -92,17 +92,30 @@ Rules:
 
 ## 5. Content workflow (the core domain)
 
-All content types — **Image Post, Video Post, Short, Live Stream** — share **one** lifecycle:
+All content types — **Image, Video, Short, Live, YouTube** — share **one** lifecycle with **5 statuses**:
 
 ```
-Draft → Submitted → Under Review → Needs Changes → Approved → Scheduled → Published → Archived
+DRAFT · UNDER_REVIEW · NEEDS_CLARIFICATION · SCHEDULED · PUBLISHED
 ```
+
+Entry depends on `source`:
+- **APP** (reporter uploads from the mobile app) → always created in `UNDER_REVIEW` (can never skip review).
+- **CMS** (created in the dashboard) → author picks the initial status from a dropdown (Draft / Under Review / Scheduled / Published direct).
 
 Rules:
-- One `Content` model with a `type` discriminator and type-specific fields/relations; do **not** create four parallel modules.
-- Status transitions go through a single **state machine** with allowed-transition rules and per-transition permission checks (e.g. only `content:review` can move to Approved/Needs Changes; only `content:publish` can Publish).
-- Every transition writes an audit log entry (who, when, from→to, note).
-- Filtering is first-class: by type, status, language, category, location, reporter, publish date.
+- One `Content` model with a `type` discriminator (`IMAGE`|`VIDEO`|`SHORT`|`LIVE`|`YOUTUBE`) and a `source` (`APP`|`CMS`); do **not** create parallel modules per type.
+- Status transitions go through a single **state machine** (`lib/content/state-machine.ts`) with explicit allowed-transition rules and per-transition permission gates:
+  - `DRAFT → UNDER_REVIEW`: no extra permission (`content:edit` suffices — any CMS user can submit for review).
+  - `DRAFT → SCHEDULED` / `DRAFT → PUBLISHED`: requires **`content:create`**. The bar is identical to creating at that status directly, so there is no loophole. Every direct CMS publish is audit-logged (`directPublish: true`). See KL-012.
+  - `UNDER_REVIEW → NEEDS_CLARIFICATION`, `UNDER_REVIEW → PUBLISHED`, `UNDER_REVIEW → SCHEDULED`: requires **`content:review`**.
+  - `NEEDS_CLARIFICATION → PUBLISHED`, `NEEDS_CLARIFICATION → DRAFT`: requires **`content:review`**.
+  - `SCHEDULED → PUBLISHED`: requires **`content:publish`** (automated scheduler uses this path).
+  - **`REPORTER` role has `content:edit` only — no `content:create`.** Reporters submit exclusively via the mobile app (`source=APP`), which always produces `UNDER_REVIEW`.
+- **Needs Clarification loop is lightweight:** reviewer raises a doubt (required note) → author replies → reviewer publishes or rejects back to Draft. No formal resubmit hop.
+- Every transition (and clarification note/reply) writes an audit log entry (who, when, from→to, note). Direct CMS publishes are audit-logged.
+- Filtering is first-class: by type, status, source, language, category, location, reporter, publish date.
+
+> Note: this 5-status workflow supersedes the earlier 8-status draft. The fuller set (Submitted/Approved/Archived) may be reconsidered in a later phase or for white-label clients, but Phase 1 ships exactly these 5.
 
 ---
 
@@ -135,8 +148,8 @@ Rules:
 
 ## 8. Status (update as you go) — PuraLocal-first ordering
 
-- [ ] Phase 0 — Foundation: orgId column + query guard (single seeded PuraLocal org), auth, RBAC, dashboard shell
-- [ ] Phase 1 — Content module + workflow state machine
+- [x] Phase 0 — Foundation: orgId column + query guard (single seeded PuraLocal org), auth, RBAC, dashboard shell
+- [x] Phase 1 — Content module + workflow state machine
 - [ ] Phase 2 — Media pipeline (image/video/shorts/live) + scheduling/publishing
 - [ ] Phase 3 — Reporters (onboarding, verification, assignments, performance, earnings)
 - [ ] Phase 4 — Users & engagement

@@ -201,7 +201,7 @@ function ChannelLogo({ name, logo, size = 'md' }: { name: string; logo: string |
   const sz = size === 'sm' ? 'h-8 w-8 text-[10px]' : 'h-10 w-10 text-xs'
   if (logo) {
     // eslint-disable-next-line @next/next/no-img-element
-    return <img src={logo} alt={name} className={`${sz} rounded-lg object-cover border border-border shrink-0`} />
+    return <img src={logo} alt={name} className={`${sz} rounded-lg object-contain bg-white p-1 border border-border shrink-0`} />
   }
   const initials = name.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase()
   return (

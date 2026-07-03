@@ -1,4 +1,4 @@
-import type { Permission } from '@/lib/rbac/permissions'
+import type { Capability } from '@/lib/rbac/permissions'
 
 export interface Organization {
   id: string
@@ -11,7 +11,7 @@ export interface RoleDefinition {
   id: string             // stable key, e.g. 'EDITOR' or 'CUSTOM_REGIONAL'
   organizationId: string
   name: string           // display name
-  permissions: Permission[]
+  permissions: Capability[]
   isSystem: boolean      // system roles can be edited but not deleted
   createdAt: Date
 }
@@ -23,6 +23,10 @@ export interface UserWithRole {
   role: string           // role ID — built-in or custom
   organizationId: string
   photoUrl?: string | null
+  phone?: string | null
+  bio?: string | null
+  timezone?: string | null
+  language?: string | null
   invitedAt: Date
   joinedAt: Date | null
 }
@@ -55,6 +59,7 @@ export type AuditAction =
   | 'auth.password_changed'
   // User management
   | 'user.invited'
+  | 'user.profile_updated'
   | 'user.role_assigned'
   | 'user.role_removed'
   | 'user.removed'

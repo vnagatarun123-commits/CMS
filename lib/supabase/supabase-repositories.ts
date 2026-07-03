@@ -216,6 +216,12 @@ export class SupabaseUserRepository implements UserRepository {
       await tx.profile.delete({ where: { id: userId } })
     })
   }
+
+  async updateProfile(_userId: string, _organizationId: string, _params: import('@/lib/data/repositories').UpdateProfileParams): Promise<import('@/types/domain').UserWithRole> {
+    // Requires a Prisma migration adding phone/bio/timezone/language columns to Profile.
+    // Implemented in the Supabase swap slice.
+    throw new Error('updateProfile not yet implemented in Supabase backend — migrate schema first')
+  }
 }
 
 // ── RoleAssignmentRepository ──────────────────────────────────────────────────

@@ -19,16 +19,17 @@ import { getContentActivity } from '@/app/actions/audit-log'
 import { StatusBadge, contentStatusLabel } from '@/components/shared/status-badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { PLATFORMS, PlatformIcon, type ConnectedAccount, type PlatformId, formatFollowers } from '../../social-connect/_components/social-connect-client'
 
 // ── Type config ───────────────────────────────────────────────────────────────
 
 const TYPE_CFG: Record<ContentType, { label: string; icon: React.ElementType; color: string }> = {
-  IMAGE:   { label: 'Image',   icon: ImageIcon, color: 'bg-blue-50 text-blue-700 border-blue-200'       },
-  VIDEO:   { label: 'Video',   icon: Video,     color: 'bg-purple-50 text-purple-700 border-purple-200' },
-  SHORT:   { label: 'Short',   icon: Film,      color: 'bg-pink-50 text-pink-700 border-pink-200'       },
-  LIVE:    { label: 'Live',    icon: Video,     color: 'bg-red-50 text-red-700 border-red-200'           },
-  YOUTUBE: { label: 'YouTube', icon: Video,     color: 'bg-orange-50 text-orange-700 border-orange-200' },
+  IMAGE:   { label: 'Image',   icon: ImageIcon, color: 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-500/10 dark:text-blue-300 dark:border-blue-500/20'             },
+  VIDEO:   { label: 'Video',   icon: Video,     color: 'bg-violet-50 text-violet-700 border-violet-200 dark:bg-violet-500/10 dark:text-violet-300 dark:border-violet-500/20' },
+  SHORT:   { label: 'Short',   icon: Film,      color: 'bg-pink-50 text-pink-700 border-pink-200 dark:bg-pink-500/10 dark:text-pink-300 dark:border-pink-500/20'             },
+  LIVE:    { label: 'Live',    icon: Video,     color: 'bg-red-50 text-red-700 border-red-200 dark:bg-red-500/10 dark:text-red-300 dark:border-red-500/20'                   },
+  YOUTUBE: { label: 'YouTube', icon: Video,     color: 'bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-500/10 dark:text-orange-300 dark:border-orange-500/20' },
 }
 
 const VISIBLE_TYPES: ContentType[] = [ContentType.IMAGE, ContentType.VIDEO, ContentType.SHORT]
@@ -90,8 +91,8 @@ function SocialPublishModal({ item, onClose }: { item: Content; onClose: () => v
 
         {done ? (
           <div className="px-8 py-10 flex flex-col items-center gap-3">
-            <div className="h-14 w-14 rounded-full bg-emerald-100 flex items-center justify-center animate-in zoom-in duration-300">
-              <CheckCircle className="h-8 w-8 text-emerald-600" />
+            <div className="h-14 w-14 rounded-full bg-emerald-100 dark:bg-emerald-500/15 flex items-center justify-center animate-in zoom-in duration-300">
+              <CheckCircle className="h-8 w-8 text-emerald-600 dark:text-emerald-400" />
             </div>
             <p className="text-sm font-semibold text-foreground">Published successfully!</p>
           </div>
@@ -149,7 +150,7 @@ function SocialPublishModal({ item, onClose }: { item: Content; onClose: () => v
                           return (
                             <button key={acc.id} type="button" disabled={disabled}
                               onClick={() => toggle(acc.id)}
-                              className={`w-full flex items-center gap-3 rounded-xl border px-3 py-2 text-left transition-all ${disabled ? 'opacity-40 cursor-not-allowed border-border' : sel ? 'border-emerald-300 bg-emerald-50/50 shadow-sm' : 'border-border hover:border-foreground/20 hover:bg-muted/20'}`}>
+                              className={`w-full flex items-center gap-3 rounded-xl border px-3 py-2 text-left transition-all ${disabled ? 'opacity-40 cursor-not-allowed border-border' : sel ? 'border-emerald-300 bg-emerald-50/50 dark:border-emerald-500/40 dark:bg-emerald-500/10 shadow-sm' : 'border-border hover:border-foreground/20 hover:bg-muted/20'}`}>
                               <div className="relative shrink-0">
                                 {acc.avatarUrl
                                   // eslint-disable-next-line @next/next/no-img-element
@@ -207,21 +208,21 @@ function FlagBadge({ isBreakingNews, isTrending, isFeatured }: {
 }) {
   if (isBreakingNews) {
     return (
-      <span className="inline-block text-[9px] font-bold uppercase tracking-wide rounded px-1.5 py-px bg-red-100 text-red-700 leading-tight">
+      <span className="inline-block text-[9px] font-bold uppercase tracking-wide rounded px-1.5 py-px bg-red-100 text-red-700 dark:bg-red-500/15 dark:text-red-300 leading-tight">
         Breaking
       </span>
     )
   }
   if (isTrending) {
     return (
-      <span className="inline-block text-[9px] font-bold uppercase tracking-wide rounded px-1.5 py-px bg-orange-100 text-orange-700 leading-tight">
+      <span className="inline-block text-[9px] font-bold uppercase tracking-wide rounded px-1.5 py-px bg-orange-100 text-orange-700 dark:bg-orange-500/15 dark:text-orange-300 leading-tight">
         Trending
       </span>
     )
   }
   if (isFeatured) {
     return (
-      <span className="inline-block text-[9px] font-bold uppercase tracking-wide rounded px-1.5 py-px bg-amber-100 text-amber-700 leading-tight">
+      <span className="inline-block text-[9px] font-bold uppercase tracking-wide rounded px-1.5 py-px bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300 leading-tight">
         Featured
       </span>
     )
@@ -232,14 +233,14 @@ function FlagBadge({ isBreakingNews, isTrending, isFeatured }: {
 // ── Category badge ────────────────────────────────────────────────────────────
 
 const CAT_PALETTES = [
-  'bg-emerald-50 text-emerald-700 border-emerald-200',
-  'bg-violet-50 text-violet-700 border-violet-200',
-  'bg-amber-50 text-amber-700 border-amber-200',
-  'bg-sky-50 text-sky-700 border-sky-200',
-  'bg-rose-50 text-rose-700 border-rose-200',
-  'bg-teal-50 text-teal-700 border-teal-200',
-  'bg-indigo-50 text-indigo-700 border-indigo-200',
-  'bg-orange-50 text-orange-700 border-orange-200',
+  'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:border-emerald-500/20',
+  'bg-violet-50 text-violet-700 border-violet-200 dark:bg-violet-500/10 dark:text-violet-300 dark:border-violet-500/20',
+  'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/10 dark:text-amber-300 dark:border-amber-500/20',
+  'bg-sky-50 text-sky-700 border-sky-200 dark:bg-sky-500/10 dark:text-sky-300 dark:border-sky-500/20',
+  'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-500/10 dark:text-rose-300 dark:border-rose-500/20',
+  'bg-teal-50 text-teal-700 border-teal-200 dark:bg-teal-500/10 dark:text-teal-300 dark:border-teal-500/20',
+  'bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-500/10 dark:text-indigo-300 dark:border-indigo-500/20',
+  'bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-500/10 dark:text-orange-300 dark:border-orange-500/20',
 ]
 
 function catColor(name: string): string {
@@ -266,10 +267,10 @@ function buildLocationPath(locationId: string | null | undefined, locations: Loc
 // ── Reporter cell ─────────────────────────────────────────────────────────────
 
 const ROLE_COLORS: Record<string, string> = {
-  'Senior Reporter': 'bg-indigo-100 text-indigo-700',
-  'Staff Reporter':  'bg-sky-100 text-sky-700',
-  'Contributor':     'bg-emerald-100 text-emerald-700',
-  'Freelancer':      'bg-amber-100 text-amber-700',
+  'Senior Reporter': 'bg-indigo-100 text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-300',
+  'Staff Reporter':  'bg-sky-100 text-sky-700 dark:bg-sky-500/15 dark:text-sky-300',
+  'Contributor':     'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300',
+  'Freelancer':      'bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300',
 }
 
 function ReporterCell({ name, photoUrl, role }: { name: string; photoUrl?: string | null; role?: string | null }) {
@@ -351,8 +352,8 @@ function RejectDialog({ content, toStatus, pending, onConfirm, onCancel }: Rejec
       <div className="w-full max-w-md bg-background rounded-2xl shadow-2xl border border-border overflow-hidden animate-in zoom-in-95 duration-200">
         <div className="flex items-center justify-between px-5 py-4 border-b border-border">
           <div className="flex items-center gap-2">
-            <div className="h-7 w-7 rounded-full bg-red-50 flex items-center justify-center">
-              <XCircle className="h-4 w-4 text-red-600" />
+            <div className="h-7 w-7 rounded-full bg-red-50 dark:bg-red-500/15 flex items-center justify-center">
+              <XCircle className="h-4 w-4 text-red-600 dark:text-red-400" />
             </div>
             <h3 className="text-sm font-semibold text-foreground">Reject — Move to {label}</h3>
           </div>
@@ -404,8 +405,8 @@ function DeleteDialog({ content, pending, onConfirm, onCancel }: DeleteDialogPro
       <div className="w-full max-w-md bg-background rounded-2xl shadow-2xl border border-border overflow-hidden animate-in zoom-in-95 duration-200">
         <div className="flex items-center justify-between px-5 py-4 border-b border-border">
           <div className="flex items-center gap-2">
-            <div className="h-7 w-7 rounded-full bg-red-50 flex items-center justify-center">
-              <Trash2 className="h-4 w-4 text-red-600" />
+            <div className="h-7 w-7 rounded-full bg-red-50 dark:bg-red-500/15 flex items-center justify-center">
+              <Trash2 className="h-4 w-4 text-red-600 dark:text-red-400" />
             </div>
             <h3 className="text-sm font-semibold text-foreground">Delete Content</h3>
           </div>
@@ -419,7 +420,7 @@ function DeleteDialog({ content, pending, onConfirm, onCancel }: DeleteDialogPro
           <div className="bg-muted/40 border border-border/60 rounded-xl p-3.5 italic">
             <p className="text-xs text-muted-foreground line-clamp-3">"{content.title}"</p>
           </div>
-          <p className="text-[11px] text-red-600 font-semibold bg-red-50 rounded px-2.5 py-1.5 w-fit border border-red-100">
+          <p className="text-[11px] text-red-600 dark:text-red-300 font-semibold bg-red-50 dark:bg-red-500/10 rounded px-2.5 py-1.5 w-fit border border-red-100 dark:border-red-500/20">
             This action is permanent and cannot be undone.
           </p>
         </div>
@@ -613,11 +614,11 @@ function PreviewMeta({ item, locationPath }: { item: PreviewItem; locationPath: 
       <h2 className="text-base font-semibold text-foreground leading-snug">{item.title}</h2>
 
       {item.rejectionNote && (
-        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 flex gap-2.5">
-          <AlertCircle className="h-4 w-4 text-red-600 shrink-0 mt-0.5" />
+        <div className="rounded-lg border border-red-200 bg-red-50 dark:border-red-500/20 dark:bg-red-500/10 px-4 py-3 flex gap-2.5">
+          <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-400 shrink-0 mt-0.5" />
           <div>
-            <p className="text-xs font-semibold text-red-700 mb-0.5">Rejection reason</p>
-            <p className="text-xs text-red-700 leading-relaxed">{item.rejectionNote}</p>
+            <p className="text-xs font-semibold text-red-700 dark:text-red-300 mb-0.5">Rejection reason</p>
+            <p className="text-xs text-red-700 dark:text-red-300 leading-relaxed">{item.rejectionNote}</p>
           </div>
         </div>
       )}
@@ -679,7 +680,7 @@ function PreviewMeta({ item, locationPath }: { item: PreviewItem; locationPath: 
         )}
         {item.scheduledAt && (
           <MetaRow icon={Calendar} label="Scheduled">
-            <span className="text-sm text-amber-700 font-medium">
+            <span className="text-sm text-amber-700 dark:text-amber-400 font-medium">
               {new Date(item.scheduledAt).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}
             </span>
           </MetaRow>
@@ -704,12 +705,12 @@ function MetaRow({ icon: Icon, label, children }: { icon: React.ElementType; lab
 // ── Activity modal ────────────────────────────────────────────────────────────
 
 const ACTION_META: Record<string, { label: string; icon: React.ElementType; color: string }> = {
-  'content.created':      { label: 'Uploaded',          icon: History,         color: 'bg-blue-100 text-blue-600'    },
-  'content.updated':      { label: 'Edited',             icon: Pencil,          color: 'bg-amber-100 text-amber-600'  },
-  'content.transitioned': { label: 'Status changed',     icon: ArrowRightLeft,  color: 'bg-violet-100 text-violet-600'},
-  'content.published':    { label: 'Published',          icon: CheckCircle,     color: 'bg-emerald-100 text-emerald-600'},
-  'content.scheduled':    { label: 'Scheduled',          icon: Clock,           color: 'bg-amber-100 text-amber-600'  },
-  'content.deleted':      { label: 'Deleted',            icon: Trash2,          color: 'bg-red-100 text-red-600'      },
+  'content.created':      { label: 'Uploaded',          icon: History,         color: 'bg-blue-100 text-blue-600 dark:bg-blue-500/15 dark:text-blue-300'          },
+  'content.updated':      { label: 'Edited',             icon: Pencil,          color: 'bg-amber-100 text-amber-600 dark:bg-amber-500/15 dark:text-amber-300'      },
+  'content.transitioned': { label: 'Status changed',     icon: ArrowRightLeft,  color: 'bg-violet-100 text-violet-600 dark:bg-violet-500/15 dark:text-violet-300'  },
+  'content.published':    { label: 'Published',          icon: CheckCircle,     color: 'bg-emerald-100 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-300'},
+  'content.scheduled':    { label: 'Scheduled',          icon: Clock,           color: 'bg-amber-100 text-amber-600 dark:bg-amber-500/15 dark:text-amber-300'      },
+  'content.deleted':      { label: 'Deleted',            icon: Trash2,          color: 'bg-red-100 text-red-600 dark:bg-red-500/15 dark:text-red-300'              },
 }
 
 function eventLabel(entry: AuditEntry): string {
@@ -758,8 +759,8 @@ function ActivityModal({ contentId, contentTitle, onClose }: {
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-border shrink-0">
           <div className="flex items-center gap-2.5 min-w-0">
-            <div className="h-7 w-7 rounded-full bg-violet-100 flex items-center justify-center shrink-0">
-              <History className="h-3.5 w-3.5 text-violet-600" />
+            <div className="h-7 w-7 rounded-full bg-violet-100 dark:bg-violet-500/15 flex items-center justify-center shrink-0">
+              <History className="h-3.5 w-3.5 text-violet-600 dark:text-violet-300" />
             </div>
             <div className="min-w-0">
               <p className="text-sm font-semibold text-foreground">Activity</p>
@@ -775,7 +776,7 @@ function ActivityModal({ contentId, contentTitle, onClose }: {
         {/* Body */}
         <div className="overflow-y-auto flex-1 px-5 py-4">
           {error ? (
-            <div className="flex items-center gap-2 text-sm text-red-600 py-6 justify-center">
+            <div className="flex items-center gap-2 text-sm text-red-600 dark:text-red-400 py-6 justify-center">
               <AlertCircle className="h-4 w-4 shrink-0" /> {error}
             </div>
           ) : entries === null ? (
@@ -861,7 +862,7 @@ const STATUS_TABS: { label: string; value: ContentStatus | '' }[] = [
   { label: 'All Content',    value: '' },
 ]
 
-const PAGE_SIZE = 10
+const PAGE_SIZE_OPTIONS = [10, 20, 50, 100]
 
 // ── Column configuration ──────────────────────────────────────────────────────
 
@@ -938,7 +939,7 @@ function ColumnConfigPanel({ columns, onChange, onClose }: {
               className={[
                 'flex items-center gap-2 rounded-lg px-2 py-1.5 select-none transition-colors',
                 isDragging ? 'opacity-40' : '',
-                isOver ? 'border-t-2 border-red-500' : '',
+                isOver ? 'border-t-2 border-primary' : '',
                 locked ? 'opacity-60' : 'cursor-grab hover:bg-muted/50',
               ].join(' ')}>
               <GripVertical className={`h-3.5 w-3.5 shrink-0 ${locked ? 'text-transparent' : 'text-muted-foreground'}`} />
@@ -989,10 +990,11 @@ export function ContentListClient({ initialContent, categories, locations, langu
 
   const [activeTab,      setActiveTab]      = useState<ContentStatus | ''>(ContentStatus.DRAFT)
   const [search,         setSearch]         = useState('')
-  const [typeFilter,     setTypeFilter]     = useState('')
-  const [categoryFilter, setCategoryFilter] = useState('')
-  const [locationFilter, setLocationFilter] = useState('')
+  const [typeFilter,     setTypeFilter]     = useState('all')
+  const [categoryFilter, setCategoryFilter] = useState('all')
+  const [locationFilter, setLocationFilter] = useState('all')
   const [page,           setPage]           = useState(1)
+  const [pageSize,       setPageSize]       = useState(10)
 
   const counts = useMemo(() => {
     const map: Record<string, number> = { '': content.length }
@@ -1004,17 +1006,17 @@ export function ContentListClient({ initialContent, categories, locations, langu
     const q = search.toLowerCase()
     return content.filter(item => {
       if (activeTab && item.status !== activeTab) return false
-      if (typeFilter && item.type !== typeFilter) return false
-      if (categoryFilter && item.categoryId !== categoryFilter) return false
-      if (locationFilter && item.locationId !== locationFilter) return false
+      if (typeFilter && typeFilter !== 'all' && item.type !== typeFilter) return false
+      if (categoryFilter && categoryFilter !== 'all' && item.categoryId !== categoryFilter) return false
+      if (locationFilter && locationFilter !== 'all' && item.locationId !== locationFilter) return false
       if (q && !item.title.toLowerCase().includes(q) && !(item.excerpt ?? '').toLowerCase().includes(q)) return false
       return true
     })
   }, [content, activeTab, search, typeFilter, categoryFilter, locationFilter])
 
-  const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
+  const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize))
   const safePage  = Math.min(page, pageCount)
-  const paginated = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE)
+  const paginated = filtered.slice((safePage - 1) * pageSize, safePage * pageSize)
 
   function switchTab(val: ContentStatus | '') { setActiveTab(val); setPage(1) }
 
@@ -1118,8 +1120,8 @@ export function ContentListClient({ initialContent, categories, locations, langu
     })
   }
 
-  const hasFilters = !!(search || typeFilter || categoryFilter || locationFilter)
-  function clearFilters() { setSearch(''); setTypeFilter(''); setCategoryFilter(''); setLocationFilter(''); setPage(1) }
+  const hasFilters = !!(search || (typeFilter && typeFilter !== 'all') || (categoryFilter && categoryFilter !== 'all') || (locationFilter && locationFilter !== 'all'))
+  function clearFilters() { setSearch(''); setTypeFilter('all'); setCategoryFilter('all'); setLocationFilter('all'); setPage(1) }
 
   function openPreview(item: Content) {
     setPreviewItem({
@@ -1141,14 +1143,14 @@ export function ContentListClient({ initialContent, categories, locations, langu
         {/* Header */}
         <div className="flex items-center justify-between px-1 mb-5">
           <div>
-            <h1 className="text-xl font-semibold text-foreground">Content</h1>
-            <p className="text-sm text-muted-foreground mt-0.5">Manage all content across types and workflows.</p>
+            <h1 className="text-2xl font-bold tracking-tight text-foreground">Content</h1>
+            <p className="text-[14px] text-muted-foreground mt-1">Manage all content across types and workflows.</p>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" className="h-9 gap-1.5 text-sm">
+            <Button variant="outline" size="sm" className="h-9 gap-1.5 text-sm rounded-lg">
               <Download className="h-3.5 w-3.5" />Export
             </Button>
-            <Button size="sm" className="h-9 gap-1.5 text-sm bg-primary text-primary-foreground hover:bg-primary/90"
+            <Button size="sm" className="h-9 gap-1.5 text-sm rounded-lg bg-primary text-primary-foreground hover:bg-primary/90"
               onClick={() => router.push('/dashboard/content/new')}>
               <Plus className="h-3.5 w-3.5" />Add Content
             </Button>
@@ -1162,8 +1164,8 @@ export function ContentListClient({ initialContent, categories, locations, langu
             const count  = counts[tab.value] ?? 0
             return (
               <button key={String(tab.value)} onClick={() => switchTab(tab.value)}
-                className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium whitespace-nowrap border-b-2 -mb-px transition-colors
-                  ${active ? 'border-red-600 text-red-600' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>
+                className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium whitespace-nowrap border-b-2 -mb-px transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-t-sm
+                  ${active ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>
                 {tab.label}
                 <span className={`rounded-full px-1.5 py-0.5 text-[11px] font-semibold leading-none
                   ${active ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
@@ -1177,36 +1179,55 @@ export function ContentListClient({ initialContent, categories, locations, langu
         {/* Filters */}
         <div className="flex flex-wrap items-center gap-2 mb-4">
           <div className="relative min-w-[200px] flex-1 max-w-xs">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
-            <Input placeholder="Search content…" value={search}
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
+            <label htmlFor="content-search" className="sr-only">Search content</label>
+            <Input id="content-search" placeholder="Search content…" value={search}
               onChange={e => { setSearch(e.target.value); setPage(1) }}
-              className="pl-8 h-8 text-sm" />
+              className="pl-9 h-9 text-sm rounded-lg" />
           </div>
-          <select value={typeFilter} onChange={e => { setTypeFilter(e.target.value); setPage(1) }}
-            className="h-8 rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring">
-            <option value="">All Types</option>
-            {VISIBLE_TYPES.map(t => <option key={t} value={t}>{TYPE_CFG[t].label}</option>)}
-          </select>
-          <select value={categoryFilter} onChange={e => { setCategoryFilter(e.target.value); setPage(1) }}
-            className="h-8 rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring">
-            <option value="">All Categories</option>
-            {categories.filter(c => c.active).map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-          </select>
-          <select value={locationFilter} onChange={e => { setLocationFilter(e.target.value); setPage(1) }}
-            className="h-8 rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring">
-            <option value="">All Locations</option>
-            {locations.filter(l => l.active).map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
-          </select>
+          <label htmlFor="filter-type" className="sr-only">Filter by type</label>
+          <Select value={typeFilter} onValueChange={v => { setTypeFilter(v || 'all'); setPage(1) }}>
+            <SelectTrigger id="filter-type" className="h-9 min-w-[130px] rounded-lg text-sm bg-background text-foreground border-input">
+              <SelectValue placeholder="All Types" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Types</SelectItem>
+              {VISIBLE_TYPES.map(t => <SelectItem key={t} value={t}>{TYPE_CFG[t].label}</SelectItem>)}
+            </SelectContent>
+          </Select>
+
+          <label htmlFor="filter-category" className="sr-only">Filter by category</label>
+          <Select value={categoryFilter} onValueChange={v => { setCategoryFilter(v || 'all'); setPage(1) }}>
+            <SelectTrigger id="filter-category" className="h-9 min-w-[150px] rounded-lg text-sm bg-background text-foreground border-input">
+              <SelectValue placeholder="All Categories" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Categories</SelectItem>
+              {categories.filter(c => c.active).map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+            </SelectContent>
+          </Select>
+
+          <label htmlFor="filter-location" className="sr-only">Filter by location</label>
+          <Select value={locationFilter} onValueChange={v => { setLocationFilter(v || 'all'); setPage(1) }}>
+            <SelectTrigger id="filter-location" className="h-9 min-w-[150px] rounded-lg text-sm bg-background text-foreground border-input">
+              <SelectValue placeholder="All Locations" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Locations</SelectItem>
+              {locations.filter(l => l.active).map(l => <SelectItem key={l.id} value={l.id}>{l.name}</SelectItem>)}
+            </SelectContent>
+          </Select>
           {hasFilters && (
-            <Button variant="ghost" size="sm" className="h-8 text-xs text-muted-foreground" onClick={clearFilters}>
+            <Button variant="ghost" size="sm" className="h-9 text-xs text-muted-foreground rounded-lg" onClick={clearFilters}>
               <SlidersHorizontal className="h-3 w-3 mr-1" />Clear
             </Button>
           )}
           {/* Column config button */}
           <div className="relative ml-auto">
             <Button variant="outline" size="sm"
-              className={`h-8 gap-1.5 text-xs ${showColPanel ? 'border-red-500 text-red-600' : ''}`}
-              onClick={() => setShowColPanel(p => !p)}>
+              className={`h-9 gap-1.5 text-xs rounded-lg ${showColPanel ? 'border-primary text-primary' : ''}`}
+              onClick={() => setShowColPanel(p => !p)}
+              aria-label="Configure columns" aria-expanded={showColPanel}>
               <Columns3 className="h-3.5 w-3.5" />Columns
             </Button>
             {showColPanel && (
@@ -1221,38 +1242,44 @@ export function ContentListClient({ initialContent, categories, locations, langu
 
         {/* Table */}
         {filtered.length === 0 ? (
-          <div className="rounded-lg border bg-card flex flex-col items-center justify-center py-16 text-center">
-            <FileText className="h-10 w-10 text-muted-foreground/40 mb-3" />
-            <p className="text-sm font-medium">No content found</p>
-            <p className="text-xs text-muted-foreground mt-1 mb-4">
-              {hasFilters ? 'Try adjusting your filters.' : 'No content in this status yet.'}
+          <div className="rounded-2xl border bg-card ring-1 ring-border/50 flex flex-col items-center justify-center py-16 text-center">
+            <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center mb-4">
+              <FileText className="h-6 w-6 text-muted-foreground/60" />
+            </div>
+            <p className="text-[15px] font-semibold tracking-tight text-foreground">No content found</p>
+            <p className="text-[13px] text-muted-foreground mt-1 mb-4 max-w-xs">
+              {hasFilters ? 'No content matches your current filters. Try adjusting or clearing them.' : 'No content in this status yet. Create your first item to get started.'}
             </p>
-            {!hasFilters && (
-              <Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90"
+            {hasFilters ? (
+              <Button variant="outline" size="sm" className="rounded-lg" onClick={clearFilters}>
+                <SlidersHorizontal className="mr-1.5 h-3.5 w-3.5" />Clear filters
+              </Button>
+            ) : (
+              <Button size="sm" className="rounded-lg bg-primary text-primary-foreground hover:bg-primary/90"
                 onClick={() => router.push('/dashboard/content/new')}>
                 <Plus className="mr-1.5 h-3.5 w-3.5" />Add Content
               </Button>
             )}
           </div>
         ) : (
-          <div className="rounded-lg border border-border bg-card overflow-hidden">
+          <div className="rounded-2xl border border-border bg-card ring-1 ring-border/50 overflow-hidden">
             <div className="overflow-x-auto">
               <table className="min-w-full text-sm">
                 <thead>
-                  <tr className="border-b border-border bg-muted/30">
+                  <tr className="border-b border-border bg-muted/40">
                     {columns.filter(c => c.visible).map(col => {
-                      const base = 'py-3 px-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wide'
+                      const base = 'sticky top-0 z-10 bg-muted/40 backdrop-blur-sm h-12 px-5 text-left text-[13px] font-medium text-muted-foreground whitespace-nowrap'
                       switch (col.id) {
-                        case 'sno':       return <th key={col.id} className={`${base} text-center w-10`}>S.No</th>
+                        case 'sno':       return <th key={col.id} className={`${base} text-center w-12`}>S.No</th>
                         case 'content':   return <th key={col.id} className={base} style={{ minWidth: 380 }}>Content</th>
-                        case 'type':      return <th key={col.id} className={`${base} whitespace-nowrap`}>Type</th>
-                        case 'category':  return <th key={col.id} className={`${base} whitespace-nowrap`}>Category</th>
+                        case 'type':      return <th key={col.id} className={base}>Type</th>
+                        case 'category':  return <th key={col.id} className={base}>Category</th>
                         case 'location':  return <th key={col.id} className={base}>Location</th>
                         case 'contributor': return <th key={col.id} className={base}>Contributor</th>
-                        case 'status':    return <th key={col.id} className={`${base} whitespace-nowrap`}>Status</th>
+                        case 'status':    return <th key={col.id} className={base}>Status</th>
                         case 'reason':    return <th key={col.id} className={base}>Reason</th>
-                        case 'scheduled': return <th key={col.id} className={`${base} whitespace-nowrap`}>Scheduled At</th>
-                        case 'uploaded':  return <th key={col.id} className={`${base} whitespace-nowrap`}>Uploaded</th>
+                        case 'scheduled': return <th key={col.id} className={base}>Scheduled At</th>
+                        case 'uploaded':  return <th key={col.id} className={base}>Uploaded</th>
                         case 'actions':   return <th key={col.id} className={base} style={{ minWidth: 96, width: 96 }}>Actions</th>
                         default: return null
                       }
@@ -1266,7 +1293,7 @@ export function ContentListClient({ initialContent, categories, locations, langu
                       item={item}
                       locations={locations}
                       columns={columns}
-                      pageIndex={(safePage - 1) * PAGE_SIZE + idx + 1}
+                      pageIndex={(safePage - 1) * pageSize + idx + 1}
                       onEdit={() => router.push(`/dashboard/content/${item.id}/edit`)}
                       onApprove={() => handleQuickApprove(item)}
                       onReject={() => openReject(item)}
@@ -1284,14 +1311,27 @@ export function ContentListClient({ initialContent, categories, locations, langu
             </div>
 
             {/* Pagination */}
-            <div className="flex items-center justify-between px-4 py-3 border-t border-border bg-muted/20">
-              <p className="text-xs text-muted-foreground">
-                Showing{' '}
-                <span className="font-medium text-foreground">
-                  {Math.min((safePage - 1) * PAGE_SIZE + 1, filtered.length)}–{Math.min(safePage * PAGE_SIZE, filtered.length)}
-                </span>{' '}
-                of <span className="font-medium text-foreground">{filtered.length}</span>
-              </p>
+            <div className="flex items-center justify-between px-5 py-3 border-t border-border bg-muted/20">
+              <div className="flex items-center gap-3">
+                <p className="text-[13px] text-muted-foreground">
+                  Showing{' '}
+                  <span className="font-medium text-foreground tabular-nums">
+                    {Math.min((safePage - 1) * pageSize + 1, filtered.length)}–{Math.min(safePage * pageSize, filtered.length)}
+                  </span>{' '}
+                  of <span className="font-medium text-foreground tabular-nums">{filtered.length}</span>
+                </p>
+                <div className="flex items-center gap-1.5">
+                  <label htmlFor="rows-per-page" className="text-[13px] text-muted-foreground">Rows</label>
+                  <Select value={String(pageSize)} onValueChange={v => { setPageSize(Number(v)); setPage(1) }}>
+                    <SelectTrigger id="rows-per-page" className="h-8 w-[70px] min-w-0 text-xs text-foreground font-medium rounded-lg bg-background border-input px-2">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {PAGE_SIZE_OPTIONS.map(n => <SelectItem key={n} value={String(n)}>{n}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
               {pageCount > 1 && (
                 <div className="flex items-center gap-1">
                   <PageBtn onClick={() => setPage(p => Math.max(1, p - 1))} disabled={safePage === 1}
@@ -1408,20 +1448,20 @@ function ContentRow({ item, locations, columns, pageIndex, onEdit, onApprove, on
 
       case 'sno':
         return (
-          <td key="sno" className="py-3 px-3 text-center text-xs text-muted-foreground tabular-nums w-10">
+          <td key="sno" className="px-5 py-3.5 align-middle text-center text-[13px] text-muted-foreground tabular-nums w-12">
             {pageIndex}
           </td>
         )
 
       case 'content':
         return (
-          <td key="content" className="py-3 px-3">
+          <td key="content" className="px-5 py-3.5 align-middle">
             <div className="flex items-center gap-3">
               <div className="w-[72px] shrink-0">
                 <Thumbnail type={item.type} url={item.thumbnailUrl} title={item.title} onPreview={onPreview} />
               </div>
               <div className="min-w-0 flex-1">
-                <p className="font-medium text-foreground text-sm leading-snug cursor-default" title={item.title}>
+                <p className="font-medium text-foreground text-[14px] leading-snug cursor-default" title={item.title}>
                   {item.title}
                 </p>
                 <div className="mt-1">
@@ -1433,32 +1473,32 @@ function ContentRow({ item, locations, columns, pageIndex, onEdit, onApprove, on
         )
 
       case 'type':
-        return <td key="type" className="py-3 px-3 whitespace-nowrap"><TypeBadge type={item.type} /></td>
+        return <td key="type" className="px-5 py-3.5 align-middle whitespace-nowrap"><TypeBadge type={item.type} /></td>
 
       case 'category':
         return (
-          <td key="category" className="py-3 px-3 whitespace-nowrap">
+          <td key="category" className="px-5 py-3.5 align-middle whitespace-nowrap">
             {item.categoryName
-              ? <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium ${catColor(item.categoryName)}`}>{item.categoryName}</span>
-              : <span className="text-xs text-muted-foreground">—</span>}
+              ? <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${catColor(item.categoryName)}`}>{item.categoryName}</span>
+              : <span className="text-[13px] text-muted-foreground">—</span>}
           </td>
         )
 
       case 'location':
         return (
-          <td key="location" className="py-3 px-3">
+          <td key="location" className="px-5 py-3.5 align-middle">
             {locationPath !== '—' ? (
-              <div className="flex items-start gap-1 text-xs text-muted-foreground max-w-[160px]">
-                <MapPin className="h-3 w-3 text-red-500 shrink-0 mt-0.5" />
+              <div className="flex items-start gap-1 text-[13px] text-muted-foreground max-w-[160px]">
+                <MapPin className="h-3 w-3 text-red-500 dark:text-red-400 shrink-0 mt-0.5" />
                 <span className="leading-snug">{locationPath}</span>
               </div>
-            ) : <span className="text-xs text-muted-foreground">—</span>}
+            ) : <span className="text-[13px] text-muted-foreground">—</span>}
           </td>
         )
 
       case 'contributor':
         return (
-          <td key="contributor" className="py-3 px-3">
+          <td key="contributor" className="px-5 py-3.5 align-middle">
             {item.reporterName
               ? <ReporterCell name={item.reporterName} photoUrl={item.reporterPhotoUrl} role={item.reporterRole} />
               : <div className="flex items-center gap-2 min-w-[130px]">
@@ -1467,7 +1507,7 @@ function ContentRow({ item, locations, columns, pageIndex, onEdit, onApprove, on
                   </div>
                   <div className="min-w-0">
                     <p className="text-xs font-medium text-foreground truncate max-w-[90px]">PuraLocal Official</p>
-                    <span className="inline-block text-[9px] font-semibold rounded bg-blue-100 text-blue-700 px-1.5 py-0 leading-4 mt-0.5 uppercase tracking-wide w-fit text-center">
+                    <span className="inline-block text-[9px] font-semibold rounded bg-blue-100 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300 px-1.5 py-0 leading-4 mt-0.5 uppercase tracking-wide w-fit text-center">
                       ORG
                     </span>
                   </div>
@@ -1476,41 +1516,41 @@ function ContentRow({ item, locations, columns, pageIndex, onEdit, onApprove, on
         )
 
       case 'status':
-        return <td key="status" className="py-3 px-3 whitespace-nowrap"><StatusBadge status={item.status} /></td>
+        return <td key="status" className="px-5 py-3.5 align-middle whitespace-nowrap"><StatusBadge status={item.status} /></td>
 
       case 'reason':
         return (
-          <td key="reason" className="py-3 px-3">
+          <td key="reason" className="px-5 py-3.5 align-middle">
             {item.rejectionNote ? (
               <div className="flex items-start gap-1.5 max-w-[180px]" title={item.rejectionNote}>
-                <AlertCircle className="h-3 w-3 text-red-500 shrink-0 mt-0.5" />
-                <span className="text-xs text-red-600 leading-snug line-clamp-2">{item.rejectionNote}</span>
+                <AlertCircle className="h-3 w-3 text-red-500 dark:text-red-400 shrink-0 mt-0.5" />
+                <span className="text-[13px] text-red-600 dark:text-red-300 leading-snug line-clamp-2">{item.rejectionNote}</span>
               </div>
-            ) : <span className="text-xs text-muted-foreground">—</span>}
+            ) : <span className="text-[13px] text-muted-foreground">—</span>}
           </td>
         )
 
       case 'scheduled':
         return (
-          <td key="scheduled" className="py-3 px-3 whitespace-nowrap">
+          <td key="scheduled" className="px-5 py-3.5 align-middle whitespace-nowrap">
             {item.scheduledAt ? (
               <div className="text-xs">
-                <div className="text-amber-700 font-medium flex items-center gap-1">
-                  <Calendar className="h-2.5 w-2.5" />
+                <div className="text-amber-700 dark:text-amber-400 font-medium flex items-center gap-1 tabular-nums">
+                  <Calendar className="h-2.5 w-2.5 shrink-0" />
                   {new Date(item.scheduledAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}
                 </div>
-                <div className="text-muted-foreground text-[11px] ml-3.5">
+                <div className="text-muted-foreground text-[11px] ml-3.5 tabular-nums">
                   {new Date(item.scheduledAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
                 </div>
               </div>
-            ) : <span className="text-xs text-muted-foreground">—</span>}
+            ) : <span className="text-[13px] text-muted-foreground">—</span>}
           </td>
         )
 
       case 'uploaded':
         return (
-          <td key="uploaded" className="py-3 px-3 whitespace-nowrap">
-            <div className="text-xs text-muted-foreground">
+          <td key="uploaded" className="px-5 py-3.5 align-middle whitespace-nowrap">
+            <div className="text-xs text-muted-foreground tabular-nums">
               <div>{date}</div>
               <div className="text-[11px]">{time}</div>
             </div>
@@ -1519,43 +1559,43 @@ function ContentRow({ item, locations, columns, pageIndex, onEdit, onApprove, on
 
       case 'actions':
         return (
-          <td key="actions" className="py-3 px-1" style={{ minWidth: 96, width: 96 }}>
+          <td key="actions" className="py-3.5 px-3 align-middle" style={{ minWidth: 96, width: 96 }}>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 28px)', gap: '2px' }}>
               {isDraft && <>
-                <ActionIcon onClick={onEdit} title="Edit" icon={<Pencil className="h-3.5 w-3.5" />} cls="text-amber-500 hover:bg-amber-50" />
+                <ActionIcon onClick={onEdit} title="Edit" icon={<Pencil className="h-3.5 w-3.5" />} cls="text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-500/15" />
                 <ActionIcon onClick={onSubmitReview} title="Submit for Review" icon={<SendHorizonal className="h-3.5 w-3.5" />} cls="text-primary hover:bg-primary/10" />
-                <ActionIcon onClick={onActivity} title="Activity" icon={<History className="h-3.5 w-3.5" />} cls="text-violet-500 hover:bg-violet-50" />
-                <ActionIcon onClick={onDirectPublish} title="Publish Directly" icon={<CheckCircle className="h-3.5 w-3.5" />} cls="text-emerald-500 hover:bg-emerald-50" />
-                <ActionIcon onClick={onDelete} title="Delete Draft" icon={<Trash2 className="h-3.5 w-3.5" />} cls="text-red-400 hover:bg-red-50 hover:text-red-600" />
+                <ActionIcon onClick={onActivity} title="Activity" icon={<History className="h-3.5 w-3.5" />} cls="text-violet-500 hover:bg-violet-50 dark:hover:bg-violet-500/15" />
+                <ActionIcon onClick={onDirectPublish} title="Publish Directly" icon={<CheckCircle className="h-3.5 w-3.5" />} cls="text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-500/15" />
+                <ActionIcon onClick={onDelete} title="Delete Draft" icon={<Trash2 className="h-3.5 w-3.5" />} cls="text-red-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-500/15 dark:hover:text-red-300" />
               </>}
               {isReview && <>
                 <ActionIcon onClick={onPreview} title="Preview" icon={<Eye className="h-3.5 w-3.5" />} cls="text-muted-foreground hover:text-foreground hover:bg-muted" />
-                <ActionIcon onClick={onEdit} title="Edit" icon={<Pencil className="h-3.5 w-3.5" />} cls="text-amber-500 hover:bg-amber-50" />
-                <ActionIcon onClick={onActivity} title="Activity" icon={<History className="h-3.5 w-3.5" />} cls="text-violet-500 hover:bg-violet-50" />
-                <ActionIcon onClick={onApprove} title="Approve & Publish" icon={<CheckCircle className="h-3.5 w-3.5" />} cls="text-emerald-500 hover:bg-emerald-50" />
-                <ActionIcon onClick={onReject} title="Needs Clarification" icon={<XCircle className="h-3.5 w-3.5" />} cls="text-orange-500 hover:bg-orange-50" />
+                <ActionIcon onClick={onEdit} title="Edit" icon={<Pencil className="h-3.5 w-3.5" />} cls="text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-500/15" />
+                <ActionIcon onClick={onActivity} title="Activity" icon={<History className="h-3.5 w-3.5" />} cls="text-violet-500 hover:bg-violet-50 dark:hover:bg-violet-500/15" />
+                <ActionIcon onClick={onApprove} title="Approve & Publish" icon={<CheckCircle className="h-3.5 w-3.5" />} cls="text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-500/15" />
+                <ActionIcon onClick={onReject} title="Needs Clarification" icon={<XCircle className="h-3.5 w-3.5" />} cls="text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-500/15" />
               </>}
               {isRejected && <>
                 <ActionIcon onClick={onPreview} title="Preview" icon={<Eye className="h-3.5 w-3.5" />} cls="text-muted-foreground hover:text-foreground hover:bg-muted" />
-                <ActionIcon onClick={onEdit} title="Edit" icon={<Pencil className="h-3.5 w-3.5" />} cls="text-amber-500 hover:bg-amber-50" />
-                <ActionIcon onClick={onActivity} title="Activity" icon={<History className="h-3.5 w-3.5" />} cls="text-violet-500 hover:bg-violet-50" />
-                <ActionIcon onClick={onApprove} title="Approve & Publish" icon={<CheckCircle className="h-3.5 w-3.5" />} cls="text-emerald-500 hover:bg-emerald-50" />
-                <ActionIcon onClick={onReject} title="Send Back to Draft" icon={<Undo2 className="h-3.5 w-3.5" />} cls="text-orange-400 hover:bg-orange-50" />
+                <ActionIcon onClick={onEdit} title="Edit" icon={<Pencil className="h-3.5 w-3.5" />} cls="text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-500/15" />
+                <ActionIcon onClick={onActivity} title="Activity" icon={<History className="h-3.5 w-3.5" />} cls="text-violet-500 hover:bg-violet-50 dark:hover:bg-violet-500/15" />
+                <ActionIcon onClick={onApprove} title="Approve & Publish" icon={<CheckCircle className="h-3.5 w-3.5" />} cls="text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-500/15" />
+                <ActionIcon onClick={onReject} title="Send Back to Draft" icon={<Undo2 className="h-3.5 w-3.5" />} cls="text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-500/15" />
               </>}
               {isScheduled && <>
                 <ActionIcon onClick={onPreview} title="Preview" icon={<Eye className="h-3.5 w-3.5" />} cls="text-muted-foreground hover:text-foreground hover:bg-muted" />
-                <ActionIcon onClick={onEdit} title="Edit" icon={<Pencil className="h-3.5 w-3.5" />} cls="text-amber-500 hover:bg-amber-50" />
-                <ActionIcon onClick={onActivity} title="Activity" icon={<History className="h-3.5 w-3.5" />} cls="text-violet-500 hover:bg-violet-50" />
-                <ActionIcon onClick={onApprove} title="Publish Now" icon={<CheckCircle className="h-3.5 w-3.5" />} cls="text-emerald-500 hover:bg-emerald-50" />
+                <ActionIcon onClick={onEdit} title="Edit" icon={<Pencil className="h-3.5 w-3.5" />} cls="text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-500/15" />
+                <ActionIcon onClick={onActivity} title="Activity" icon={<History className="h-3.5 w-3.5" />} cls="text-violet-500 hover:bg-violet-50 dark:hover:bg-violet-500/15" />
+                <ActionIcon onClick={onApprove} title="Publish Now" icon={<CheckCircle className="h-3.5 w-3.5" />} cls="text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-500/15" />
               </>}
               {isPublished && <>
                 <ActionIcon onClick={onPreview} title="Preview" icon={<Eye className="h-3.5 w-3.5" />} cls="text-muted-foreground hover:text-foreground hover:bg-muted" />
-                <ActionIcon onClick={onActivity} title="Activity" icon={<History className="h-3.5 w-3.5" />} cls="text-violet-500 hover:bg-violet-50" />
+                <ActionIcon onClick={onActivity} title="Activity" icon={<History className="h-3.5 w-3.5" />} cls="text-violet-500 hover:bg-violet-50 dark:hover:bg-violet-500/15" />
                 <ActionIcon onClick={onToggleVisibility}
                   title={isVisible ? 'Hide from app' : 'Make visible in app'}
                   icon={isVisible ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}
-                  cls={isVisible ? 'text-emerald-500 hover:bg-emerald-50' : 'text-orange-500 hover:bg-orange-50'} />
-                <ActionIcon onClick={onSocialPublish} title="Publish to Social Media" icon={<Share2 className="h-3.5 w-3.5" />} cls="text-sky-500 hover:bg-sky-50" />
+                  cls={isVisible ? 'text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-500/15' : 'text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-500/15'} />
+                <ActionIcon onClick={onSocialPublish} title="Publish to Social Media" icon={<Share2 className="h-3.5 w-3.5" />} cls="text-sky-500 hover:bg-sky-50 dark:hover:bg-sky-500/15" />
               </>}
             </div>
           </td>
@@ -1578,8 +1618,8 @@ function ActionIcon({ onClick, title, icon, cls }: {
   onClick: () => void; title: string; icon: React.ReactNode; cls: string
 }) {
   return (
-    <button onClick={onClick} title={title}
-      className={`h-7 w-7 flex items-center justify-center rounded-md text-muted-foreground transition-colors ${cls}`}>
+    <button onClick={onClick} title={title} aria-label={title}
+      className={`h-7 w-7 flex items-center justify-center rounded-md text-muted-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${cls}`}>
       {icon}
     </button>
   )

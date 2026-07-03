@@ -25,7 +25,7 @@ export const createRole = withAuth(
       id: parsed.data.name.toUpperCase().replace(/\s+/g, '_'),
       organizationId: session.orgContext.organizationId,
       name: parsed.data.name,
-      permissions: parsed.data.permissions as Permission[],
+      permissions: parsed.data.permissions,
       isSystem: false,
     })
 

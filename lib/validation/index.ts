@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { Permission } from '@/lib/rbac/permissions'
+import { ALL_CAPABILITIES } from '@/lib/rbac/permissions'
 
 export const SignInInput = z.object({
   email: z.string().email('Invalid email address'),
@@ -20,16 +20,35 @@ export const AssignRoleInput = z.object({
 })
 export type AssignRoleInput = z.infer<typeof AssignRoleInput>
 
-const permissionValues = Object.values(Permission) as [Permission, ...Permission[]]
+const capabilityValues = [...ALL_CAPABILITIES] as [string, ...string[]]
 
 export const CreateRoleInput = z.object({
   name: z.string().min(1, 'Name is required').max(60),
-  permissions: z.array(z.enum(permissionValues)),
+  permissions: z.array(z.enum(capabilityValues)),
 })
 export type CreateRoleInput = z.infer<typeof CreateRoleInput>
 
 export const UpdateRoleInput = z.object({
   name: z.string().min(1, 'Name is required').max(60),
-  permissions: z.array(z.enum(permissionValues)),
+  permissions: z.array(z.enum(capabilityValues)),
 })
 export type UpdateRoleInput = z.infer<typeof UpdateRoleInput>
+
+export const UpdateProfileInput = z.object({
+  name: z.string().min(1, 'Name is required').max(100),
+  phone: z.string().max(20).nullable().optional(),
+  bio: z.string().max(280).nullable().optional(),
+  timezone: z.string().max(60).nullable().optional(),
+  language: z.string().max(10).nullable().optional(),
+})
+export type UpdateProfileInput = z.infer<typeof UpdateProfileInput>
+
+export const ChangePasswordInput = z.object({
+  currentPassword: z.string().min(1, 'Current password is required'),
+  newPassword: z.string().min(8, 'Password must be at least 8 characters'),
+  confirmPassword: z.string().min(1, 'Please confirm your new password'),
+}).refine(d => d.newPassword === d.confirmPassword, {
+  message: 'Passwords do not match',
+  path: ['confirmPassword'],
+})
+export type ChangePasswordInput = z.infer<typeof ChangePasswordInput>

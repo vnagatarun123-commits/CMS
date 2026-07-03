@@ -1,7 +1,7 @@
 import type { AuthProvider, SignInParams } from '@/lib/auth/auth-provider'
 import type { Session, User } from '@/types/auth'
 import type { UserWithRole } from '@/types/domain'
-import { UnauthenticatedError } from '@/lib/errors'
+import { UnauthenticatedError, ValidationError } from '@/lib/errors'
 import { SEEDED_ORG, MOCK_USER_PASSWORDS } from '@/lib/mock/seed'
 
 // globalThis-based session store — single active session, dev/mock only.
@@ -82,6 +82,23 @@ export class MockAuthProvider implements AuthProvider {
     G.__puralocalSession = toSession(user)
     return G.__puralocalSession
   }
+
+  async changePassword(userId: string, currentPassword: string, newPassword: string): Promise<void> {
+    const user = this.users.find(u => u.id === userId)
+    if (!user) throw new UnauthenticatedError()
+    const stored = MOCK_USER_PASSWORDS[user.email]
+    if (stored !== currentPassword) throw new ValidationError('Current password is incorrect')
+    MOCK_USER_PASSWORDS[user.email] = newPassword
+  }
+
+  async patchSessionUser(patch: Partial<Pick<User, 'name' | 'photoUrl'>>): Promise<void> {
+    if (G.__puralocalSession) {
+      G.__puralocalSession = {
+        ...G.__puralocalSession,
+        user: { ...G.__puralocalSession.user, ...patch },
+      }
+    }
+  }
 }
 
 function toSession(user: UserWithRole): Session {
@@ -92,6 +109,7 @@ function toSession(user: UserWithRole): Session {
       name: user.name,
       role: user.role,
       organizationId: user.organizationId,
+      photoUrl: user.photoUrl ?? null,
     },
     orgContext: {
       organizationId: user.organizationId,

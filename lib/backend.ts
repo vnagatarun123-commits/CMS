@@ -15,7 +15,7 @@ export interface Backend {
 // BACKEND_VERSION: bump this string any time a new repository is added to the
 // backend or seeded data changes shape. The old globalThis singleton will be
 // discarded and recreated so hot-reloads pick up the new data automatically.
-const BACKEND_VERSION = '2026-06-27-v6'
+const BACKEND_VERSION = '2026-07-03-v2-recent-content'
 
 const G = globalThis as unknown as {
   __puralocalBackend?: Backend | null

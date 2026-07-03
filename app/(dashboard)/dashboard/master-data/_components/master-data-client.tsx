@@ -247,7 +247,7 @@ function CategoriesTab({ initial }: { initial: Category[] }) {
 
       <div className="rounded-xl border border-gray-200 overflow-hidden">
         <table className="w-full text-sm">
-          <thead className="bg-gray-50 border-b border-gray-200">
+          <thead className="">
             <tr>
               <th className="text-left px-4 py-3 font-medium text-gray-600 w-16">Image</th>
               <th className="text-left px-4 py-3 font-medium text-gray-600">Name</th>
@@ -287,13 +287,15 @@ function CategoriesTab({ initial }: { initial: Category[] }) {
       {/* Pagination */}
       <div className="flex items-center justify-between text-sm text-gray-500">
         <div className="flex items-center gap-2">
-          <span>Rows per page:</span>
-          <select
-            value={pageSize}
-            onChange={e => { setPageSize(Number(e.target.value)); resetPage() }}
-            className="border border-gray-200 rounded-md px-2 py-1 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
-            {PAGE_SIZE_OPTIONS.map(n => <option key={n} value={n}>{n}</option>)}
-          </select>
+          <span>Rows:</span>
+          <Select value={String(pageSize)} onValueChange={v => { setPageSize(Number(v)); resetPage() }}>
+            <SelectTrigger className="h-8 w-[70px] min-w-0 text-xs text-foreground font-medium rounded-lg bg-background border-input px-2">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {PAGE_SIZE_OPTIONS.map(n => <SelectItem key={n} value={String(n)}>{n}</SelectItem>)}
+            </SelectContent>
+          </Select>
         </div>
         <div className="flex items-center gap-3">
           <span>{filtered.length === 0 ? '0' : `${pageStart}–${pageEnd}`} of {filtered.length}</span>
@@ -763,7 +765,7 @@ function LanguagesTab({ initial }: { initial: Language[] }) {
 
       <div className="rounded-xl border border-gray-200 overflow-hidden">
         <table className="w-full text-sm">
-          <thead className="bg-gray-50 border-b border-gray-200">
+          <thead className="">
             <tr>
               <th className="text-left px-4 py-3 font-medium text-gray-600 w-28">Code</th>
               <th className="text-left px-4 py-3 font-medium text-gray-600">Name</th>
@@ -891,7 +893,7 @@ function TagsTab() {
       </div>
       <div className="rounded-xl border border-gray-200 overflow-hidden">
         <table className="w-full text-sm">
-          <thead className="bg-gray-50 border-b border-gray-200">
+          <thead className="">
             <tr>
               <th className="text-left px-4 py-3 font-medium text-gray-600">Tag</th>
               <th className="text-left px-4 py-3 font-medium text-gray-600">Slug</th>

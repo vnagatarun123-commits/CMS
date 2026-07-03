@@ -25,6 +25,7 @@ import {
   SEEDED_NOTIFICATION_TEMPLATES,
   SEEDED_AUDIT_ENTRIES,
 } from './seed'
+import { RECENT_CONTENT } from './seed-recent'
 
 export function createMockBackend(): Backend {
   const users = structuredClone(SEEDED_USERS)
@@ -40,7 +41,7 @@ export function createMockBackend(): Backend {
       categories: new MockCategoryRepository(structuredClone(SEEDED_CATEGORIES)),
       locations: new MockLocationRepository(structuredClone(SEEDED_LOCATIONS)),
       languages: new MockLanguageRepository(structuredClone(SEEDED_LANGUAGES)),
-      content: new MockContentRepository(structuredClone(SEEDED_CONTENT)),
+      content: new MockContentRepository(structuredClone([...RECENT_CONTENT, ...SEEDED_CONTENT])),
       notifications: new MockNotificationRepository(structuredClone(SEEDED_NOTIFICATIONS)),
       notificationTemplates: new MockNotificationTemplateRepository(structuredClone(SEEDED_NOTIFICATION_TEMPLATES)),
     },

@@ -22,7 +22,7 @@ import type {
   NotificationPriority,
   NotificationStatus,
 } from '@/types/domain'
-import type { Permission } from '@/lib/rbac/permissions'
+import type { Capability } from '@/lib/rbac/permissions'
 
 // Every repository method requires an explicit organizationId.
 // Implementations throw MissingOrgContextError if absent,
@@ -34,12 +34,22 @@ export interface OrganizationRepository {
   findById(organizationId: string): Promise<Organization | null>
 }
 
+export interface UpdateProfileParams {
+  name?: string
+  phone?: string | null
+  bio?: string | null
+  timezone?: string | null
+  language?: string | null
+  photoUrl?: string | null
+}
+
 export interface UserRepository {
   listByOrg(organizationId: string): Promise<UserWithRole[]>
   findById(userId: string, organizationId: string): Promise<UserWithRole | null>
   findByEmail(email: string, organizationId: string): Promise<UserWithRole | null>
   invite(params: InviteUserParams): Promise<UserWithRole>
   remove(userId: string, organizationId: string): Promise<void>
+  updateProfile(userId: string, organizationId: string, params: UpdateProfileParams): Promise<UserWithRole>
 }
 
 export interface RoleAssignmentRepository {
@@ -125,13 +135,13 @@ export interface CreateRoleParams {
   id: string
   organizationId: string
   name: string
-  permissions: Permission[]
+  permissions: Capability[]
   isSystem: boolean
 }
 
 export interface UpdateRoleParams {
   name: string
-  permissions: Permission[]
+  permissions: Capability[]
 }
 
 export interface AppendAuditParams {

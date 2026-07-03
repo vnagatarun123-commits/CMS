@@ -40,7 +40,8 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     // Run on all paths except Next.js internals, static assets, and the
-    // e2e reset endpoint (which clears mock state, not Supabase cookies).
-    '/((?!_next/static|_next/image|favicon.ico|api/e2e|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    // e2e reset endpoint (which clears mock state, not Supabase cookies),
+    // and the upload endpoint to prevent middleware request body buffering limits.
+    '/((?!_next/static|_next/image|favicon.ico|api/e2e|api/upload|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 }

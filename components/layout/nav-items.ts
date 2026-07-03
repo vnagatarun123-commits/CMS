@@ -18,23 +18,27 @@ import {
   Wallet,
   Play,
   TrendingUp,
-  UserCheck,
-  SlidersHorizontal,
+  UserCircle2,
+  KeyRound,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
-import { Permission } from '@/lib/rbac/permissions'
+import { Permission, pageCapabilities, submoduleCapabilities, type Capability } from '@/lib/rbac/permissions'
 
 export interface NavChild {
   label: string
   href: string
   icon: LucideIcon
   exactMatch?: boolean
+  // Granular capabilities that reveal this sub-tab. Shown if the user holds ANY.
+  capabilities?: Capability[]
 }
 
 export interface NavItem {
   label: string
   href: string
-  permission: Permission | null
+  // Coarse Permission or granular Capability. null = always visible.
+  // Grouped items (with children) use null and derive visibility from children.
+  permission: Permission | Capability | null
   icon: LucideIcon
   exactMatch?: boolean
   children?: NavChild[]
@@ -58,14 +62,14 @@ export const NAV_SECTIONS: NavSection[] = [
       {
         label: 'Content',
         href: '/dashboard/content',
-        permission: Permission.CONTENT_EDIT,
+        permission: null,
         icon: FileText,
         children: [
-          { label: 'All Content',     href: '/dashboard/content',      icon: LayoutList, exactMatch: true },
-          { label: 'Live Management', href: '/dashboard/content/live', icon: Radio },
+          { label: 'All Content',     href: '/dashboard/content',      icon: LayoutList, exactMatch: true, capabilities: submoduleCapabilities('content', 'all') },
+          { label: 'Live Management', href: '/dashboard/content/live', icon: Radio,                        capabilities: submoduleCapabilities('content', 'live') },
         ],
       },
-      { label: 'Social Connect', href: '/dashboard/social-connect', permission: Permission.CONTENT_PUBLISH, icon: Share2 },
+      { label: 'Social Connect', href: '/dashboard/social-connect', permission: 'social.queue:publish', icon: Share2 },
     ],
   },
   {
@@ -74,18 +78,16 @@ export const NAV_SECTIONS: NavSection[] = [
       {
         label: 'Contributors',
         href: '/dashboard/contributors',
-        permission: Permission.REPORTERS_MANAGE,
+        permission: null,
         icon: Users2,
         children: [
-          { label: 'All Contributors',     href: '/dashboard/contributors',            icon: Users2, exactMatch: true },
-          { label: 'Approval Management',  href: '/dashboard/contributors/approvals',  icon: CheckSquare },
-          { label: 'Earnings Management',  href: '/dashboard/contributors/earnings',   icon: DollarSign },
-          { label: 'Commission Rules',     href: '/dashboard/contributors/commission', icon: Percent },
-          { label: 'Add Contributor',      href: '/dashboard/contributors/add',        icon: UserCheck },
+          { label: 'Contributors List',    href: '/dashboard/contributors',            icon: Users2, exactMatch: true, capabilities: submoduleCapabilities('contributors', 'list') },
+          { label: 'Contributor Requests', href: '/dashboard/contributors/approvals',  icon: CheckSquare,               capabilities: submoduleCapabilities('contributors', 'requests') },
+          { label: 'Earnings Management',  href: '/dashboard/contributors/earnings',   icon: DollarSign,                capabilities: submoduleCapabilities('contributors', 'earnings') },
+          { label: 'Commission Rules',     href: '/dashboard/contributors/commission', icon: Percent,                   capabilities: submoduleCapabilities('contributors', 'commission') },
         ],
       },
       { label: 'Users',     href: '/dashboard/users',     permission: Permission.USERS_VIEW, icon: Users },
-      { label: 'Reporters', href: '/dashboard/reporters', permission: Permission.REPORTERS_MANAGE, icon: UserCheck },
     ],
   },
   {
@@ -93,7 +95,7 @@ export const NAV_SECTIONS: NavSection[] = [
     items: [
       { label: 'Ads',           href: '/dashboard/ads',           permission: Permission.ADS_MANAGE,      icon: Megaphone },
       { label: 'Finance',       href: '/dashboard/finance',       permission: Permission.FINANCE_VIEW,    icon: Wallet },
-      { label: 'Notifications', href: '/dashboard/notifications', permission: Permission.CONTENT_PUBLISH, icon: Bell },
+      { label: 'Notifications', href: '/dashboard/notifications', permission: 'notifications.push:send', icon: Bell },
     ],
   },
   {
@@ -102,13 +104,13 @@ export const NAV_SECTIONS: NavSection[] = [
       {
         label: 'Analytics',
         href: '/dashboard/analytics',
-        permission: Permission.ANALYTICS_VIEW,
+        permission: null,
         icon: BarChart3,
         children: [
-          { label: 'Content',   href: '/dashboard/analytics/content',  icon: FileText },
-          { label: 'Reporters', href: '/dashboard/analytics/reporter', icon: Users2 },
-          { label: 'Video',     href: '/dashboard/analytics/video',    icon: Play },
-          { label: 'Ads',       href: '/dashboard/analytics/ads',      icon: TrendingUp },
+          { label: 'Content',   href: '/dashboard/analytics/content',  icon: FileText,    capabilities: pageCapabilities('analytics', 'content') },
+          { label: 'Reporters', href: '/dashboard/analytics/reporter', icon: Users2,      capabilities: pageCapabilities('analytics', 'reporter') },
+          { label: 'Video',     href: '/dashboard/analytics/video',    icon: Play,        capabilities: pageCapabilities('analytics', 'video') },
+          { label: 'Ads',       href: '/dashboard/analytics/ads',      icon: TrendingUp,  capabilities: pageCapabilities('analytics', 'ads') },
         ],
       },
     ],
@@ -116,8 +118,9 @@ export const NAV_SECTIONS: NavSection[] = [
   {
     label: 'Settings',
     items: [
+      { label: 'My Profile',    href: '/dashboard/settings/profile',     permission: null,                     icon: UserCircle2 },
+      { label: 'Security',      href: '/dashboard/settings/security',    permission: null,                     icon: KeyRound },
       { label: 'Users & Roles', href: '/dashboard/settings/users-roles', permission: Permission.USERS_MANAGE,  icon: ShieldCheck },
-      { label: 'Ref Data',      href: '/dashboard/settings/ref-data',    permission: Permission.ORG_CONFIGURE, icon: SlidersHorizontal },
       { label: 'Master Data',   href: '/dashboard/master-data',          permission: Permission.ORG_CONFIGURE, icon: Database },
       { label: 'Audit Log',     href: '/dashboard/audit-log',            permission: Permission.ORG_CONFIGURE, icon: ClipboardList },
     ],

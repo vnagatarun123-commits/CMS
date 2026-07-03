@@ -16,6 +16,7 @@ import { createContent, updateContent } from '@/app/actions/content'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
 // ── Step config ───────────────────────────────────────────────────────────────
 
@@ -30,7 +31,7 @@ type Step = 1 | 2 | 3
 
 function StepIndicator({ current }: { current: Step }) {
   return (
-    <div className="rounded-xl border border-border bg-card shadow-sm px-8 py-5 mb-6">
+    <div className="rounded-2xl border border-border bg-card ring-1 ring-border/50 shadow-sm px-8 py-5 mb-6">
       <div className="flex items-center">
         {STEPS.map(({ label, sub }, i) => {
           const idx    = (i + 1) as Step
@@ -68,28 +69,28 @@ function Field({ label, required, hint, children }: {
 }) {
   return (
     <div className="flex flex-col gap-1.5">
-      <Label className="text-xs font-medium text-foreground">
-        {label}{required && <span className="text-red-500 ml-0.5">*</span>}
+      <Label className="text-[13px] font-medium text-foreground">
+        {label}{required && <span className="text-destructive ml-0.5">*</span>}
       </Label>
       {children}
-      {hint && <p className="text-[11px] text-muted-foreground">{hint}</p>}
+      {hint && <p className="text-[11px] text-muted-foreground leading-relaxed">{hint}</p>}
     </div>
   )
 }
 
 // ── Shared style constants ────────────────────────────────────────────────────
 
-const selectCls = 'flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50'
-const inputCls  = 'flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring'
+const selectCls = 'flex h-9 w-full rounded-lg border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors hover:border-muted-foreground/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50'
+const inputCls  = 'flex h-9 w-full rounded-lg border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring'
 
 // ── Toggle ────────────────────────────────────────────────────────────────────
 
 function Toggle({ value, onChange }: { value: boolean; onChange: (v: boolean) => void }) {
   return (
-    <button type="button" role="switch" aria-checked={value} onClick={() => onChange(!value)}
-      className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2
+    <button type="button" role="switch" aria-checked={value} aria-label={value ? 'Enabled' : 'Disabled'} onClick={() => onChange(!value)}
+      className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background
         ${value ? 'bg-primary' : 'bg-muted-foreground/30'}`}>
-      <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform
+      <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-background shadow transition-transform
         ${value ? 'translate-x-4' : 'translate-x-1'}`} />
     </button>
   )
@@ -110,11 +111,11 @@ function TagInput({ tags, onChange }: { tags: string[]; onChange: (tags: string[
     if (e.key === 'Backspace' && !input && tags.length) onChange(tags.slice(0, -1))
   }
   return (
-    <div className="flex flex-wrap items-center gap-1.5 min-h-9 rounded-md border border-input bg-background px-3 py-1.5 focus-within:ring-2 focus-within:ring-ring">
+    <div className="flex flex-wrap items-center gap-1.5 min-h-9 rounded-lg border border-input bg-background px-3 py-1.5 transition-colors focus-within:ring-2 focus-within:ring-ring">
       {tags.map(tag => (
-        <span key={tag} className="inline-flex items-center gap-1 rounded bg-muted px-2 py-0.5 text-xs font-medium">
+        <span key={tag} className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-foreground">
           #{tag}
-          <button type="button" onClick={() => onChange(tags.filter(t => t !== tag))} className="hover:text-destructive ml-0.5">
+          <button type="button" onClick={() => onChange(tags.filter(t => t !== tag))} aria-label={`Remove tag ${tag}`} className="hover:text-destructive ml-0.5 transition-colors">
             <X className="h-2.5 w-2.5" />
           </button>
         </span>
@@ -134,10 +135,10 @@ function Checkbox({ checked, indeterminate, onChange }: {
 }) {
   return (
     <button type="button" role="checkbox" aria-checked={checked} onClick={onChange}
-      className={`h-4 w-4 rounded border-2 flex items-center justify-center shrink-0 transition-colors
+      className={`h-4 w-4 rounded border-2 flex items-center justify-center shrink-0 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background
         ${checked || indeterminate ? 'bg-primary border-primary' : 'border-muted-foreground/40 bg-background'}`}>
-      {checked && <Check className="h-2.5 w-2.5 text-white stroke-[3]" />}
-      {!checked && indeterminate && <div className="h-0.5 w-2 bg-white rounded-full" />}
+      {checked && <Check className="h-2.5 w-2.5 text-primary-foreground stroke-[3]" />}
+      {!checked && indeterminate && <div className="h-0.5 w-2 bg-primary-foreground rounded-full" />}
     </button>
   )
 }
@@ -155,7 +156,7 @@ function LanguageSelect({ languages, selected, onChange }: {
   }
 
   return (
-    <div className="rounded-md border border-input bg-background overflow-hidden">
+    <div className="rounded-lg border border-input bg-background overflow-hidden">
       <label className="flex items-center gap-2.5 px-3 py-2 border-b border-border cursor-pointer hover:bg-muted/30 transition-colors">
         <Checkbox checked={allSelected} indeterminate={selected.length > 0 && !allSelected}
           onChange={() => onChange(allSelected ? [] : active.map(l => l.id))} />
@@ -196,44 +197,68 @@ function LocationCascade({ locations, loc, onChange }: {
   return (
     <div className="flex flex-col gap-3">
       <Field label="State" required>
-        <select value={loc.stateId}
-          onChange={e => onChange({ stateId: e.target.value, districtId: '', mandalId: '', locationId: '' })}
-          className={selectCls}>
-          <option value="">Select State</option>
-          {states.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-        </select>
+        <Select
+          value={loc.stateId || 'none'}
+          onValueChange={v => onChange({ stateId: v === 'none' ? '' : (v || ''), districtId: '', mandalId: '', locationId: '' })}
+        >
+          <SelectTrigger className="w-full bg-background border-input text-foreground text-sm rounded-lg h-9">
+            <SelectValue placeholder="Select State" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="none">Select State</SelectItem>
+            {states.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
+          </SelectContent>
+        </Select>
       </Field>
 
       {loc.stateId && districts.length > 0 && (
         <Field label="District">
-          <select value={loc.districtId}
-            onChange={e => onChange({ ...loc, districtId: e.target.value, mandalId: '', locationId: '' })}
-            className={selectCls}>
-            <option value="">Select District</option>
-            {districts.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
-          </select>
+          <Select
+            value={loc.districtId || 'none'}
+            onValueChange={v => onChange({ ...loc, districtId: v === 'none' ? '' : (v || ''), mandalId: '', locationId: '' })}
+          >
+            <SelectTrigger className="w-full bg-background border-input text-foreground text-sm rounded-lg h-9">
+              <SelectValue placeholder="Select District" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">Select District</SelectItem>
+              {districts.map(d => <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>)}
+            </SelectContent>
+          </Select>
         </Field>
       )}
 
       {loc.districtId && mandals.length > 0 && (
         <Field label="Mandal">
-          <select value={loc.mandalId}
-            onChange={e => onChange({ ...loc, mandalId: e.target.value, locationId: '' })}
-            className={selectCls}>
-            <option value="">Select Mandal</option>
-            {mandals.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
-          </select>
+          <Select
+            value={loc.mandalId || 'none'}
+            onValueChange={v => onChange({ ...loc, mandalId: v === 'none' ? '' : (v || ''), locationId: '' })}
+          >
+            <SelectTrigger className="w-full bg-background border-input text-foreground text-sm rounded-lg h-9">
+              <SelectValue placeholder="Select Mandal" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">Select Mandal</SelectItem>
+              {mandals.map(m => <SelectItem key={m.id} value={m.id}>{m.name}</SelectItem>)}
+            </SelectContent>
+          </Select>
         </Field>
       )}
 
       {loc.mandalId && villages.length > 0 && (
         <Field label="Village">
-          <select value={loc.locationId}
-            onChange={e => onChange({ ...loc, locationId: e.target.value })}
-            className={selectCls}>
-            <option value="">Select Village</option>
-            {villages.map(v => <option key={v.id} value={v.id}>{v.name}</option>)}
-          </select>
+          <Select
+            value={loc.locationId || 'none'}
+            onValueChange={v => onChange({ ...loc, locationId: v === 'none' ? '' : (v || '') })}
+          >
+            <SelectTrigger className="w-full bg-background border-input text-foreground text-sm rounded-lg h-9">
+              <SelectValue placeholder="Select Village" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">Select Village</SelectItem>
+              {villages.map(v => <SelectItem key={v.id} value={v.id}>{v.name}</SelectItem>)}
+            </SelectContent>
+          </Select>
         </Field>
       )}
     </div>
@@ -350,7 +375,8 @@ function MultiImageUploadArea({ urls, onFiles }: {
                 </span>
               )}
               <button type="button" onClick={() => remove(idx)}
-                className="absolute top-1 right-1 h-5 w-5 rounded-full bg-black/60 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity">
+                aria-label={`Remove image ${idx + 1}`} title="Remove image"
+                className="absolute top-1 right-1 h-5 w-5 rounded-full bg-black/60 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70">
                 <X className="h-3 w-3" />
               </button>
             </div>
@@ -560,11 +586,13 @@ function VideoUploadArea({ orientation, thumbnailMode, onThumbnailMode, onFile, 
           )}
           <div className="absolute top-2 right-2 flex gap-1">
             <button type="button" onClick={() => setMuted(m => !m)}
-              className="h-7 w-7 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/80 transition-colors">
+              aria-label={muted ? 'Unmute preview' : 'Mute preview'} title={muted ? 'Unmute' : 'Mute'}
+              className="h-8 w-8 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/80 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70">
               {muted ? <VolumeX className="h-3.5 w-3.5" /> : <Volume2 className="h-3.5 w-3.5" />}
             </button>
             <button type="button" onClick={removeVideo}
-              className="h-7 w-7 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/80 transition-colors">
+              aria-label="Remove video" title="Remove video"
+              className="h-8 w-8 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/80 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70">
               <X className="h-3.5 w-3.5" />
             </button>
           </div>
@@ -600,7 +628,8 @@ function VideoUploadArea({ orientation, thumbnailMode, onThumbnailMode, onFile, 
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={uploadedFrameUrl} alt="Thumbnail" className="w-full aspect-video object-cover" />
                   <button type="button" onClick={() => { setUploadedFrameUrl(null); onFile(videoUrl, null) }}
-                    className="absolute top-1.5 right-1.5 h-6 w-6 rounded-full bg-black/60 flex items-center justify-center text-white">
+                    aria-label="Remove thumbnail" title="Remove thumbnail"
+                    className="absolute top-1.5 right-1.5 h-6 w-6 rounded-full bg-black/60 flex items-center justify-center text-white hover:bg-black/80 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70">
                     <X className="h-3 w-3" />
                   </button>
                 </div>
@@ -683,11 +712,11 @@ function VideoUploadArea({ orientation, thumbnailMode, onThumbnailMode, onFile, 
 // ── Preview card (Step 3 right panel) ────────────────────────────────────────
 
 const TYPE_COLORS: Record<ContentType, string> = {
-  [ContentType.IMAGE]:   'bg-blue-100 text-blue-700',
-  [ContentType.VIDEO]:   'bg-purple-100 text-purple-700',
-  [ContentType.SHORT]:   'bg-pink-100 text-pink-700',
-  [ContentType.LIVE]:    'bg-red-100 text-red-700',
-  [ContentType.YOUTUBE]: 'bg-red-100 text-red-700',
+  [ContentType.IMAGE]:   'bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-500/10 dark:text-blue-300 dark:border-blue-500/20',
+  [ContentType.VIDEO]:   'bg-violet-50 text-violet-700 border border-violet-200 dark:bg-violet-500/10 dark:text-violet-300 dark:border-violet-500/20',
+  [ContentType.SHORT]:   'bg-pink-50 text-pink-700 border border-pink-200 dark:bg-pink-500/10 dark:text-pink-300 dark:border-pink-500/20',
+  [ContentType.LIVE]:    'bg-red-50 text-red-700 border border-red-200 dark:bg-red-500/10 dark:text-red-300 dark:border-red-500/20',
+  [ContentType.YOUTUBE]: 'bg-red-50 text-red-700 border border-red-200 dark:bg-red-500/10 dark:text-red-300 dark:border-red-500/20',
 }
 
 function PreviewCard({ form, categories, locations, resolvedLocationId, scheduleEnabled, scheduleDate, scheduleTime }: {
@@ -772,7 +801,7 @@ function PreviewCard({ form, categories, locations, resolvedLocationId, schedule
               </div>
             )}
             {scheduleEnabled && scheduleDate && (
-              <div className="flex items-center gap-1.5 text-xs text-amber-700 font-medium">
+              <div className="flex items-center gap-1.5 text-xs text-amber-700 dark:text-amber-300 font-medium">
                 <Calendar className="h-3 w-3 shrink-0" />
                 <span>Scheduled: {scheduleDate}{scheduleTime ? ` at ${scheduleTime}` : ''}</span>
               </div>
@@ -781,8 +810,10 @@ function PreviewCard({ form, categories, locations, resolvedLocationId, schedule
         </div>
 
         <div className="px-4 pb-4">
-          <span className={`inline-flex items-center text-[10px] font-semibold uppercase tracking-wide rounded-full px-2.5 py-1
-            ${scheduleEnabled && scheduleDate ? 'bg-amber-100 text-amber-700' : 'bg-yellow-50 text-yellow-700 border border-yellow-200'}`}>
+          <span className={`inline-flex items-center text-[10px] font-semibold uppercase tracking-wide rounded-full px-2.5 py-1 border
+            ${scheduleEnabled && scheduleDate
+              ? 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/10 dark:text-amber-300 dark:border-amber-500/20'
+              : 'bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-500/10 dark:text-yellow-300 dark:border-yellow-500/20'}`}>
             {scheduleEnabled && scheduleDate ? 'Scheduled' : 'Draft'}
           </span>
         </div>
@@ -999,26 +1030,26 @@ export function AddContentForm({ categories, locations, languages, editContent }
       <div className="max-w-5xl mx-auto w-full px-6 py-10">
 
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-foreground">{isEdit ? 'Edit Content' : 'Add Content'}</h1>
-          <p className="text-sm text-muted-foreground mt-1">
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">{isEdit ? 'Edit Content' : 'Add Content'}</h1>
+          <p className="text-[14px] text-muted-foreground mt-1">
             {isEdit ? 'Update the details of your content.' : 'Fill in the details to publish your content.'}
           </p>
         </div>
 
         <StepIndicator current={step} />
 
-        <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
+        <div className="rounded-2xl border border-border bg-card ring-1 ring-border/50 shadow-sm overflow-hidden">
 
           {/* Card header */}
-          <div className="flex items-center gap-2.5 px-6 py-4 border-b border-border bg-muted/20">
-            <div className="h-6 w-6 rounded-md bg-primary/15 flex items-center justify-center">
-              {step === 1 && <Image className="h-3.5 w-3.5 text-primary" />}
-              {step === 2 && <Star className="h-3.5 w-3.5 text-primary" />}
-              {step === 3 && <Mic className="h-3.5 w-3.5 text-primary" />}
+          <div className="flex items-center gap-3 px-6 py-4 border-b border-border bg-muted/20">
+            <div className="h-8 w-8 rounded-lg bg-primary/15 flex items-center justify-center shrink-0">
+              {step === 1 && <Image className="h-4 w-4 text-primary" />}
+              {step === 2 && <Star className="h-4 w-4 text-primary" />}
+              {step === 3 && <Mic className="h-4 w-4 text-primary" />}
             </div>
             <div>
-              <h2 className="text-sm font-semibold text-foreground">{STEPS[step - 1]!.label}</h2>
-              <p className="text-xs text-muted-foreground">{STEPS[step - 1]!.sub}</p>
+              <h2 className="text-[15px] font-semibold tracking-tight text-foreground">{STEPS[step - 1]!.label}</h2>
+              <p className="text-[13px] text-muted-foreground">{STEPS[step - 1]!.sub}</p>
             </div>
           </div>
 
@@ -1082,9 +1113,9 @@ export function AddContentForm({ categories, locations, languages, editContent }
 
                       {/* Shorts tab — show info pill instead of sub-type cards */}
                       {activeTab === 'shorts' && (
-                        <div className="flex items-center gap-3 rounded-xl border border-border bg-pink-50/50 px-4 py-3">
-                          <div className="h-9 w-9 rounded-full bg-pink-100 flex items-center justify-center border border-pink-200 shrink-0">
-                            <Smartphone className="h-4 w-4 text-pink-600" />
+                        <div className="flex items-center gap-3 rounded-xl border border-pink-200 bg-pink-50/60 px-4 py-3 dark:border-pink-500/20 dark:bg-pink-500/10">
+                          <div className="h-9 w-9 rounded-full bg-pink-100 flex items-center justify-center border border-pink-200 shrink-0 dark:bg-pink-500/15 dark:border-pink-500/25">
+                            <Smartphone className="h-4 w-4 text-pink-600 dark:text-pink-300" />
                           </div>
                           <div>
                             <p className="text-sm font-semibold text-foreground">Short Video</p>
@@ -1103,7 +1134,7 @@ export function AddContentForm({ categories, locations, languages, editContent }
                               value={form.title} onChange={e => set('title', e.target.value.slice(0, 120))}
                               className="pr-16" />
                             <span className={`absolute right-3 top-1/2 -translate-y-1/2 text-xs tabular-nums
-                              ${titleLeft < 20 ? 'text-red-500 font-medium' : 'text-muted-foreground'}`}>
+                              ${titleLeft < 20 ? 'text-destructive font-medium' : 'text-muted-foreground'}`}>
                               {form.title.length}/120
                             </span>
                           </div>
@@ -1114,9 +1145,9 @@ export function AddContentForm({ categories, locations, languages, editContent }
                             <textarea rows={7}
                               placeholder="Enter description (max 600 characters)"
                               value={form.excerpt} onChange={e => set('excerpt', e.target.value.slice(0, 600))}
-                              className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring resize-none pb-7" />
+                              className="flex w-full rounded-lg border border-input bg-background px-3 py-2 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring resize-none pb-7" />
                             <span className={`absolute right-3 bottom-2 text-xs tabular-nums
-                              ${excerptLeft < 60 ? 'text-red-500 font-medium' : 'text-muted-foreground'}`}>
+                              ${excerptLeft < 60 ? 'text-destructive font-medium' : 'text-muted-foreground'}`}>
                               {form.excerpt.length}/600
                             </span>
                           </div>
@@ -1124,8 +1155,8 @@ export function AddContentForm({ categories, locations, languages, editContent }
                       </div>
 
                       <div>
-                        <Label className="text-xs font-medium text-foreground mb-2 block">
-                          Upload Media <span className="text-red-500">*</span>
+                        <Label className="text-[13px] font-medium text-foreground mb-2 block">
+                          Upload Media <span className="text-destructive">*</span>
                         </Label>
                         {form.type === ContentType.IMAGE
                           ? <MultiImageUploadArea
@@ -1157,17 +1188,25 @@ export function AddContentForm({ categories, locations, languages, editContent }
                     {/* LEFT */}
                     <div className="flex flex-col gap-5">
                       <Field label="Category" required>
-                        <select value={form.categoryId} onChange={e => set('categoryId', e.target.value)} className={selectCls}>
-                          <option value="">Select Category</option>
-                          {categories.filter(c => c.active).map(c => (
-                            <option key={c.id} value={c.id}>{c.name}</option>
-                          ))}
-                        </select>
+                        <Select
+                          value={form.categoryId || 'none'}
+                          onValueChange={v => set('categoryId', v === 'none' ? '' : (v || ''))}
+                        >
+                          <SelectTrigger className="w-full bg-background border-input text-foreground text-sm rounded-lg h-9">
+                            <SelectValue placeholder="Select Category" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="none">Select Category</SelectItem>
+                            {categories.filter(c => c.active).map(c => (
+                              <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </Field>
 
                       <div className="flex flex-col gap-1.5">
-                        <Label className="text-xs font-medium text-foreground">
-                          Location <span className="text-red-500">*</span>
+                        <Label className="text-[13px] font-medium text-foreground">
+                          Location <span className="text-destructive">*</span>
                         </Label>
                         <LocationCascade
                           locations={locations}
@@ -1188,7 +1227,7 @@ export function AddContentForm({ categories, locations, languages, editContent }
                       </Field>
 
                       <div>
-                        <Label className="text-xs font-medium text-foreground mb-2.5 block">
+                        <Label className="text-[13px] font-medium text-foreground mb-2.5 block">
                           Flag <span className="text-muted-foreground font-normal">(select one, click again to remove)</span>
                         </Label>
                         <FlagRadio selected={form.flag} onChange={v => set('flag', v)} />
@@ -1211,7 +1250,7 @@ export function AddContentForm({ categories, locations, languages, editContent }
                         <div className="flex items-center gap-2.5 h-9 rounded-md border border-input bg-muted/30 px-3">
                           <div className="h-5 w-5 rounded-full bg-primary flex items-center justify-center text-[10px] text-primary-foreground font-bold shrink-0">P</div>
                           <span className="text-sm font-medium flex-1">PuraLocal Official</span>
-                          <span className="text-[10px] font-semibold text-amber-700 bg-amber-100 rounded px-1.5 py-0.5 uppercase tracking-wide">Org</span>
+                          <span className="text-[10px] font-semibold text-amber-700 bg-amber-100 rounded px-1.5 py-0.5 uppercase tracking-wide dark:text-amber-300 dark:bg-amber-500/15">Org</span>
                         </div>
                       </Field>
 
@@ -1229,7 +1268,7 @@ export function AddContentForm({ categories, locations, languages, editContent }
                             <div className="relative">
                               <textarea rows={4} placeholder="Paste or type the transcription here…"
                                 value={form.transcription} onChange={e => set('transcription', e.target.value.slice(0, 5000))}
-                                className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring resize-none pb-7" />
+                                className="flex w-full rounded-lg border border-input bg-background px-3 py-2 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring resize-none pb-7" />
                               <span className="absolute right-3 bottom-2 text-xs text-muted-foreground tabular-nums">
                                 {form.transcription.length}/5000
                               </span>
@@ -1237,13 +1276,21 @@ export function AddContentForm({ categories, locations, languages, editContent }
                           </Field>
                           <div className="grid grid-cols-2 gap-3 items-end">
                             <Field label="Voice Selection">
-                              <select value={form.voice} onChange={e => set('voice', e.target.value)} className={selectCls}>
-                                <option value="">Select Voice</option>
-                                <option value="female-te">Female · Telugu</option>
-                                <option value="male-te">Male · Telugu</option>
-                                <option value="female-hi">Female · Hindi</option>
-                                <option value="male-hi">Male · Hindi</option>
-                              </select>
+                              <Select
+                                value={form.voice || 'none'}
+                                onValueChange={v => set('voice', v === 'none' ? '' : (v || ''))}
+                              >
+                               <SelectTrigger className="w-full bg-background border-input text-foreground text-sm rounded-lg h-9">
+                                  <SelectValue placeholder="Select Voice" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="none">Select Voice</SelectItem>
+                                  <SelectItem value="female-te">Female · Telugu</SelectItem>
+                                  <SelectItem value="male-te">Male · Telugu</SelectItem>
+                                  <SelectItem value="female-hi">Female · Hindi</SelectItem>
+                                  <SelectItem value="male-hi">Male · Hindi</SelectItem>
+                                </SelectContent>
+                              </Select>
                             </Field>
                             <Button type="button" variant="outline" size="sm" className="h-9 gap-1.5" disabled>
                               <MicOff className="h-3.5 w-3.5" />
@@ -1284,7 +1331,7 @@ export function AddContentForm({ categories, locations, languages, editContent }
                               </Field>
                             </div>
                             {scheduleDate && (
-                              <p className="text-xs text-amber-700 font-medium flex items-center gap-1.5">
+                              <p className="text-xs text-amber-700 dark:text-amber-300 font-medium flex items-center gap-1.5">
                                 <Calendar className="h-3 w-3" />
                                 Will publish on {new Date(`${scheduleDate}T${scheduleTime}`).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}
                               </p>

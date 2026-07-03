@@ -7,14 +7,17 @@ import {
   X, MapPin, Filter, Eye, Ban, RotateCcw, ShieldOff,
   StickyNote, CheckCircle2, XCircle, AlertCircle,
   Play, Radio, Film, FileText, Signal, Download,
-  ChevronRight, UserX, UserCheck,
+  ChevronRight, ChevronLeft, UserX, UserCheck,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { SEED_APP_USERS } from '@/lib/mock/seed-app-users'
 import type {
   AppUser, AppUserStatus, SubscriptionPlan,
   DevicePlatform, ConnectionType, UserType,
 } from '@/types/app-user'
+
+const PAGE_SIZE_OPTIONS = [10, 20, 50, 100]
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -539,6 +542,12 @@ export function UserManagementClient() {
     return list
   }, [users, filters])
 
+  const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(20)
+  const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize))
+  const safePage  = Math.min(page, pageCount)
+  const paginated = filtered.slice((safePage - 1) * pageSize, safePage * pageSize)
+
   const total      = users.length
   const guests     = users.filter(u => u.userType === 'guest').length
   const registered = users.filter(u => u.userType === 'registered').length
@@ -664,18 +673,22 @@ export function UserManagementClient() {
           <table className="w-full text-sm min-w-[1100px]">
             <thead>
               <tr className="border-b border-border bg-muted/30">
-                {['User', 'Type', 'Location', 'Device / ISP', 'Auth', 'Status', 'Plan', 'Sessions', 'Last Active', 'Buffering', 'Completion', ''].map(h => (
-                  <th key={h} className="py-3 px-3 text-left text-[11px] font-semibold text-muted-foreground uppercase tracking-wide whitespace-nowrap">{h}</th>
+                {['S.No.', 'User', 'Type', 'Location', 'Device / ISP', 'Auth', 'Status', 'Plan', 'Sessions', 'Last Active', 'Buffering', 'Completion', ''].map(h => (
+                  <th key={h} className={`py-3 px-3 text-[11px] font-semibold text-muted-foreground uppercase tracking-wide whitespace-nowrap ${h === 'S.No.' ? 'text-center w-10' : 'text-left'}`}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
-              {filtered.length === 0 ? (
-                <tr><td colSpan={12} className="py-16 text-center text-sm text-muted-foreground">No users match filters</td></tr>
-              ) : filtered.map(user => (
+              {paginated.length === 0 ? (
+                <tr><td colSpan={13} className="py-16 text-center text-sm text-muted-foreground">No users match filters</td></tr>
+              ) : paginated.map((user, index) => (
                 <tr key={user.id}
                   className={`hover:bg-muted/20 transition-colors cursor-pointer ${user.userType === 'guest' ? 'bg-orange-50/30' : ''}`}
                   onClick={() => setDetail(user)}>
+
+                  <td className="py-3 px-3 text-center text-xs text-muted-foreground tabular-nums w-10">
+                    {(safePage - 1) * pageSize + index + 1}
+                  </td>
 
                   <td className="py-3 px-3">
                     <div className="flex items-center gap-2.5">
@@ -777,6 +790,54 @@ export function UserManagementClient() {
               ))}
             </tbody>
           </table>
+        </div>
+
+        {/* Pagination */}
+        <div className="flex items-center justify-between px-4 py-3 border-t border-border bg-muted/20">
+          <div className="flex items-center gap-3">
+            <p className="text-xs text-muted-foreground">
+              Showing{' '}
+              <span className="font-medium text-foreground">
+                {filtered.length === 0 ? 0 : (safePage - 1) * pageSize + 1}–{Math.min(safePage * pageSize, filtered.length)}
+              </span>{' '}
+              of <span className="font-medium text-foreground">{filtered.length}</span>
+            </p>
+            <div className="flex items-center gap-1.5">
+              <span className="text-xs text-muted-foreground">Rows</span>
+              <Select value={String(pageSize)} onValueChange={v => { setPageSize(Number(v)); setPage(1) }}>
+                <SelectTrigger className="h-7 w-[70px] min-w-0 text-xs text-foreground font-medium rounded-md bg-background border-input px-2">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {PAGE_SIZE_OPTIONS.map(n => <SelectItem key={n} value={String(n)}>{n}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <div className="flex items-center gap-1">
+            <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={safePage === 1} title="Previous"
+              className="h-7 w-7 flex items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+              <ChevronLeft className="h-3.5 w-3.5" />
+            </button>
+            {Array.from({ length: pageCount }, (_, i) => i + 1)
+              .filter(p => p === 1 || p === pageCount || Math.abs(p - safePage) <= 1)
+              .reduce<(number | '…')[]>((acc, p, i, arr) => {
+                if (i > 0 && p - (arr[i - 1] as number) > 1) acc.push('…')
+                acc.push(p); return acc
+              }, [])
+              .map((p, i) => p === '…'
+                ? <span key={`e${i}`} className="px-1 text-xs text-muted-foreground">…</span>
+                : <button key={p} onClick={() => setPage(p as number)}
+                    className={`h-7 w-7 rounded-md text-xs font-medium transition-colors
+                      ${safePage === p ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-muted hover:text-foreground'}`}>
+                    {p}
+                  </button>
+              )}
+            <button onClick={() => setPage(p => Math.min(pageCount, p + 1))} disabled={safePage === pageCount} title="Next"
+              className="h-7 w-7 flex items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+              <ChevronRight className="h-3.5 w-3.5" />
+            </button>
+          </div>
         </div>
       </div>
 

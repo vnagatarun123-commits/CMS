@@ -56,7 +56,7 @@
   --card-foreground:       oklch(0.130 0.010 264);
   --popover:               oklch(1 0 0);
   --popover-foreground:    oklch(0.130 0.010 264);
-  --primary:               oklch(0.511 0.228 264.1); /* indigo-600 #4F46E5 */
+  --primary:               oklch(0.546 0.225 259); /* indigo-600 #4F46E5 */
   --primary-foreground:    oklch(1 0 0);
   --secondary:             oklch(0.954 0.008 264);   /* slate-100 */
   --secondary-foreground:  oklch(0.205 0.012 264);
@@ -67,11 +67,11 @@
   --destructive:           oklch(0.577 0.245 27.3);
   --border:                oklch(0.900 0.008 258);   /* slate-200 */
   --input:                 oklch(0.900 0.008 258);
-  --ring:                  oklch(0.511 0.228 264.1);
-  --radius:                0.5rem;
+  --ring:                  oklch(0.546 0.225 259);
+  --radius:                0.75rem; /* premium soft — 12px base → lg:12px xl:17px 2xl:22px */
 
   /* charts */
-  --chart-1: oklch(0.511 0.228 264.1);
+  --chart-1: oklch(0.546 0.225 259);
   --chart-2: oklch(0.590 0.167 152.4);
   --chart-3: oklch(0.725 0.169 69.4);
   --chart-4: oklch(0.576 0.245 27.3);
@@ -80,12 +80,12 @@
   /* sidebar — light: soft slate */
   --sidebar:                   oklch(0.969 0.006 264);
   --sidebar-foreground:        oklch(0.430 0.016 255);
-  --sidebar-primary:           oklch(0.511 0.228 264.1);
+  --sidebar-primary:           oklch(0.546 0.225 259);
   --sidebar-primary-foreground:oklch(1 0 0);
   --sidebar-accent:            oklch(0.940 0.018 264.1);
-  --sidebar-accent-foreground: oklch(0.511 0.228 264.1);
+  --sidebar-accent-foreground: oklch(0.546 0.225 259);
   --sidebar-border:            oklch(0.900 0.008 258);
-  --sidebar-ring:              oklch(0.511 0.228 264.1);
+  --sidebar-ring:              oklch(0.546 0.225 259);
 
   /* semantic */
   --color-success:        #16A34A;
@@ -127,7 +127,7 @@
   --popover-foreground:    oklch(0.950 0.005 260);
 
   /* Primary: indigo-400 — bright enough on dark bg, distinct without being red */
-  --primary:               oklch(0.672 0.190 272.5); /* #818CF8 indigo-400 */
+  --primary:               oklch(0.707 0.150 256); /* #818CF8 indigo-400 */
   --primary-foreground:    oklch(0.118 0.012 264);   /* near-black on indigo */
 
   --secondary:             oklch(0.205 0.013 262);
@@ -139,10 +139,10 @@
   --destructive:           oklch(0.700 0.175 24.0);  /* red-400 */
   --border:                oklch(0.265 0.011 258);   /* #30363D */
   --input:                 oklch(0.205 0.013 262);
-  --ring:                  oklch(0.672 0.190 272.5);
+  --ring:                  oklch(0.707 0.150 256);
 
   /* charts */
-  --chart-1: oklch(0.672 0.190 272.5);
+  --chart-1: oklch(0.707 0.150 256);
   --chart-2: oklch(0.590 0.167 152.4);
   --chart-3: oklch(0.725 0.169 69.4);
   --chart-4: oklch(0.700 0.175 24.0);
@@ -151,12 +151,12 @@
   /* sidebar — darkest layer, near-black */
   --sidebar:                   oklch(0.088 0.010 264);   /* #0D1117 */
   --sidebar-foreground:        oklch(0.598 0.012 255);   /* #8B949E */
-  --sidebar-primary:           oklch(0.672 0.190 272.5); /* indigo-400 */
+  --sidebar-primary:           oklch(0.707 0.150 256); /* indigo-400 */
   --sidebar-primary-foreground:oklch(0.118 0.012 264);
-  --sidebar-accent:            oklch(0.672 0.190 272.5 / 0.12);
-  --sidebar-accent-foreground: oklch(0.672 0.190 272.5);
+  --sidebar-accent:            oklch(0.707 0.150 256 / 0.12);
+  --sidebar-accent-foreground: oklch(0.707 0.150 256);
   --sidebar-border:            oklch(0.185 0.012 262);   /* #21262D */
-  --sidebar-ring:              oklch(0.672 0.190 272.5);
+  --sidebar-ring:              oklch(0.707 0.150 256);
 
   /* semantic — adjusted for dark bg contrast */
   --color-success:        #34C759;
@@ -211,10 +211,231 @@
 ::-webkit-scrollbar-thumb:hover  { background: oklch(0.340 0.012 258); }
 
 /* ── Focus ring ──────────────────────────────────────────────────────────── */
-:focus-visible { outline: 2px solid oklch(0.672 0.190 272.5 / 0.7); outline-offset: 2px; }
+:focus-visible { outline: 2px solid oklch(0.707 0.150 256 / 0.7); outline-offset: 2px; }
 
 /* ── Selection ───────────────────────────────────────────────────────────── */
-::selection { background: oklch(0.672 0.190 272.5 / 0.25); color: inherit; }
+::selection { background: oklch(0.707 0.150 256 / 0.25); color: inherit; }
 
 /* ── Tabular nums for data columns ──────────────────────────────────────── */
 table, .tabular { font-variant-numeric: tabular-nums; }
+
+/* ── macOS 26 Liquid Glass — design system ────────────────────────────────── */
+
+/* Sidebar glass — translucent dark material, replicates macOS sidebar */
+.glass-sidebar {
+  background: oklch(0.072 0.010 264 / 0.88) !important;
+  backdrop-filter: blur(40px) saturate(200%) brightness(1.06);
+  -webkit-backdrop-filter: blur(40px) saturate(200%) brightness(1.06);
+}
+:root:not(.dark) .glass-sidebar {
+  background: oklch(0.966 0.006 264 / 0.90) !important;
+  backdrop-filter: blur(40px) saturate(160%);
+  -webkit-backdrop-filter: blur(40px) saturate(160%);
+}
+
+/* Topbar glass — blurs content that scrolls behind it */
+.glass-topbar {
+  background: oklch(0.108 0.012 264 / 0.72) !important;
+  backdrop-filter: blur(28px) saturate(180%) brightness(1.10);
+  -webkit-backdrop-filter: blur(28px) saturate(180%) brightness(1.10);
+  border-bottom: 1px solid oklch(1 0 0 / 0.055) !important;
+}
+:root:not(.dark) .glass-topbar {
+  background: oklch(0.995 0.002 264 / 0.82) !important;
+  backdrop-filter: blur(28px) saturate(150%);
+  -webkit-backdrop-filter: blur(28px) saturate(150%);
+  border-bottom: 1px solid oklch(0 0 0 / 0.08) !important;
+}
+
+/* Glass table headers — global: every thead th within dashboard main content */
+main thead th {
+  background: oklch(0.142 0.012 263 / 0.90);
+  backdrop-filter: blur(16px) saturate(150%);
+  -webkit-backdrop-filter: blur(16px) saturate(150%);
+  border-bottom: 1px solid oklch(1 0 0 / 0.06);
+}
+:root:not(.dark) main thead th {
+  background: oklch(0.960 0.006 264 / 0.90);
+  border-bottom: 1px solid oklch(0 0 0 / 0.07);
+}
+
+/* Glass pill — search, icon buttons */
+.glass-pill {
+  background: oklch(1 0 0 / 0.055);
+  backdrop-filter: blur(10px) saturate(140%);
+  -webkit-backdrop-filter: blur(10px) saturate(140%);
+  border: 1px solid oklch(1 0 0 / 0.09);
+  transition: background 0.15s;
+}
+.glass-pill:hover { background: oklch(1 0 0 / 0.085); }
+:root:not(.dark) .glass-pill {
+  background: oklch(0 0 0 / 0.04);
+  border-color: oklch(0 0 0 / 0.08);
+}
+:root:not(.dark) .glass-pill:hover { background: oklch(0 0 0 / 0.07); }
+
+/* ── Glass card — the primary container surface ──────────────────────────── */
+/* Use on stat cards, content panels, any card-level container */
+.glass-card {
+  background: oklch(0.162 0.012 263 / 0.78);
+  backdrop-filter: blur(20px) saturate(160%) brightness(1.04);
+  -webkit-backdrop-filter: blur(20px) saturate(160%) brightness(1.04);
+  border: 1px solid oklch(1 0 0 / 0.07);
+  box-shadow: 0 2px 8px oklch(0 0 0 / 0.22), 0 1px 2px oklch(0 0 0 / 0.12);
+}
+.glass-card:hover {
+  border-color: oklch(1 0 0 / 0.10);
+  box-shadow: 0 4px 16px oklch(0 0 0 / 0.28), 0 1px 3px oklch(0 0 0 / 0.14);
+}
+:root:not(.dark) .glass-card {
+  background: oklch(1 0 0 / 0.82);
+  border-color: oklch(0 0 0 / 0.06);
+  box-shadow: 0 2px 8px oklch(0 0 0 / 0.06), 0 1px 2px oklch(0 0 0 / 0.04);
+}
+
+/* ── Icon container — stat card icon bg ─────────────────────────────────── */
+/* Replaces hardcoded bg-X-50 which look wrong in dark mode */
+.icon-indigo   { background: oklch(0.707 0.150 256 / 0.15); color: oklch(0.707 0.150 256); }
+.icon-emerald  { background: oklch(0.590 0.167 152.4 / 0.15); color: oklch(0.590 0.167 152.4); }
+.icon-amber    { background: oklch(0.724 0.166 68.3  / 0.18); color: oklch(0.724 0.166 68.3); }
+.icon-red      { background: oklch(0.700 0.175 24.0  / 0.15); color: oklch(0.700 0.175 24.0); }
+.icon-violet   { background: oklch(0.720 0.155 295.0 / 0.15); color: oklch(0.720 0.155 295.0); }
+.icon-sky      { background: oklch(0.722 0.148 215.0 / 0.15); color: oklch(0.722 0.148 215.0); }
+.icon-teal     { background: oklch(0.650 0.130 185.0 / 0.15); color: oklch(0.650 0.130 185.0); }
+.icon-slate    { background: oklch(0.420 0.016 255   / 0.20); color: oklch(0.720 0.010 255); }
+.icon-orange   { background: oklch(0.724 0.166 55.0  / 0.15); color: oklch(0.724 0.166 55.0); }
+.icon-pink     { background: oklch(0.720 0.160 342.0 / 0.15); color: oklch(0.720 0.160 342.0); }
+
+/* Light mode adjustments for icon containers */
+:root:not(.dark) .icon-indigo  { background: oklch(0.546 0.225 259 / 0.10); color: oklch(0.546 0.225 259); }
+:root:not(.dark) .icon-emerald { background: oklch(0.590 0.167 152.4 / 0.10); color: oklch(0.465 0.167 152.4); }
+:root:not(.dark) .icon-amber   { background: oklch(0.724 0.166 68.3  / 0.12); color: oklch(0.554 0.166 68.3); }
+:root:not(.dark) .icon-red     { background: oklch(0.700 0.175 24.0  / 0.10); color: oklch(0.570 0.175 24.0); }
+:root:not(.dark) .icon-violet  { background: oklch(0.520 0.220 295.0 / 0.10); color: oklch(0.520 0.220 295.0); }
+:root:not(.dark) .icon-sky     { background: oklch(0.600 0.148 215.0 / 0.10); color: oklch(0.440 0.148 215.0); }
+:root:not(.dark) .icon-teal    { background: oklch(0.520 0.130 185.0 / 0.10); color: oklch(0.520 0.130 185.0); }
+:root:not(.dark) .icon-slate   { background: oklch(0.550 0.016 255   / 0.10); color: oklch(0.430 0.016 255); }
+
+/* ── Shadow system ───────────────────────────────────────────────────────── */
+/* Layered soft shadows — macOS 26 style, no hard borders */
+.shadow-glass-sm  { box-shadow: 0 1px 3px oklch(0 0 0 / 0.18), 0 0 0 1px oklch(1 0 0 / 0.05); }
+.shadow-glass     { box-shadow: 0 2px 8px oklch(0 0 0 / 0.22), 0 1px 2px oklch(0 0 0 / 0.12), 0 0 0 1px oklch(1 0 0 / 0.06); }
+.shadow-glass-lg  { box-shadow: 0 8px 24px oklch(0 0 0 / 0.32), 0 2px 6px oklch(0 0 0 / 0.16), 0 0 0 1px oklch(1 0 0 / 0.07); }
+.shadow-glass-xl  { box-shadow: 0 16px 48px oklch(0 0 0 / 0.40), 0 4px 12px oklch(0 0 0 / 0.18), 0 0 0 1px oklch(1 0 0 / 0.08); }
+
+/* ── Global card glass treatment — all stat/content cards in dark mode ───── */
+/* Targets every rounded card panel inside the main content area */
+.dark main .rounded-xl.bg-card,
+.dark main .rounded-xl.border.border-border.bg-card {
+  background: oklch(0.162 0.012 263 / 0.78) !important;
+  backdrop-filter: blur(20px) saturate(160%) brightness(1.04);
+  -webkit-backdrop-filter: blur(20px) saturate(160%) brightness(1.04);
+  border-color: oklch(1 0 0 / 0.07) !important;
+  box-shadow: 0 2px 8px oklch(0 0 0 / 0.22), 0 1px 2px oklch(0 0 0 / 0.12);
+}
+.dark main .rounded-xl.bg-card:hover,
+.dark main .rounded-xl.border.border-border.bg-card:hover {
+  border-color: oklch(1 0 0 / 0.10) !important;
+  box-shadow: 0 4px 16px oklch(0 0 0 / 0.28), 0 1px 3px oklch(0 0 0 / 0.14);
+}
+
+/* ── Table improvements — macOS 26 clean row style ──────────────────────── */
+/* Subtler row dividers, no hard grid lines */
+.dark tbody tr { border-bottom: 1px solid oklch(1 0 0 / 0.04); }
+.dark tbody tr:last-child { border-bottom: none; }
+.dark tbody tr:hover { background: oklch(1 0 0 / 0.025); }
+
+/* ── Input glass — text inputs, selects ─────────────────────────────────── */
+.dark input[type="text"],
+.dark input[type="email"],
+.dark input[type="password"],
+.dark input[type="search"],
+.dark input[type="number"],
+.dark textarea,
+.dark select {
+  background: oklch(0.162 0.012 263 / 0.60);
+  border-color: oklch(1 0 0 / 0.10);
+  backdrop-filter: blur(8px);
+}
+.dark input:focus,
+.dark textarea:focus,
+.dark select:focus {
+  border-color: oklch(0.707 0.150 256 / 0.60);
+  box-shadow: 0 0 0 3px oklch(0.707 0.150 256 / 0.12);
+}
+
+/* ── Badge refinements — consistent text sizing ──────────────────────────── */
+/* Ensure all inline badges share the same height rhythm */
+.badge-xs { font-size: 10px; padding: 1px 6px; border-radius: 9999px; font-weight: 600; letter-spacing: 0.01em; }
+.badge-sm { font-size: 11px; padding: 2px 8px; border-radius: 9999px; font-weight: 500; }
+
+/* ── Typography refinements — visibility improvements ────────────────────── */
+.dark .text-muted-foreground { color: oklch(0.650 0.012 255); } /* slightly brighter than default */
+.section-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: oklch(0.520 0.010 255);
+}
+.dark .section-label { color: oklch(0.520 0.010 255); }
+
+/* ══ Premium polish layer ═════════════════════════════════════════════════════
+   Cascades app-wide via shared selectors. Scoped to `main` for page content so
+   portalled dialogs / dense matrices keep their own tighter density. */
+
+/* Rounded menu & select items */
+[data-slot="dropdown-menu-item"],
+[data-slot="dropdown-menu-checkbox-item"],
+[data-slot="dropdown-menu-radio-item"],
+[data-slot="select-item"] { border-radius: 0.5rem; }
+
+/* Table header — calm, readable (Vesper-style, NOT tiny uppercase) */
+main thead th {
+  height: 3rem;
+  padding-left: 1.25rem;
+  padding-right: 1.25rem;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--muted-foreground);
+}
+
+/* Generous row rhythm + smooth hover, both themes */
+main tbody td { padding: 0.95rem 1.25rem; font-size: 14px; }
+:root:not(.dark) main tbody tr { border-bottom: 1px solid oklch(0 0 0 / 0.05); transition: background 0.12s; }
+:root:not(.dark) main tbody tr:last-child { border-bottom: none; }
+:root:not(.dark) main tbody tr:hover { background: oklch(0 0 0 / 0.018); }
+
+/* Premium corners — clip any bordered container that wraps a table so the
+   header top corners and footer bottom corners follow the radius cleanly. */
+main .rounded-md:has(> table),
+main .rounded-lg:has(> table),
+main .rounded-xl:has(> table),
+main .rounded-2xl:has(> table) { overflow: hidden; }
+
+/* Table footer — premium surface */
+main tfoot { border-top: 1px solid var(--border); }
+main tfoot td, main tfoot th { background: oklch(0 0 0 / 0.015); }
+.dark main tfoot td, .dark main tfoot th { background: oklch(1 0 0 / 0.02); }
+
+/* Card hover lift — subtle depth on interactive card surfaces (light parity) */
+main .rounded-xl.bg-card,
+main .rounded-2xl.bg-card {
+  transition: box-shadow 0.18s ease, border-color 0.18s ease;
+}
+:root:not(.dark) main .rounded-xl.bg-card:hover,
+:root:not(.dark) main .rounded-2xl.bg-card:hover {
+  box-shadow: 0 6px 20px oklch(0 0 0 / 0.07), 0 1px 3px oklch(0 0 0 / 0.05);
+}
+
+/* Segmented tabs / filter underline — crisper active state */
+[data-slot="tabs-list"] { gap: 2px; }
+
+/* Inputs & selects — premium focus glow in light mode too */
+:root:not(.dark) input:focus-visible,
+:root:not(.dark) textarea:focus-visible,
+:root:not(.dark) [data-slot="select-trigger"]:focus-visible {
+  box-shadow: 0 0 0 3px oklch(0.546 0.225 259 / 0.12);
+}

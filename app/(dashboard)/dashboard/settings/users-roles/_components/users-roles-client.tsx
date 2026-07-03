@@ -2,172 +2,210 @@
 
 import { useState, useTransition } from 'react'
 import type { UserWithRole, RoleDefinition } from '@/types/domain'
-import { Permission } from '@/lib/rbac/permissions'
+import {
+  PERMISSION_CATALOG,
+  type Capability,
+  type CapabilityModule,
+  type CapabilitySubmodule,
+  type CapabilityPage,
+} from '@/lib/rbac/permissions'
 import { listUsers, inviteUser, removeUser } from '@/app/actions/users'
 import { listRoles, createRole, updateRole, deleteRole } from '@/app/actions/roles'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Switch } from '@/components/ui/switch'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
+import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
 
-// ── Permission label map (used in invite access preview) ─────────────────────
+// ── Capability helpers ────────────────────────────────────────────────────────
 
-const PERM_LABEL: Record<Permission, string> = {
-  'content:create':   'Create content',
-  'content:edit':     'Edit content',
-  'content:review':   'Review content',
-  'content:publish':  'Publish content',
-  'reporters:manage': 'Manage contributors',
-  'ads:manage':       'Manage ads',
-  'users:view':       'View users',
-  'users:manage':     'Manage users',
-  'finance:view':     'View finance',
-  'analytics:view':   'View analytics',
-  'org:configure':    'Configure org',
-  'platform:manage':       'Platform admin',
-  'notifications:manage':  'Send notifications',
-}
+const moduleCapabilities = (mod: CapabilityModule): Capability[] =>
+  mod.submodules.flatMap(s => s.pages.flatMap(pg => pg.actions.map(a => a.capability)))
 
-// ── Sub-page / action permission matrix ───────────────────────────────────────
+const submoduleCaps = (sub: CapabilitySubmodule): Capability[] =>
+  sub.pages.flatMap(pg => pg.actions.map(a => a.capability))
 
-interface PermAction { label: string; perm: Permission }
-interface PermPage   { page: string; actions: PermAction[] }
-interface PermModule { module: string; pages: PermPage[] }
+const pageCaps = (pg: CapabilityPage): Capability[] =>
+  pg.actions.map(a => a.capability)
 
-const MODULE_MATRIX: PermModule[] = [
-  {
-    module: 'Content',
-    pages: [
-      {
-        page: 'All Content',
-        actions: [
-          { label: 'Create',  perm: Permission.CONTENT_CREATE  },
-          { label: 'Edit',    perm: Permission.CONTENT_EDIT    },
-          { label: 'Review',  perm: Permission.CONTENT_REVIEW  },
-          { label: 'Publish', perm: Permission.CONTENT_PUBLISH },
-        ],
-      },
-      {
-        page: 'Live Management',
-        actions: [{ label: 'Manage', perm: Permission.CONTENT_PUBLISH }],
-      },
-    ],
-  },
-  {
-    module: 'Contributors',
-    pages: [
-      {
-        page: 'Approvals · Earnings · Commission',
-        actions: [{ label: 'Manage', perm: Permission.REPORTERS_MANAGE }],
-      },
-    ],
-  },
-  {
-    module: 'Social Connect',
-    pages: [
-      { page: '', actions: [{ label: 'Publish', perm: Permission.CONTENT_PUBLISH }] },
-    ],
-  },
-  {
-    module: 'App Users',
-    pages: [
-      {
-        page: '',
-        actions: [
-          { label: 'View',   perm: Permission.USERS_VIEW   },
-          { label: 'Manage', perm: Permission.USERS_MANAGE },
-        ],
-      },
-    ],
-  },
-  {
-    module: 'Ads',
-    pages: [
-      {
-        page: 'Campaigns · Slots · Performance',
-        actions: [{ label: 'Manage', perm: Permission.ADS_MANAGE }],
-      },
-    ],
-  },
-  {
-    module: 'Notifications',
-    pages: [
-      { page: '', actions: [{ label: 'Send', perm: Permission.CONTENT_PUBLISH }] },
-    ],
-  },
-  {
-    module: 'Analytics',
-    pages: [
-      { page: '', actions: [{ label: 'View', perm: Permission.ANALYTICS_VIEW }] },
-    ],
-  },
-  {
-    module: 'Finance',
-    pages: [
-      { page: '', actions: [{ label: 'View', perm: Permission.FINANCE_VIEW }] },
-    ],
-  },
-  {
-    module: 'Settings',
-    pages: [
-      { page: 'Users & Roles',           actions: [{ label: 'Manage',    perm: Permission.USERS_MANAGE    }] },
-      { page: 'Master Data · Audit Log', actions: [{ label: 'Configure', perm: Permission.ORG_CONFIGURE   }] },
-      { page: 'Platform',                actions: [{ label: 'Admin',     perm: Permission.PLATFORM_MANAGE }] },
-    ],
-  },
-]
+// Capability for a given (page, column-key), or undefined if the page lacks it.
+const cellCapability = (pg: CapabilityPage, colKey: string): Capability | undefined =>
+  pg.actions.find(a => a.key === colKey)?.capability
 
-// ── Permission checkbox matrix ────────────────────────────────────────────────
+// ── Permission editor: modules (left) → sub-module sections → pages table ─────
 
-function PermissionMatrix({
+function PermissionEditor({
   selected,
   onChange,
 }: {
-  selected: Set<Permission>
-  onChange: (p: Permission, checked: boolean) => void
+  selected: Set<Capability>
+  onChange: (next: Set<Capability>) => void
 }) {
+  const [activeId, setActiveId] = useState(PERMISSION_CATALOG[0]!.id)
+  const active: CapabilityModule =
+    PERMISSION_CATALOG.find(m => m.id === activeId) ?? PERMISSION_CATALOG[0]!
+
+  const countOn = (caps: Capability[]) => caps.filter(c => selected.has(c)).length
+
+  const setMany = (caps: Capability[], on: boolean) => {
+    const next = new Set(selected)
+    caps.forEach(c => (on ? next.add(c) : next.delete(c)))
+    onChange(next)
+  }
+
+  const toggleCell = (cap: Capability, on: boolean) => setMany([cap], on)
+
   return (
-    <div className="max-h-80 overflow-y-auto rounded-md border divide-y text-sm">
-      {MODULE_MATRIX.map(mod => (
-        <div key={mod.module}>
-          {/* Module header */}
-          <div className="px-3 py-1.5 bg-muted/60 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-            {mod.module}
-          </div>
-          {/* Sub-pages */}
-          {mod.pages.map((pg, pgIdx) => (
+    <div className="flex flex-1 min-h-0 overflow-hidden">
+      {/* ── Left: modules with toggle ────────────────────────────────────── */}
+      <div className="w-48 shrink-0 border-r overflow-y-auto">
+        {PERMISSION_CATALOG.map(mod => {
+          const caps = moduleCapabilities(mod)
+          const on = countOn(caps)
+          const isActive = mod.id === activeId
+          return (
             <div
-              key={pgIdx}
-              className="flex items-center gap-3 px-3 py-2 border-t hover:bg-muted/20 transition-colors"
-            >
-              {pg.page ? (
-                <span className="w-44 shrink-0 text-xs text-muted-foreground">{pg.page}</span>
-              ) : (
-                <span className="w-44 shrink-0" />
+              key={mod.id}
+              onClick={() => setActiveId(mod.id)}
+              className={cn(
+                'flex items-center justify-between gap-2 px-3 py-2.5 cursor-pointer border-l-2 transition-colors select-none',
+                isActive
+                  ? 'bg-primary/[0.07] border-primary'
+                  : 'border-transparent text-foreground/80 hover:bg-muted/30',
               )}
-              <div className="flex flex-wrap gap-x-4 gap-y-1.5">
-                {pg.actions.map((action, actIdx) => (
-                  <label
-                    key={`${pgIdx}-${actIdx}`}
-                    className="flex items-center gap-1.5 cursor-pointer"
-                  >
-                    <input
-                      type="checkbox"
-                      className="rounded border-border"
-                      checked={selected.has(action.perm)}
-                      onChange={e => onChange(action.perm, e.target.checked)}
-                    />
-                    <span className="text-sm">{action.label}</span>
-                  </label>
-                ))}
+            >
+              <div className="flex items-center gap-2 min-w-0">
+                <span className={cn('text-[13px] font-medium truncate', isActive && 'text-primary')}>
+                  {mod.label}
+                </span>
+                {on > 0 && (
+                  <span className={cn(
+                    'shrink-0 rounded-full px-1.5 py-px text-[10px] font-semibold tabular-nums',
+                    isActive ? 'bg-primary/15 text-primary' : 'bg-muted text-muted-foreground',
+                  )}>
+                    {on}
+                  </span>
+                )}
+              </div>
+              <Switch
+                size="sm"
+                checked={on > 0}
+                onCheckedChange={(checked) => setMany(caps, checked as boolean)}
+                onClick={(e) => e.stopPropagation()}
+              />
+            </div>
+          )
+        })}
+      </div>
+
+      {/* ── Right: sub-module sections for the active module ──────────────── */}
+      <div className="flex-1 min-w-0 overflow-y-auto p-4 space-y-4">
+        <div className="flex items-baseline justify-between">
+          <h3 className="text-[13px] font-semibold text-foreground/60 uppercase tracking-wide">
+            {active.label}
+          </h3>
+          <span className="text-[11px] text-muted-foreground">
+            {active.submodules.length} sub-module{active.submodules.length !== 1 ? 's' : ''}
+          </span>
+        </div>
+
+        {active.submodules.map(sub => {
+          const caps = submoduleCaps(sub)
+          const on = countOn(caps)
+          const allOn = on === caps.length
+          return (
+            <div key={sub.id} className="rounded-lg border overflow-hidden">
+              {/* Sub-module header with its own toggle */}
+              <div className="flex items-center justify-between gap-2 bg-muted/50 px-4 py-2.5 border-b">
+                <div className="flex items-center gap-2.5">
+                  <Checkbox
+                    checked={allOn}
+                    indeterminate={on > 0 && !allOn}
+                    onCheckedChange={() => setMany(caps, !allOn)}
+                  />
+                  <span className="text-[13px] font-semibold text-foreground">{sub.label}</span>
+                  {on > 0 && (
+                    <span className="rounded-full bg-primary/10 text-primary px-1.5 py-px text-[10px] font-semibold tabular-nums">
+                      {on}/{caps.length}
+                    </span>
+                  )}
+                </div>
+                <Switch
+                  size="sm"
+                  checked={on > 0}
+                  onCheckedChange={(checked) => setMany(caps, checked as boolean)}
+                />
+              </div>
+
+              {/* Pages table for this sub-module */}
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b bg-background">
+                      <th className="w-full px-4 py-2 text-left text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">
+                        Page
+                      </th>
+                      {active.actions.map(col => (
+                        <th
+                          key={col.key}
+                          className="px-3 py-2 text-center text-[11px] font-semibold text-muted-foreground whitespace-nowrap"
+                        >
+                          {col.label}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y">
+                    {sub.pages.map(pg => {
+                      const pc = pageCaps(pg)
+                      const pageOn = pc.every(c => selected.has(c))
+                      const pageSome = pc.some(c => selected.has(c))
+                      return (
+                        <tr key={pg.id} className="hover:bg-muted/[0.15] transition-colors">
+                          <td className="px-4 py-2.5">
+                            <div className="flex items-center gap-2.5">
+                              <Checkbox
+                                checked={pageOn}
+                                indeterminate={!pageOn && pageSome}
+                                onCheckedChange={() => setMany(pc, !pageOn)}
+                              />
+                              <span className="text-[13px] text-foreground/80 whitespace-nowrap">
+                                {pg.label}
+                              </span>
+                            </div>
+                          </td>
+                          {active.actions.map(col => {
+                            const cap = cellCapability(pg, col.key)
+                            return (
+                              <td key={col.key} className="px-3 py-2.5 text-center">
+                                {cap ? (
+                                  <div className="flex justify-center">
+                                    <Checkbox
+                                      checked={selected.has(cap)}
+                                      onCheckedChange={(v) => toggleCell(cap, v as boolean)}
+                                    />
+                                  </div>
+                                ) : (
+                                  <span className="text-muted-foreground/20 text-base select-none">—</span>
+                                )}
+                              </td>
+                            )
+                          })}
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
               </div>
             </div>
-          ))}
-        </div>
-      ))}
+          )
+        })}
+      </div>
     </div>
   )
 }
@@ -186,25 +224,18 @@ function RoleDialog({
   onSaved: (roles: RoleDefinition[]) => void
 }) {
   const [name, setName] = useState(editing?.name ?? '')
-  const [selected, setSelected] = useState<Set<Permission>>(
-    new Set((editing?.permissions ?? []) as Permission[]),
+  const [selected, setSelected] = useState<Set<Capability>>(
+    new Set(editing?.permissions ?? []),
   )
   const [isPending, startTransition] = useTransition()
 
-  const toggle = (p: Permission, checked: boolean) =>
-    setSelected(prev => {
-      const next = new Set(prev)
-      checked ? next.add(p) : next.delete(p)
-      return next
-    })
-
   const syncState = (role: RoleDefinition | null) => {
     setName(role?.name ?? '')
-    setSelected(new Set((role?.permissions ?? []) as Permission[]))
+    setSelected(new Set(role?.permissions ?? []))
   }
 
   const handleSave = () => {
-    const perms = [...selected] as Permission[]
+    const perms = [...selected]
     startTransition(async () => {
       const result = editing
         ? await updateRole({ id: editing.id, name, permissions: perms })
@@ -214,7 +245,6 @@ function RoleDialog({
         toast.error(result.error.message)
         return
       }
-
       const refreshed = await listRoles()
       onSaved(refreshed.ok ? refreshed.data : [])
       toast.success(editing ? 'Role updated' : 'Role created')
@@ -224,33 +254,46 @@ function RoleDialog({
 
   return (
     <Dialog open={open} onOpenChange={v => { if (!v) { syncState(editing); onClose() } }}>
-      <DialogContent className="max-w-xl">
-        <DialogHeader>
-          <DialogTitle>{editing ? 'Edit role' : 'New role'}</DialogTitle>
+      <DialogContent className="!max-w-[min(960px,95vw)] w-[min(960px,95vw)] h-[85vh] p-0 flex flex-col gap-0 overflow-hidden">
+        {/* Header */}
+        <DialogHeader className="px-6 py-4 border-b shrink-0">
+          <DialogTitle className="text-base">
+            {editing ? `Edit role — ${editing.name}` : 'New role'}
+          </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4 py-2">
-          <div className="space-y-1.5">
-            <Label>Name</Label>
+        {/* Role name */}
+        <div className="px-6 py-3 border-b shrink-0">
+          <div className="flex items-center gap-3 max-w-xs">
+            <Label className="shrink-0 text-sm text-muted-foreground">Name</Label>
             <Input
               value={name}
               onChange={e => setName(e.target.value)}
               placeholder="e.g. Regional Editor"
+              className="h-8 text-sm"
               autoFocus
             />
           </div>
-
-          <div className="space-y-1.5">
-            <Label>Permissions</Label>
-            <PermissionMatrix selected={selected} onChange={toggle} />
-          </div>
         </div>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={onClose} disabled={isPending}>Cancel</Button>
-          <Button onClick={handleSave} disabled={!name.trim() || isPending}>
-            {isPending ? 'Saving…' : 'Save'}
-          </Button>
+        {/* Two-panel permission editor */}
+        <PermissionEditor selected={selected} onChange={setSelected} />
+
+        {/* Footer */}
+        <DialogFooter className="px-6 py-3.5 border-t shrink-0 bg-muted/20">
+          <div className="flex items-center justify-between w-full">
+            <span className="text-xs text-muted-foreground">
+              {selected.size} permission{selected.size !== 1 ? 's' : ''} selected
+            </span>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={onClose} disabled={isPending}>
+                Cancel
+              </Button>
+              <Button size="sm" onClick={handleSave} disabled={!name.trim() || isPending}>
+                {isPending ? 'Saving…' : 'Save role'}
+              </Button>
+            </div>
+          </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -272,7 +315,7 @@ function RolesTab({
   const [isPending, startTransition] = useTransition()
 
   const openCreate = () => { setEditing(null); setDialogOpen(true) }
-  const openEdit = (r: RoleDefinition) => { setEditing(r); setDialogOpen(true) }
+  const openEdit   = (r: RoleDefinition) => { setEditing(r); setDialogOpen(true) }
 
   const handleDelete = (r: RoleDefinition) => {
     startTransition(async () => {
@@ -317,8 +360,7 @@ function RolesTab({
                 </td>
                 <td className="px-4 py-3 text-right space-x-2">
                   <Button
-                    variant="ghost"
-                    size="sm"
+                    variant="ghost" size="sm"
                     className="h-7 px-2 text-xs"
                     onClick={() => openEdit(role)}
                   >
@@ -326,8 +368,7 @@ function RolesTab({
                   </Button>
                   {!role.isSystem && (
                     <Button
-                      variant="ghost"
-                      size="sm"
+                      variant="ghost" size="sm"
                       className="h-7 px-2 text-xs text-destructive hover:text-destructive"
                       onClick={() => setConfirmDelete(role)}
                     >
@@ -350,9 +391,7 @@ function RolesTab({
 
       <Dialog open={!!confirmDelete} onOpenChange={v => { if (!v) setConfirmDelete(null) }}>
         <DialogContent className="max-w-sm">
-          <DialogHeader>
-            <DialogTitle>Delete role</DialogTitle>
-          </DialogHeader>
+          <DialogHeader><DialogTitle>Delete role</DialogTitle></DialogHeader>
           <p className="text-sm text-muted-foreground">
             Delete <strong>{confirmDelete?.name}</strong>? Users assigned this role will lose
             their access.
@@ -478,8 +517,7 @@ function UsersTab({
                 </td>
                 <td className="px-4 py-3 text-right">
                   <Button
-                    variant="ghost"
-                    size="sm"
+                    variant="ghost" size="sm"
                     className="h-7 px-2 text-xs text-destructive hover:text-destructive"
                     onClick={() => handleRemove(user.id)}
                     disabled={isPending}
@@ -502,9 +540,7 @@ function UsersTab({
 
       <Dialog open={inviteOpen} onOpenChange={v => { if (!v) setInviteOpen(false) }}>
         <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Invite user</DialogTitle>
-          </DialogHeader>
+          <DialogHeader><DialogTitle>Invite user</DialogTitle></DialogHeader>
           <div className="space-y-3 py-2">
             <div className="space-y-1.5">
               <Label>Name</Label>
@@ -536,17 +572,28 @@ function UsersTab({
                 </SelectContent>
               </Select>
             </div>
-
             {form.role && (() => {
               const role = roles.find(r => r.id === form.role)
               if (!role || role.permissions.length === 0) return null
+              // Summarise granular capabilities by the module they belong to.
+              const granted = new Set(role.permissions)
+              const modules = PERMISSION_CATALOG
+                .map(m => {
+                  const caps = m.submodules.flatMap(s => s.pages.flatMap(pg => pg.actions.map(a => a.capability)))
+                  const on = caps.filter(c => granted.has(c)).length
+                  return { label: m.label, on, total: caps.length }
+                })
+                .filter(m => m.on > 0)
               return (
-                <div className="rounded-md bg-muted/40 p-3 space-y-1">
-                  <p className="text-xs font-medium text-muted-foreground">Access preview</p>
+                <div className="rounded-md bg-muted/40 p-3 space-y-1.5">
+                  <p className="text-xs font-medium text-muted-foreground">
+                    Access preview · {role.permissions.length} permission{role.permissions.length !== 1 ? 's' : ''}
+                  </p>
                   <div className="flex flex-wrap gap-1.5">
-                    {role.permissions.map(p => (
-                      <span key={p} className="text-xs bg-background border rounded px-1.5 py-0.5">
-                        {PERM_LABEL[p as Permission] ?? p}
+                    {modules.map(m => (
+                      <span key={m.label} className="text-xs bg-background border rounded px-1.5 py-0.5">
+                        {m.label}
+                        <span className="text-muted-foreground"> {m.on}/{m.total}</span>
                       </span>
                     ))}
                   </div>
@@ -555,7 +602,9 @@ function UsersTab({
             })()}
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setInviteOpen(false)} disabled={isPending}>Cancel</Button>
+            <Button variant="outline" onClick={() => setInviteOpen(false)} disabled={isPending}>
+              Cancel
+            </Button>
             <Button
               onClick={handleInvite}
               disabled={!form.name || !form.email || !form.role || isPending}

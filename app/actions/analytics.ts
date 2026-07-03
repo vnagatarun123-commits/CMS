@@ -1,7 +1,15 @@
 'use server'
 
 import { withAuth } from '@/lib/auth/with-auth'
-import { Permission } from '@/lib/rbac/permissions'
+// Each analytics sub-tab is gated by its own granular capability so a role can be
+// granted, say, Video analytics without Content analytics. `can(ANALYTICS_VIEW)`
+// still derives true from any of these for coarse checks elsewhere.
+const ANALYTICS = {
+  content:  'analytics.content:view',
+  reporter: 'analytics.reporter:view',
+  video:    'analytics.video:view',
+  ads:      'analytics.ads:view',
+} as const
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -109,7 +117,7 @@ function last30DaysSimple(base: number, variance: number): { date: string; value
 // ── Server actions ─────────────────────────────────────────────────────────────
 
 export const getContentAnalytics = withAuth(
-  Permission.ANALYTICS_VIEW,
+  ANALYTICS.content,
   async (_session): Promise<ContentAnalytics> => {
     const viewsByDay = last30Days()
 
@@ -195,7 +203,7 @@ export const getContentAnalytics = withAuth(
 )
 
 export const getReporterAnalytics = withAuth(
-  Permission.ANALYTICS_VIEW,
+  ANALYTICS.reporter,
   async (_session): Promise<ReporterAnalytics> => {
     return {
       overview: {
@@ -247,7 +255,7 @@ export const getReporterAnalytics = withAuth(
 )
 
 export const getVideoAnalytics = withAuth(
-  Permission.ANALYTICS_VIEW,
+  ANALYTICS.video,
   async (_session): Promise<VideoAnalytics> => {
     return {
       overview: {
@@ -311,7 +319,7 @@ export const getVideoAnalytics = withAuth(
 )
 
 export const getAdsAnalytics = withAuth(
-  Permission.ANALYTICS_VIEW,
+  ANALYTICS.ads,
   async (_session): Promise<AdsAnalytics> => {
     return {
       overview: {

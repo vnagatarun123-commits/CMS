@@ -129,6 +129,16 @@ export class MockUserRepository implements UserRepository {
     if (user.organizationId !== organizationId) throw new WrongOrgError()
     this.users.delete(userId)
   }
+
+  async updateProfile(userId: string, organizationId: string, params: import('@/lib/data/repositories').UpdateProfileParams): Promise<import('@/types/domain').UserWithRole> {
+    assertOrg(organizationId)
+    const user = this.users.get(userId)
+    if (!user) throw new NotFoundError('User')
+    if (user.organizationId !== organizationId) throw new WrongOrgError()
+    const updated = { ...user, ...params }
+    this.users.set(userId, updated)
+    return updated
+  }
 }
 
 // ── RoleAssignmentRepository ──────────────────────────────────────────────────

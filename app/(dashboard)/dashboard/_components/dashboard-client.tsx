@@ -209,12 +209,12 @@ export function DashboardClient({ user, stats }: Props) {
             </div>
             <div className="flex items-end justify-between gap-3 h-44 pt-2">
               {(publishingActivity ?? []).map((d, i) => (
-                <div key={i} className="flex flex-1 flex-col items-center gap-2 min-w-0">
-                  <div className="flex items-end gap-1 w-full justify-center h-full">
+                <div key={i} className="flex flex-1 flex-col items-center gap-2 min-w-0 h-full">
+                  <div className="flex flex-1 items-end gap-1 w-full justify-center">
                     <div className="w-3.5 rounded-t bg-primary/80" style={{ height: `${(d.submitted / chartMax) * 100}%`, minHeight: d.submitted ? 4 : 0 }} title={`${d.submitted} submitted`} />
                     <div className="w-3.5 rounded-t bg-emerald-500" style={{ height: `${(d.published / chartMax) * 100}%`, minHeight: d.published ? 4 : 0 }} title={`${d.published} published`} />
                   </div>
-                  <span className="text-[11px] text-muted-foreground">{d.label}</span>
+                  <span className="text-[11px] text-muted-foreground shrink-0">{d.label}</span>
                 </div>
               ))}
             </div>

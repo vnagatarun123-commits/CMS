@@ -84,18 +84,18 @@ interface YoutubeLiveEvent {
 // ── Seed data ─────────────────────────────────────────────────────────────────
 
 const SEED_SATELLITE: SatelliteChannel[] = [
-  { id: 'sc1', name: 'TV9 Telugu',         logo: null, streamUrl: 'https://stream.tv9telugu.com/live', category: 'News',          description: 'Telugu news channel',          active: true,  addedOn: new Date('2025-01-10') },
-  { id: 'sc2', name: 'NTV Telugu',          logo: null, streamUrl: 'https://live.ntvtelugu.com/hls',   category: 'News',          description: 'NTV 24x7 news stream',         active: true,  addedOn: new Date('2025-01-15') },
-  { id: 'sc3', name: 'ABN Andhra Jyothi',  logo: null, streamUrl: 'https://abn.stream.live/ch1',      category: 'News',          description: 'Andhra Jyothi live stream',    active: false, addedOn: new Date('2025-02-01') },
-  { id: 'sc4', name: 'Gemini TV',          logo: null, streamUrl: 'https://gemini.live/stream',        category: 'Entertainment', description: 'Gemini entertainment channel', active: true,  addedOn: new Date('2025-02-20') },
-  { id: 'sc5', name: 'Zee Telugu',         logo: null, streamUrl: 'https://zeep.live/zeetelugu',       category: 'Entertainment', description: 'Zee Telugu HD stream',         active: true,  addedOn: new Date('2025-03-05') },
+  { id: 'sc1', name: 'TV9 Telugu',         logo: 'https://upload.wikimedia.org/wikipedia/commons/9/94/TV9TeluguLogo.jpg', streamUrl: 'https://stream.tv9telugu.com/live', category: 'News',          description: 'Telugu news channel',          active: true,  addedOn: new Date('2025-01-10') },
+  { id: 'sc2', name: 'NTV Telugu',          logo: 'https://upload.wikimedia.org/wikipedia/en/b/ba/Ntv_India_official_logo.png', streamUrl: 'https://live.ntvtelugu.com/hls',   category: 'News',          description: 'NTV 24x7 news stream',         active: true,  addedOn: new Date('2025-01-15') },
+  { id: 'sc3', name: 'ABN Andhra Jyothi',  logo: 'https://upload.wikimedia.org/wikipedia/commons/0/01/Andhra_Jyothi_newspaper_logo.png', streamUrl: 'https://abn.stream.live/ch1',      category: 'News',          description: 'Andhra Jyothi live stream',    active: false, addedOn: new Date('2025-02-01') },
+  { id: 'sc4', name: 'Gemini TV',          logo: 'https://upload.wikimedia.org/wikipedia/en/6/63/Gemini_TV_Logo.png', streamUrl: 'https://gemini.live/stream',        category: 'Entertainment', description: 'Gemini entertainment channel', active: true,  addedOn: new Date('2025-02-20') },
+  { id: 'sc5', name: 'Zee Telugu',         logo: 'https://upload.wikimedia.org/wikipedia/commons/5/57/Zee_Telugu.png', streamUrl: 'https://zeep.live/zeetelugu',       category: 'Entertainment', description: 'Zee Telugu HD stream',         active: true,  addedOn: new Date('2025-03-05') },
 ]
 
 const SEED_YOUTUBE: YoutubeChannel[] = [
-  { id: 'yc1', name: 'TV9 Telugu',        youtubeUrl: 'https://youtube.com/@tv9telugu',       logo: null, subscriberCount: '8.2M', active: true,  addedOn: new Date('2025-01-12') },
-  { id: 'yc2', name: 'NTV Telugu',        youtubeUrl: 'https://youtube.com/@ntvtelugu',       logo: null, subscriberCount: '5.1M', active: true,  addedOn: new Date('2025-01-20') },
-  { id: 'yc3', name: 'PuraLocal News',    youtubeUrl: 'https://youtube.com/@puralocalnews',   logo: null, subscriberCount: '124K', active: true,  addedOn: new Date('2025-04-01') },
-  { id: 'yc4', name: 'Telangana Today',   youtubeUrl: 'https://youtube.com/@telanganatoday', logo: null, subscriberCount: '2.3M', active: false, addedOn: new Date('2025-04-10') },
+  { id: 'yc1', name: 'TV9 Telugu',        youtubeUrl: 'https://youtube.com/@tv9telugu',       logo: 'https://upload.wikimedia.org/wikipedia/commons/9/94/TV9TeluguLogo.jpg', subscriberCount: '8.2M', active: true,  addedOn: new Date('2025-01-12') },
+  { id: 'yc2', name: 'NTV Telugu',        youtubeUrl: 'https://youtube.com/@ntvtelugu',       logo: 'https://upload.wikimedia.org/wikipedia/en/b/ba/Ntv_India_official_logo.png', subscriberCount: '5.1M', active: true,  addedOn: new Date('2025-01-20') },
+  { id: 'yc3', name: 'PuraLocal News',    youtubeUrl: 'https://youtube.com/@puralocalnews',   logo: 'https://images.unsplash.com/photo-1495020689067-958852a6565d?auto=format&fit=crop&w=150&h=150&q=80', subscriberCount: '124K', active: true,  addedOn: new Date('2025-04-01') },
+  { id: 'yc4', name: 'Telangana Today',   youtubeUrl: 'https://youtube.com/@telanganatoday', logo: 'https://upload.wikimedia.org/wikipedia/en/d/d3/Telangana_Today_Logo.jpg', subscriberCount: '2.3M', active: false, addedOn: new Date('2025-04-10') },
 ]
 
 const SEED_REPORTER_LIVE: ReporterLive[] = [

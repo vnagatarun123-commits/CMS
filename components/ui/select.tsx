@@ -245,10 +245,10 @@ SelectTrigger.displayName = "SelectTrigger";
 
 // ─── SelectContent ───────────────────────────────────────────────────────────
 
-interface SelectContentProps { className?: string; children: ReactNode; }
+interface SelectContentProps { className?: string; children: ReactNode; side?: 'top' | 'bottom' | 'auto' }
 
 const SelectContent = forwardRef<HTMLDivElement, SelectContentProps>(
-  ({ className, children }, ref) => {
+  ({ className, children, side = 'auto' }, ref) => {
     const { open, setOpen, value, triggerRef } = useSelectContext();
     const containerRef = useRef<HTMLDivElement>(null);
     const [triggerRect, setTriggerRect] = useState<DOMRect | null>(null);
@@ -275,8 +275,34 @@ const SelectContent = forwardRef<HTMLDivElement, SelectContentProps>(
     }, []);
 
     useEffect(() => {
-      if (open && triggerRef.current) setTriggerRect(triggerRef.current.getBoundingClientRect());
-    }, [open, triggerRef]);
+      if (!open || !triggerRef.current) return;
+
+      const updateRect = () => {
+        if (triggerRef.current) {
+          const rect = triggerRef.current.getBoundingClientRect();
+          if (
+            rect.bottom < 0 ||
+            rect.top > window.innerHeight ||
+            rect.right < 0 ||
+            rect.left > window.innerWidth
+          ) {
+            setOpen(false);
+          } else {
+            setTriggerRect(rect);
+          }
+        }
+      };
+
+      updateRect();
+
+      window.addEventListener("resize", updateRect);
+      window.addEventListener("scroll", updateRect, { capture: true, passive: true });
+
+      return () => {
+        window.removeEventListener("resize", updateRect);
+        window.removeEventListener("scroll", updateRect, { capture: true });
+      };
+    }, [open, triggerRef, setOpen]);
 
     useEffect(() => {
       if (!open || !triggerRect) return;
@@ -331,9 +357,18 @@ const SelectContent = forwardRef<HTMLDivElement, SelectContentProps>(
     const focusRect = focusedIndex !== null ? itemRects[focusedIndex] : null;
     const isHoveringOther = activeIndex !== null && activeIndex !== checkedIndex;
 
+    const spaceBelow = window.innerHeight - triggerRect.bottom;
+    const spaceAbove = triggerRect.top;
+    const openUpward = side === 'top' || (side === 'auto' && spaceBelow < 220 && spaceAbove > spaceBelow);
+    // Use top+translateY(-100%) for upward so position anchors directly to triggerRect
+    // rather than relying on window.innerHeight which can be wrong in nested scroll contexts.
+    const positionStyle: React.CSSProperties = openUpward
+      ? { position: "fixed", top: triggerRect.top - 6, left: triggerRect.left, minWidth: triggerRect.width, zIndex: 50, transform: "translateY(-100%)" }
+      : { position: "fixed", top: triggerRect.bottom + 6, left: triggerRect.left, minWidth: triggerRect.width, zIndex: 50 };
+
     return createPortal(
       <SelectContentContext.Provider value={{ activeIndex, checkedIndex, getOrAssignIndex }}>
-        <div style={{ position: "fixed", top: triggerRect.bottom + 6, left: triggerRect.left, minWidth: triggerRect.width, zIndex: 50 }}>
+        <div style={positionStyle}>
           <motion.div
             ref={(node) => {
               (containerRef as React.MutableRefObject<HTMLDivElement | null>).current = node;
@@ -351,10 +386,10 @@ const SelectContent = forwardRef<HTMLDivElement, SelectContentProps>(
             onBlur={(e) => { if (containerRef.current?.contains(e.relatedTarget as Node)) return; setFocusedIndex(null); setActiveIndex(null); }}
             onKeyDown={handleKeyDown}
             className={cn(`relative flex flex-col gap-0.5 max-h-[300px] overflow-y-auto ${shape.container} bg-card shadow-[0_4px_12px_rgba(0,0,0,0.02)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.5)] border border-border/60 p-1 select-none outline-none`, className)}
-            initial={{ opacity: 0, y: -4, scaleY: 0.96 }}
+            initial={{ opacity: 0, y: openUpward ? 4 : -4, scaleY: 0.96 }}
             animate={{ opacity: 1, y: 0, scaleY: 1 }}
             transition={springs.fast}
-            style={{ transformOrigin: "top center" }}
+            style={{ transformOrigin: openUpward ? "bottom center" : "top center" }}
           >
             <AnimatePresence>
               {checkedRect && (

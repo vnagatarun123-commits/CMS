@@ -808,7 +808,7 @@ export function UserManagementClient() {
                 <SelectTrigger className="h-7 w-[70px] min-w-0 text-xs text-foreground font-medium rounded-md bg-background border-input px-2">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent side="top">
                   {PAGE_SIZE_OPTIONS.map(n => <SelectItem key={n} value={String(n)}>{n}</SelectItem>)}
                 </SelectContent>
               </Select>

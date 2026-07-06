@@ -11,7 +11,7 @@ import {
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
-  SEED_REPORTERS, SEED_SETTLEMENTS, SEED_REDEMPTIONS, COMMISSION_RULES,
+  SEED_REPORTERS, SEED_SETTLEMENTS, SEED_REDEMPTIONS, getStoredCommissionRules,
 } from '@/lib/mock/seed-reporters'
 import type { Reporter } from '@/types/reporter'
 import type { Settlement, SettlementStatus, RedemptionRequest, MonthlyEarningBreakdown } from '@/types/earnings'
@@ -319,7 +319,8 @@ function DetailPanel({ reporter, settlements, onClose, onEdit }: {
   onEdit: (s: Settlement, action: 'paid' | 'adjust' | 'hold' | 'process') => void
 }) {
   const [tab, setTab] = useState<DetailTab>('summary')
-  const rule          = COMMISSION_RULES.find(r => r.id === reporter.commissionRuleId) ?? COMMISSION_RULES[0]!
+  const rules         = getStoredCommissionRules()
+  const rule          = rules.find(r => r.id === reporter.commissionRuleId) ?? rules[0]!
   const latest        = settlements[settlements.length - 1]
 
   const TABS: { id: DetailTab; label: string }[] = [

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { toast } from 'sonner'
 import {
   Percent, ImageIcon, Video, Film, Radio, TrendingUp, Zap,
@@ -8,7 +8,7 @@ import {
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import { COMMISSION_RULES, SEED_REPORTERS } from '@/lib/mock/seed-reporters'
+import { getStoredCommissionRules, saveStoredCommissionRules, SEED_REPORTERS, COMMISSION_RULES } from '@/lib/mock/seed-reporters'
 import type { CommissionRule, EarningMode } from '@/types/earnings'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -325,6 +325,10 @@ export function CommissionClient() {
   const [isNewRule, setIsNew]   = useState(false)
   const [confirmDelete, setConfirmDelete] = useState<CommissionRule | null>(null)
 
+  useEffect(() => {
+    setRules(getStoredCommissionRules())
+  }, [])
+
   const orgId = rules[0]?.organizationId ?? 'org_puralocal_001'
   const assignedCount = (ruleId: string) =>
     SEED_REPORTERS.filter(r => r.commissionRuleId === ruleId).length
@@ -340,6 +344,7 @@ export function CommissionClient() {
       if (updated.isDefault) next = next.map(r => (r.id === updated.id ? r : { ...r, isDefault: false }))
       // Always keep at least one default.
       if (next.length > 0 && !next.some(r => r.isDefault)) next = next.map((r, i) => (i === 0 ? { ...r, isDefault: true } : r))
+      saveStoredCommissionRules(next)
       return next
     })
     setEditor(null); setIsNew(false)
@@ -350,6 +355,7 @@ export function CommissionClient() {
     setRules(prev => {
       let next = prev.filter(r => r.id !== rule.id)
       if (rule.isDefault && !next.some(r => r.isDefault)) next = next.map((r, i) => (i === 0 ? { ...r, isDefault: true } : r))
+      saveStoredCommissionRules(next)
       return next
     })
     toast.success(`“${rule.name}” deleted`)

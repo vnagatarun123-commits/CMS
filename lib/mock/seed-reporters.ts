@@ -460,3 +460,28 @@ export const SEED_ADJUSTMENTS: ManualAdjustment[] = [
     createdAt: new Date('2026-06-01'), createdBy: 'admin@puralocal.in',
   },
 ]
+
+export function getStoredCommissionRules(): CommissionRule[] {
+  if (typeof window === 'undefined') return COMMISSION_RULES
+  try {
+    const raw = localStorage.getItem('puralocal_commission_rules_v2')
+    if (!raw) {
+      localStorage.setItem('puralocal_commission_rules_v2', JSON.stringify(COMMISSION_RULES))
+      return COMMISSION_RULES
+    }
+    const parsed = JSON.parse(raw) as any[]
+    return parsed.map(r => ({
+      ...r,
+      createdAt: r.createdAt ? new Date(r.createdAt) : new Date(),
+      updatedAt: r.updatedAt ? new Date(r.updatedAt) : new Date(),
+    }))
+  } catch (e) {
+    console.error('Failed to parse stored commission rules:', e)
+    return COMMISSION_RULES
+  }
+}
+
+export function saveStoredCommissionRules(list: CommissionRule[]): void {
+  if (typeof window === 'undefined') return
+  localStorage.setItem('puralocal_commission_rules_v2', JSON.stringify(list))
+}

@@ -217,10 +217,25 @@ export class SupabaseUserRepository implements UserRepository {
     })
   }
 
-  async updateProfile(_userId: string, _organizationId: string, _params: import('@/lib/data/repositories').UpdateProfileParams): Promise<import('@/types/domain').UserWithRole> {
-    // Requires a Prisma migration adding phone/bio/timezone/language columns to Profile.
-    // Implemented in the Supabase swap slice.
-    throw new Error('updateProfile not yet implemented in Supabase backend — migrate schema first')
+  async updateProfile(userId: string, organizationId: string, params: import('@/lib/data/repositories').UpdateProfileParams): Promise<import('@/types/domain').UserWithRole> {
+    assertOrg(organizationId)
+    return withOrgContext(this.prisma, organizationId, async (tx) => {
+      const profile = await tx.profile.findFirst({ where: { id: userId, organizationId } })
+      if (!profile) throw new NotFoundError('User')
+      const updated = await tx.profile.update({
+        where: { id: userId },
+        data: {
+          ...(params.name !== undefined ? { name: params.name } : {}),
+          ...(params.phone !== undefined ? { phone: params.phone ?? null } : {}),
+          ...(params.bio !== undefined ? { bio: params.bio ?? null } : {}),
+          ...(params.timezone !== undefined ? { timezone: params.timezone ?? null } : {}),
+          ...(params.language !== undefined ? { language: params.language ?? null } : {}),
+          ...(params.photoUrl !== undefined ? { photoUrl: params.photoUrl ?? null } : {}),
+        },
+        include: { roleAssignments: { where: { organizationId } } },
+      })
+      return toUserWithRole(updated)
+    })
   }
 }
 

@@ -1,5 +1,6 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
 }
 
 datasource db {
@@ -14,13 +15,19 @@ model Organization {
   slug      String   @unique
   createdAt DateTime @default(now()) @map("created_at")
 
-  profiles        Profile[]
-  roleAssignments RoleAssignment[]
-  auditLogs       AuditLog[]
-  categories      Category[]
-  locations       Location[]
-  languages       Language[]
-  content         Content[]
+  profiles              Profile[]
+  roleAssignments       RoleAssignment[]
+  auditLogs             AuditLog[]
+  categories            Category[]
+  locations             Location[]
+  languages             Language[]
+  content               Content[]
+  roleDefinitions       RoleDefinition[]
+  notifications         Notification[]
+  notificationTemplates NotificationTemplate[]
+  commissionRules       CommissionRule[]
+  reporters             Reporter[]
+  contributors          Contributor[]
 
   @@map("organizations")
 }
@@ -33,10 +40,14 @@ model Profile {
   name           String
   organizationId String    @map("organization_id")
   photoUrl       String?   @map("photo_url")
+  phone          String?
+  bio            String?
+  timezone       String?
+  language       String?
   invitedAt      DateTime  @map("invited_at")
   joinedAt       DateTime? @map("joined_at")
 
-  organization    Organization @relation(fields: [organizationId], references: [id])
+  organization    Organization     @relation(fields: [organizationId], references: [id])
   roleAssignments RoleAssignment[]
   content         Content[]
 
@@ -62,6 +73,22 @@ model RoleAssignment {
   @@map("role_assignments")
 }
 
+// ── RoleDefinition ────────────────────────────────────────────────────────────
+
+model RoleDefinition {
+  id             String   @id
+  organizationId String   @map("organization_id")
+  name           String
+  permissions    String[]
+  isSystem       Boolean  @default(false) @map("is_system")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@index([organizationId])
+  @@map("role_definitions")
+}
+
 // ── AuditLog ──────────────────────────────────────────────────────────────────
 
 model AuditLog {
@@ -83,12 +110,11 @@ model AuditLog {
 }
 
 // ── Category ──────────────────────────────────────────────────────────────────
-// Per-org content categories (e.g. Local News, Sports). Soft-deletable.
 
 model Category {
   id             String    @id @default(cuid())
   organizationId String    @map("organization_id")
-  code           String    // Short code, e.g. LOC, SPT — unique per org
+  code           String
   name           String
   slug           String
   active         Boolean   @default(true)
@@ -105,15 +131,13 @@ model Category {
 }
 
 // ── Location ──────────────────────────────────────────────────────────────────
-// Hierarchical: STATE → DISTRICT → MANDAL → VILLAGE.
-// parentId is null for top-level (STATE). Unique slug per org+level.
 
 model Location {
   id             String    @id @default(cuid())
   organizationId String    @map("organization_id")
   name           String
   slug           String
-  level          String    // LocationLevel: STATE | DISTRICT | MANDAL | VILLAGE
+  level          String
   parentId       String?   @map("parent_id")
   active         Boolean   @default(true)
   deletedAt      DateTime? @map("deleted_at")
@@ -132,12 +156,11 @@ model Location {
 }
 
 // ── Language ──────────────────────────────────────────────────────────────────
-// Per-org languages. code = ISO 639-1 (en, te, hi, kn, ta). Soft-deletable.
 
 model Language {
   id             String    @id @default(cuid())
   organizationId String    @map("organization_id")
-  code           String    // ISO 639-1, e.g. en, te, hi — unique per org
+  code           String
   name           String
   slug           String
   active         Boolean   @default(true)
@@ -154,14 +177,13 @@ model Language {
 }
 
 // ── Content ───────────────────────────────────────────────────────────────────
-// Single model for all content types. Type-specific fields are nullable.
 
 model Content {
   id             String    @id @default(cuid())
   organizationId String    @map("organization_id")
-  type           String    // ContentType: IMAGE | VIDEO | SHORT | LIVE | YOUTUBE
-  status         String    // ContentStatus: DRAFT | UNDER_REVIEW | NEEDS_CLARIFICATION | SCHEDULED | PUBLISHED
-  source         String    // ContentSource: APP | CMS
+  type           String
+  status         String
+  source         String
   title          String
   slug           String
   body           String?
@@ -185,11 +207,11 @@ model Content {
   createdAt      DateTime  @default(now()) @map("created_at")
   updatedAt      DateTime  @updatedAt @map("updated_at")
 
-  organization Organization @relation(fields: [organizationId], references: [id])
-  category     Category?    @relation(fields: [categoryId], references: [id])
-  location     Location?    @relation(fields: [locationId], references: [id])
-  language     Language?    @relation(fields: [languageId], references: [id])
-  reporter     Profile?     @relation(fields: [reporterId], references: [id])
+  organization Organization        @relation(fields: [organizationId], references: [id])
+  category     Category?           @relation(fields: [categoryId], references: [id])
+  location     Location?           @relation(fields: [locationId], references: [id])
+  language     Language?           @relation(fields: [languageId], references: [id])
+  reporter     Profile?            @relation(fields: [reporterId], references: [id])
   transitions  ContentTransition[]
 
   @@index([organizationId])
@@ -199,7 +221,6 @@ model Content {
 }
 
 // ── ContentTransition ─────────────────────────────────────────────────────────
-// Append-only history of every status change.
 
 model ContentTransition {
   id         String   @id @default(cuid())
@@ -215,4 +236,208 @@ model ContentTransition {
 
   @@index([contentId])
   @@map("content_transitions")
+}
+
+// ── Notification ──────────────────────────────────────────────────────────────
+
+model Notification {
+  id                  String    @id @default(cuid())
+  organizationId      String    @map("organization_id")
+  title               String
+  body                String
+  imageUrl            String?   @map("image_url")
+  deepLink            String?   @map("deep_link")
+  channels            String[]
+  audience            String
+  audienceValue       String?   @map("audience_value")
+  priority            String
+  status              String
+  templateId          String?   @map("template_id")
+  scheduledAt         DateTime? @map("scheduled_at")
+  sentAt              DateTime? @map("sent_at")
+  sentBy              String    @map("sent_by")
+  sentByName          String    @map("sent_by_name")
+  estimatedRecipients Int       @default(0) @map("estimated_recipients")
+  deliveredCount      Int       @default(0) @map("delivered_count")
+  openedCount         Int       @default(0) @map("opened_count")
+  failedCount         Int       @default(0) @map("failed_count")
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@index([organizationId])
+  @@map("notifications")
+}
+
+// ── NotificationTemplate ──────────────────────────────────────────────────────
+
+model NotificationTemplate {
+  id             String   @id @default(cuid())
+  organizationId String   @map("organization_id")
+  name           String
+  description    String   @default("")
+  title          String
+  body           String
+  channels       String[]
+  audience       String
+  priority       String
+  category       String
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@index([organizationId])
+  @@map("notification_templates")
+}
+
+// ── CommissionRule ────────────────────────────────────────────────────────────
+
+model CommissionRule {
+  id                   String   @id
+  organizationId       String   @map("organization_id")
+  name                 String
+  description          String?
+  isDefault            Boolean  @default(false) @map("is_default")
+  earningMode          String   @map("earning_mode")
+  imagePostRateInr     Float    @default(0) @map("image_post_rate_inr")
+  videoPostRateInr     Float    @default(0) @map("video_post_rate_inr")
+  shortPostRateInr     Float    @default(0) @map("short_post_rate_inr")
+  liveSessionRateInr   Float    @default(0) @map("live_session_rate_inr")
+  imageCpmInr          Float    @default(0) @map("image_cpm_inr")
+  videoCpmInr          Float    @default(0) @map("video_cpm_inr")
+  shortCpmInr          Float    @default(0) @map("short_cpm_inr")
+  liveCpmInr           Float    @default(0) @map("live_cpm_inr")
+  reachBonusThreshold  Int      @default(0) @map("reach_bonus_threshold")
+  reachBonusAmountInr  Float    @default(0) @map("reach_bonus_amount_inr")
+  viralBonusThreshold  Int      @default(0) @map("viral_bonus_threshold")
+  viralBonusAmountInr  Float    @default(0) @map("viral_bonus_amount_inr")
+  volumeBonusThreshold Int      @default(0) @map("volume_bonus_threshold")
+  volumeBonusAmountInr Float    @default(0) @map("volume_bonus_amount_inr")
+  streakBonusMonths    Int      @default(0) @map("streak_bonus_months")
+  streakBonusAmountInr Float    @default(0) @map("streak_bonus_amount_inr")
+  tdsApplicable        Boolean  @default(false) @map("tds_applicable")
+  tdsThresholdInr      Float    @default(0) @map("tds_threshold_inr")
+  tdsRatePercent       Float    @default(0) @map("tds_rate_percent")
+  createdAt            DateTime @default(now()) @map("created_at")
+  updatedAt            DateTime @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  reporters    Reporter[]
+
+  @@index([organizationId])
+  @@map("commission_rules")
+}
+
+// ── Reporter ──────────────────────────────────────────────────────────────────
+
+model Reporter {
+  id                      String    @id
+  contributorId           String    @map("contributor_id")
+  organizationId          String    @map("organization_id")
+  name                    String
+  photoUrl                String?   @map("photo_url")
+  mobile                  String
+  email                   String
+  designation             String
+  district                String
+  state                   String?
+  reporterType            String    @map("reporter_type")
+  language                String?
+  coverageAreas           String[]  @default([]) @map("coverage_areas")
+  newsGenres              String[]  @default([]) @map("news_genres")
+  status                  String
+  approvedAt              DateTime? @map("approved_at")
+  approvedBy              String?   @map("approved_by")
+  commissionRuleId        String?   @map("commission_rule_id")
+  payment                 Json?
+  stats                   Json?
+  lifetimeEarnedInr       Float     @default(0) @map("lifetime_earned_inr")
+  lifetimeSettledInr      Float     @default(0) @map("lifetime_settled_inr")
+  pendingEarningsInr      Float     @default(0) @map("pending_earnings_inr")
+  currentMonthEarningsInr Float     @default(0) @map("current_month_earnings_inr")
+  annualEarnedInr         Float     @default(0) @map("annual_earned_inr")
+  tdsDeductedInr          Float     @default(0) @map("tds_deducted_inr")
+  adminNotes              String?   @map("admin_notes")
+  flaggedForReview        Boolean   @default(false) @map("flagged_for_review")
+  createdAt               DateTime  @default(now()) @map("created_at")
+  updatedAt               DateTime  @updatedAt @map("updated_at")
+
+  organization   Organization    @relation(fields: [organizationId], references: [id])
+  commissionRule CommissionRule? @relation(fields: [commissionRuleId], references: [id])
+
+  @@index([organizationId])
+  @@map("reporters")
+}
+
+// ── Contributor ───────────────────────────────────────────────────────────────
+
+model Contributor {
+  id                    String    @id @default(cuid())
+  contributorId         String    @map("contributor_id")
+  organizationId        String    @map("organization_id")
+  name                  String
+  photoUrl              String?   @map("photo_url")
+  status                String
+  contributorSource     String    @map("contributor_source")
+  mobile                String
+  alternateMobile       String?   @map("alternate_mobile")
+  email                 String
+  dob                   String?
+  gender                String?
+  occupation            String?
+  education             String?
+  language              String?
+  languagesKnown        String[]  @default([]) @map("languages_known")
+  bio                   String?
+  address               String?
+  houseNumber           String?   @map("house_number")
+  street                String?
+  area                  String?
+  village               String?
+  mandal                String?
+  district              String
+  state                 String?
+  pincode               String?
+  designation           String
+  reporterType          String    @map("reporter_type")
+  experience            String?
+  contributorType       String?   @map("contributor_type")
+  registrationSource    String?   @map("registration_source")
+  source                String?
+  recruitedBy           String?   @map("recruited_by")
+  referralBy            String?   @map("referral_by")
+  referralCode          String?   @map("referral_code")
+  registrationDate      DateTime? @map("registration_date")
+  appliedOn             DateTime  @map("applied_on")
+  approvedOn            DateTime? @map("approved_on")
+  approvedBy            String?   @map("approved_by")
+  rejectedOn            DateTime? @map("rejected_on")
+  remarks               String?
+  verificationStatus    String?   @map("verification_status")
+  verifiedBy            String?   @map("verified_by")
+  verificationDate      DateTime? @map("verification_date")
+  aadhaarMasked         String?   @map("aadhaar_masked")
+  panMasked             String?   @map("pan_masked")
+  coverageAreas         String[]  @default([]) @map("coverage_areas")
+  newsGenres            String[]  @default([]) @map("news_genres")
+  assignedMandal        String?   @map("assigned_mandal")
+  assignedVillage       String?   @map("assigned_village")
+  coveragePriorityLevel String?   @map("coverage_priority_level")
+  accountHolderName     String?   @map("account_holder_name")
+  bankName              String?   @map("bank_name")
+  accountNumberMasked   String?   @map("account_number_masked")
+  ifscCode              String?   @map("ifsc_code")
+  branch                String?
+  upiId                 String?   @map("upi_id")
+  paymentMethod         String?   @map("payment_method")
+  panNumber             String?   @map("pan_number")
+  deviceInfo            Json?     @map("device_info")
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@index([organizationId])
+  @@map("contributors")
 }

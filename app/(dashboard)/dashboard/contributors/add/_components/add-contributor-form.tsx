@@ -613,6 +613,9 @@ export function AddContributorForm() {
     const newContributor = {
       id: newId,
       contributorId,
+      organizationId: 'org_puralocal_001',
+      createdAt: new Date(),
+      updatedAt: new Date(),
       name: form.fullName,
       photoUrl: form.photoUrl || null,
       mobile: form.mobile,

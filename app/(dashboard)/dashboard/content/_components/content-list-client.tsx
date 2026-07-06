@@ -305,13 +305,14 @@ function Thumbnail({ type, url, title, onPreview }: {
   type: ContentType; url?: string | null; title: string; onPreview: () => void
 }) {
   const { icon: Icon, color } = TYPE_CFG[type]
+  const [imgError, setImgError] = useState(false)
 
-  if (url) {
+  if (url && !imgError) {
     return (
       <button onClick={onPreview} type="button" title="Preview"
         className="h-14 w-[72px] shrink-0 overflow-hidden rounded bg-muted relative group cursor-pointer">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={url} alt={title} className="h-full w-full object-cover transition-transform group-hover:scale-105" loading="lazy" />
+        <img src={url} alt={title} onError={() => setImgError(true)} className="h-full w-full object-cover transition-transform group-hover:scale-105" loading="lazy" />
         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/35 flex items-center justify-center transition-all">
           <Eye className="h-3.5 w-3.5 text-white opacity-0 group-hover:opacity-100 transition-opacity drop-shadow" />
         </div>
@@ -1569,27 +1570,27 @@ function ContentRow({ item, locations, columns, pageIndex, onEdit, onApprove, on
                 <ActionIcon onClick={onDelete} title="Delete Draft" icon={<Trash2 className="h-3.5 w-3.5" />} cls="text-red-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-500/15 dark:hover:text-red-300" />
               </>}
               {isReview && <>
-                <ActionIcon onClick={onPreview} title="Preview" icon={<Eye className="h-3.5 w-3.5" />} cls="text-muted-foreground hover:text-foreground hover:bg-muted" />
+                <ActionIcon onClick={onPreview} title="Preview" icon={<Maximize2 className="h-3.5 w-3.5" />} cls="text-muted-foreground hover:text-foreground hover:bg-muted" />
                 <ActionIcon onClick={onEdit} title="Edit" icon={<Pencil className="h-3.5 w-3.5" />} cls="text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-500/15" />
                 <ActionIcon onClick={onActivity} title="Activity" icon={<History className="h-3.5 w-3.5" />} cls="text-violet-500 hover:bg-violet-50 dark:hover:bg-violet-500/15" />
                 <ActionIcon onClick={onApprove} title="Approve & Publish" icon={<CheckCircle className="h-3.5 w-3.5" />} cls="text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-500/15" />
                 <ActionIcon onClick={onReject} title="Needs Clarification" icon={<XCircle className="h-3.5 w-3.5" />} cls="text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-500/15" />
               </>}
               {isRejected && <>
-                <ActionIcon onClick={onPreview} title="Preview" icon={<Eye className="h-3.5 w-3.5" />} cls="text-muted-foreground hover:text-foreground hover:bg-muted" />
+                <ActionIcon onClick={onPreview} title="Preview" icon={<Maximize2 className="h-3.5 w-3.5" />} cls="text-muted-foreground hover:text-foreground hover:bg-muted" />
                 <ActionIcon onClick={onEdit} title="Edit" icon={<Pencil className="h-3.5 w-3.5" />} cls="text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-500/15" />
                 <ActionIcon onClick={onActivity} title="Activity" icon={<History className="h-3.5 w-3.5" />} cls="text-violet-500 hover:bg-violet-50 dark:hover:bg-violet-500/15" />
                 <ActionIcon onClick={onApprove} title="Approve & Publish" icon={<CheckCircle className="h-3.5 w-3.5" />} cls="text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-500/15" />
                 <ActionIcon onClick={onReject} title="Send Back to Draft" icon={<Undo2 className="h-3.5 w-3.5" />} cls="text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-500/15" />
               </>}
               {isScheduled && <>
-                <ActionIcon onClick={onPreview} title="Preview" icon={<Eye className="h-3.5 w-3.5" />} cls="text-muted-foreground hover:text-foreground hover:bg-muted" />
+                <ActionIcon onClick={onPreview} title="Preview" icon={<Maximize2 className="h-3.5 w-3.5" />} cls="text-muted-foreground hover:text-foreground hover:bg-muted" />
                 <ActionIcon onClick={onEdit} title="Edit" icon={<Pencil className="h-3.5 w-3.5" />} cls="text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-500/15" />
                 <ActionIcon onClick={onActivity} title="Activity" icon={<History className="h-3.5 w-3.5" />} cls="text-violet-500 hover:bg-violet-50 dark:hover:bg-violet-500/15" />
                 <ActionIcon onClick={onApprove} title="Publish Now" icon={<CheckCircle className="h-3.5 w-3.5" />} cls="text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-500/15" />
               </>}
               {isPublished && <>
-                <ActionIcon onClick={onPreview} title="Preview" icon={<Eye className="h-3.5 w-3.5" />} cls="text-muted-foreground hover:text-foreground hover:bg-muted" />
+                <ActionIcon onClick={onPreview} title="Preview" icon={<Maximize2 className="h-3.5 w-3.5" />} cls="text-muted-foreground hover:text-foreground hover:bg-muted" />
                 <ActionIcon onClick={onActivity} title="Activity" icon={<History className="h-3.5 w-3.5" />} cls="text-violet-500 hover:bg-violet-50 dark:hover:bg-violet-500/15" />
                 <ActionIcon onClick={onToggleVisibility}
                   title={isVisible ? 'Hide from app' : 'Make visible in app'}

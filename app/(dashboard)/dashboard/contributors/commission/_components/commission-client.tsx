@@ -336,28 +336,29 @@ export function CommissionClient() {
   function openCreate() { setEditor(blankRule(orgId)); setIsNew(true) }
   function openEdit(rule: CommissionRule) { setEditor(rule); setIsNew(false) }
 
+  // Update state AND persist to the localStorage-backed store so changes
+  // survive a full page refresh (React state alone is in-memory only).
+  function commit(next: CommissionRule[]) {
+    setRules(next)
+    saveStoredCommissionRules(next)
+  }
+
   function saveRule(updated: CommissionRule) {
-    setRules(prev => {
-      const exists = prev.some(r => r.id === updated.id)
-      let next = exists ? prev.map(r => (r.id === updated.id ? updated : r)) : [...prev, updated]
-      // A single default: if this rule is default, clear default on the rest.
-      if (updated.isDefault) next = next.map(r => (r.id === updated.id ? r : { ...r, isDefault: false }))
-      // Always keep at least one default.
-      if (next.length > 0 && !next.some(r => r.isDefault)) next = next.map((r, i) => (i === 0 ? { ...r, isDefault: true } : r))
-      saveStoredCommissionRules(next)
-      return next
-    })
+    const exists = rules.some(r => r.id === updated.id)
+    let next = exists ? rules.map(r => (r.id === updated.id ? updated : r)) : [...rules, updated]
+    // A single default: if this rule is default, clear default on the rest.
+    if (updated.isDefault) next = next.map(r => (r.id === updated.id ? r : { ...r, isDefault: false }))
+    // Always keep at least one default.
+    if (next.length > 0 && !next.some(r => r.isDefault)) next = next.map((r, i) => (i === 0 ? { ...r, isDefault: true } : r))
+    commit(next)
     setEditor(null); setIsNew(false)
   }
 
   function deleteRule(rule: CommissionRule) {
     if (rules.length <= 1) { toast.error('At least one commission rule is required'); setConfirmDelete(null); return }
-    setRules(prev => {
-      let next = prev.filter(r => r.id !== rule.id)
-      if (rule.isDefault && !next.some(r => r.isDefault)) next = next.map((r, i) => (i === 0 ? { ...r, isDefault: true } : r))
-      saveStoredCommissionRules(next)
-      return next
-    })
+    let next = rules.filter(r => r.id !== rule.id)
+    if (rule.isDefault && !next.some(r => r.isDefault)) next = next.map((r, i) => (i === 0 ? { ...r, isDefault: true } : r))
+    commit(next)
     toast.success(`“${rule.name}” deleted`)
     setConfirmDelete(null)
   }

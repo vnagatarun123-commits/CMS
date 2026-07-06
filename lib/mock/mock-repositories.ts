@@ -10,6 +10,9 @@ import type {
   ContentRepository,
   NotificationRepository,
   NotificationTemplateRepository,
+  CommissionRuleRepository,
+  ReporterRepository,
+  ContributorRepository,
   InviteUserParams,
   AssignRoleParams,
   CreateRoleParams,
@@ -30,6 +33,8 @@ import type {
   AddTransitionParams,
   NotificationListOptions,
   CreateNotificationParams,
+  ReporterListOptions,
+  ContributorListOptions,
 } from '@/lib/data/repositories'
 import type {
   Organization,
@@ -883,5 +888,175 @@ export class MockNotificationTemplateRepository implements NotificationTemplateR
     const item = this.items.get(id) ?? null
     if (!item || item.organizationId !== organizationId) return null
     return item
+  }
+}
+
+// ── MockCommissionRuleRepository ──────────────────────────────────────────────
+
+export class MockCommissionRuleRepository implements CommissionRuleRepository {
+  private items: Map<string, import('@/types/earnings').CommissionRule>
+
+  constructor(items: import('@/types/earnings').CommissionRule[]) {
+    this.items = new Map(items.map(i => [i.id, i]))
+  }
+
+  async list(organizationId: string): Promise<import('@/types/earnings').CommissionRule[]> {
+    assertOrg(organizationId)
+    return [...this.items.values()].filter(r => r.organizationId === organizationId)
+  }
+
+  async findById(id: string, organizationId: string): Promise<import('@/types/earnings').CommissionRule | null> {
+    assertOrg(organizationId)
+    const item = this.items.get(id) ?? null
+    if (!item || item.organizationId !== organizationId) return null
+    return item
+  }
+
+  async create(params: import('@/types/earnings').CommissionRule): Promise<import('@/types/earnings').CommissionRule> {
+    assertOrg(params.organizationId)
+    this.items.set(params.id, params)
+    return params
+  }
+
+  async update(id: string, organizationId: string, params: Partial<import('@/types/earnings').CommissionRule>): Promise<import('@/types/earnings').CommissionRule> {
+    assertOrg(organizationId)
+    const item = this.items.get(id)
+    if (!item || item.organizationId !== organizationId) throw new NotFoundError('CommissionRule')
+    const updated = { ...item, ...params, updatedAt: new Date() }
+    this.items.set(id, updated)
+    return updated
+  }
+
+  async setDefault(id: string, organizationId: string): Promise<void> {
+    assertOrg(organizationId)
+    for (const [k, v] of this.items) {
+      if (v.organizationId === organizationId) {
+        this.items.set(k, { ...v, isDefault: k === id })
+      }
+    }
+  }
+
+  async delete(id: string, organizationId: string): Promise<void> {
+    assertOrg(organizationId)
+    const item = this.items.get(id)
+    if (!item || item.organizationId !== organizationId) throw new NotFoundError('CommissionRule')
+    this.items.delete(id)
+  }
+}
+
+// ── MockReporterRepository ────────────────────────────────────────────────────
+
+export class MockReporterRepository implements ReporterRepository {
+  private items: Map<string, import('@/types/reporter').Reporter>
+
+  constructor(items: import('@/types/reporter').Reporter[]) {
+    this.items = new Map(items.map(i => [i.id, i]))
+  }
+
+  async list(organizationId: string, opts?: ReporterListOptions): Promise<import('@/types/reporter').Reporter[]> {
+    assertOrg(organizationId)
+    let result = [...this.items.values()].filter(r => r.organizationId === organizationId)
+    if (opts?.status) result = result.filter(r => r.status === opts.status)
+    if (opts?.search) {
+      const q = opts.search.toLowerCase()
+      result = result.filter(r => r.name.toLowerCase().includes(q) || r.email.toLowerCase().includes(q))
+    }
+    return result
+  }
+
+  async findById(id: string, organizationId: string): Promise<import('@/types/reporter').Reporter | null> {
+    assertOrg(organizationId)
+    const item = this.items.get(id) ?? null
+    if (!item || item.organizationId !== organizationId) return null
+    return item
+  }
+
+  async create(params: Omit<import('@/types/reporter').Reporter, 'createdAt' | 'updatedAt'>): Promise<import('@/types/reporter').Reporter> {
+    assertOrg(params.organizationId)
+    const now = new Date()
+    const item = { ...params, createdAt: now, updatedAt: now }
+    this.items.set(params.id, item)
+    return item
+  }
+
+  async update(id: string, organizationId: string, params: Partial<import('@/types/reporter').Reporter>): Promise<import('@/types/reporter').Reporter> {
+    assertOrg(organizationId)
+    const item = this.items.get(id)
+    if (!item || item.organizationId !== organizationId) throw new NotFoundError('Reporter')
+    const updated = { ...item, ...params, updatedAt: new Date() }
+    this.items.set(id, updated)
+    return updated
+  }
+
+  async updateStatus(id: string, organizationId: string, status: string): Promise<import('@/types/reporter').Reporter> {
+    return this.update(id, organizationId, { status: status as import('@/types/reporter').ReporterStatus })
+  }
+
+  async delete(id: string, organizationId: string): Promise<void> {
+    assertOrg(organizationId)
+    const item = this.items.get(id)
+    if (!item || item.organizationId !== organizationId) throw new NotFoundError('Reporter')
+    this.items.delete(id)
+  }
+}
+
+// ── MockContributorRepository ─────────────────────────────────────────────────
+
+export class MockContributorRepository implements ContributorRepository {
+  private items: Map<string, import('@/lib/mock/contributors-store').Contributor>
+
+  constructor(items: import('@/lib/mock/contributors-store').Contributor[]) {
+    this.items = new Map(items.map(i => [i.id, i]))
+  }
+
+  async list(organizationId: string, opts?: ContributorListOptions): Promise<import('@/lib/mock/contributors-store').Contributor[]> {
+    assertOrg(organizationId)
+    let result = [...this.items.values()].filter(c => c.organizationId === organizationId)
+    if (opts?.status) result = result.filter(c => c.status === opts.status)
+    if (opts?.search) {
+      const q = opts.search.toLowerCase()
+      result = result.filter(c => c.name.toLowerCase().includes(q) || c.email.toLowerCase().includes(q))
+    }
+    return result
+  }
+
+  async findById(id: string, organizationId: string): Promise<import('@/lib/mock/contributors-store').Contributor | null> {
+    assertOrg(organizationId)
+    const item = this.items.get(id) ?? null
+    if (!item || item.organizationId !== organizationId) return null
+    return item
+  }
+
+  async create(params: Omit<import('@/lib/mock/contributors-store').Contributor, 'createdAt' | 'updatedAt'>): Promise<import('@/lib/mock/contributors-store').Contributor> {
+    assertOrg(params.organizationId)
+    const now = new Date()
+    const item = { ...params, createdAt: now, updatedAt: now }
+    this.items.set(params.id, item)
+    return item
+  }
+
+  async update(id: string, organizationId: string, params: Partial<import('@/lib/mock/contributors-store').Contributor>): Promise<import('@/lib/mock/contributors-store').Contributor> {
+    assertOrg(organizationId)
+    const item = this.items.get(id)
+    if (!item || item.organizationId !== organizationId) throw new NotFoundError('Contributor')
+    const updated = { ...item, ...params, updatedAt: new Date() }
+    this.items.set(id, updated)
+    return updated
+  }
+
+  async updateStatus(id: string, organizationId: string, status: string, meta?: { approvedBy?: string; rejectedOn?: Date; remarks?: string }): Promise<import('@/lib/mock/contributors-store').Contributor> {
+    return this.update(id, organizationId, {
+      status: status as import('@/lib/mock/contributors-store').ContributorStatus,
+      ...(meta?.approvedBy ? { approvedBy: meta.approvedBy, approvedOn: new Date() } : {}),
+      ...(meta?.rejectedOn ? { rejectedOn: meta.rejectedOn } : {}),
+      ...(meta?.remarks ? { remarks: meta.remarks } : {}),
+    })
+  }
+
+  async delete(id: string, organizationId: string): Promise<void> {
+    assertOrg(organizationId)
+    const item = this.items.get(id)
+    if (!item || item.organizationId !== organizationId) throw new NotFoundError('Contributor')
+    this.items.delete(id)
   }
 }

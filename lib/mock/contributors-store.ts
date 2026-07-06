@@ -13,6 +13,7 @@ export interface Contributor {
   // ── Core identity ──────────────────────────────────────────────────────────
   id: string
   contributorId: string
+  organizationId: string
   name: string
   photoUrl?: string | null
   status: ContributorStatus
@@ -138,6 +139,9 @@ export interface Contributor {
 
   // ── Documents ─────────────────────────────────────────────────────────────
   documents?: { label: string; submitted: boolean }[]
+
+  createdAt?: Date
+  updatedAt?: Date
 }
 
 // ── Shared doc sets ───────────────────────────────────────────────────────────
@@ -171,10 +175,12 @@ const DOCS_MINIMAL = [
 
 // ── Seed data ─────────────────────────────────────────────────────────────────
 
-const INITIAL_SEED: Contributor[] = [
+const ORG = 'org_puralocal_001'
+
+export const INITIAL_SEED: Contributor[] = [
   // ── PENDING (APP) ──────────────────────────────────────────────────────────
   {
-    id: 'c1', contributorId: 'CON250601', name: 'Ramesh Kumar', photoUrl: null,
+    id: 'c1', contributorId: 'CON250601', organizationId: ORG, name: 'Ramesh Kumar', photoUrl: null,
     status: 'pending', contributorSource: 'APP', contributorType: 'user_applied', registrationSource: 'organic',
     mobile: '9876543210', email: 'ramesh.kumar@gmail.com', dob: '12 Apr 1995 (30 Yrs)', gender: 'Male',
     designation: 'Reporter', reporterType: 'Full Time', experience: '2 Years',
@@ -201,7 +207,7 @@ const INITIAL_SEED: Contributor[] = [
     documents: DOCS_PARTIAL,
   },
   {
-    id: 'c2', contributorId: 'CON250602', name: 'Shilpa P', photoUrl: null,
+    id: 'c2', contributorId: 'CON250602', organizationId: ORG, name: 'Shilpa P', photoUrl: null,
     status: 'pending', contributorSource: 'APP', contributorType: 'user_applied', registrationSource: 'organic',
     mobile: '9123456780', email: 'shilpa.p@gmail.com', dob: '05 Aug 1998 (26 Yrs)', gender: 'Female',
     designation: 'Stringer', reporterType: 'Part Time', experience: '1 Year',
@@ -228,7 +234,7 @@ const INITIAL_SEED: Contributor[] = [
     documents: DOCS_MINIMAL,
   },
   {
-    id: 'c3', contributorId: 'CON250603', name: 'Venkatesh B', photoUrl: null,
+    id: 'c3', contributorId: 'CON250603', organizationId: ORG, name: 'Venkatesh B', photoUrl: null,
     status: 'pending', contributorSource: 'APP', contributorType: 'user_applied', registrationSource: 'organic',
     mobile: '9988776655', email: 'venkatesh.b@gmail.com', dob: '22 Mar 1990 (35 Yrs)', gender: 'Male',
     designation: 'Reporter', reporterType: 'Full Time', experience: '5 Years',
@@ -255,7 +261,7 @@ const INITIAL_SEED: Contributor[] = [
     documents: DOCS_PARTIAL,
   },
   {
-    id: 'c4', contributorId: 'CON250604', name: 'Lavanya R', photoUrl: null,
+    id: 'c4', contributorId: 'CON250604', organizationId: ORG, name: 'Lavanya R', photoUrl: null,
     status: 'pending', contributorSource: 'APP', contributorType: 'user_applied', registrationSource: 'referral',
     mobile: '9345678901', email: 'lavanya.r@gmail.com', dob: '18 Nov 2000 (24 Yrs)', gender: 'Female',
     designation: 'Video Reporter', reporterType: 'Freelancer', experience: '6 Months',
@@ -283,7 +289,7 @@ const INITIAL_SEED: Contributor[] = [
     documents: DOCS_PARTIAL,
   },
   {
-    id: 'c5', contributorId: 'CON250605', name: 'Kiran N', photoUrl: null,
+    id: 'c5', contributorId: 'CON250605', organizationId: ORG, name: 'Kiran N', photoUrl: null,
     status: 'pending', contributorSource: 'APP', contributorType: 'user_applied', registrationSource: 'campaign',
     mobile: '9000098765', email: 'kiran.n@gmail.com', dob: '08 Jul 1993 (31 Yrs)', gender: 'Male',
     designation: 'Reporter', reporterType: 'Full Time', experience: '3 Years',
@@ -312,7 +318,7 @@ const INITIAL_SEED: Contributor[] = [
 
   // ── APPROVED (APP) ──────────────────────────────────────────────────────────
   {
-    id: 'c6', contributorId: 'CON250606', name: 'Anjali Devi', photoUrl: 'https://i.pravatar.cc/150?img=47',
+    id: 'c6', contributorId: 'CON250606', organizationId: ORG, name: 'Anjali Devi', photoUrl: 'https://i.pravatar.cc/150?img=47',
     status: 'approved', contributorSource: 'APP', contributorType: 'user_applied', registrationSource: 'organic',
     mobile: '9394949494', alternateMobile: '9290102030',
     email: 'anjali.devi@gmail.com', dob: '14 Feb 1997 (28 Yrs)', gender: 'Female',
@@ -355,7 +361,7 @@ const INITIAL_SEED: Contributor[] = [
 
   // ── REJECTED ───────────────────────────────────────────────────────────────
   {
-    id: 'c7', contributorId: 'CON250607', name: 'Mahesh Y', photoUrl: null,
+    id: 'c7', contributorId: 'CON250607', organizationId: ORG, name: 'Mahesh Y', photoUrl: null,
     status: 'rejected', contributorSource: 'APP', contributorType: 'user_applied', registrationSource: 'organic',
     mobile: '9512345678', email: 'mahesh.y@gmail.com', dob: '30 Sep 1992 (32 Yrs)', gender: 'Male',
     designation: 'Reporter', reporterType: 'Part Time', experience: '4 Years',
@@ -384,7 +390,7 @@ const INITIAL_SEED: Contributor[] = [
     documents: DOCS_MINIMAL,
   },
   {
-    id: 'c8', contributorId: 'CON250608', name: 'Priya Kumari', photoUrl: null,
+    id: 'c8', contributorId: 'CON250608', organizationId: ORG, name: 'Priya Kumari', photoUrl: null,
     status: 'pending', contributorSource: 'APP', contributorType: 'user_applied', registrationSource: 'organic',
     mobile: '9601234567', email: 'priya.k@gmail.com', dob: '25 Jan 2001 (24 Yrs)', gender: 'Female',
     designation: 'Photographer', reporterType: 'Freelancer', experience: '1 Year',
@@ -413,7 +419,7 @@ const INITIAL_SEED: Contributor[] = [
 
   // ── INACTIVE (APP) ──────────────────────────────────────────────────────────
   {
-    id: 'c9', contributorId: 'CON250609', name: 'Srinivas M', photoUrl: 'https://i.pravatar.cc/150?img=12',
+    id: 'c9', contributorId: 'CON250609', organizationId: ORG, name: 'Srinivas M', photoUrl: 'https://i.pravatar.cc/150?img=12',
     status: 'inactive', contributorSource: 'APP', contributorType: 'user_applied', registrationSource: 'organic',
     mobile: '9440123456', alternateMobile: '9866700011',
     email: 'srinivas.m@gmail.com', dob: '10 Aug 1988 (37 Yrs)', gender: 'Male',
@@ -456,7 +462,7 @@ const INITIAL_SEED: Contributor[] = [
 
   // ── APPROVED (CMS) ─────────────────────────────────────────────────────────
   {
-    id: 'c10', contributorId: 'CON250610', name: 'Deepika Rao', photoUrl: 'https://i.pravatar.cc/150?img=32',
+    id: 'c10', contributorId: 'CON250610', organizationId: ORG, name: 'Deepika Rao', photoUrl: 'https://i.pravatar.cc/150?img=32',
     status: 'approved', contributorSource: 'CMS', contributorType: 'team_recruited', registrationSource: 'organic',
     mobile: '9701234567', alternateMobile: '9100203040',
     email: 'deepika.rao@puralocal.in', dob: '03 Mar 1991 (35 Yrs)', gender: 'Female',
@@ -497,7 +503,7 @@ const INITIAL_SEED: Contributor[] = [
     documents: DOCS_VERIFIED,
   },
   {
-    id: 'c11', contributorId: 'CON250611', name: 'Suresh Babu', photoUrl: 'https://i.pravatar.cc/150?img=15',
+    id: 'c11', contributorId: 'CON250611', organizationId: ORG, name: 'Suresh Babu', photoUrl: 'https://i.pravatar.cc/150?img=15',
     status: 'approved', contributorSource: 'CMS', contributorType: 'team_recruited', registrationSource: 'organic',
     mobile: '9812345678', alternateMobile: '9700001122',
     email: 'suresh.babu@puralocal.in', dob: '17 Jun 1994 (32 Yrs)', gender: 'Male',
@@ -538,7 +544,7 @@ const INITIAL_SEED: Contributor[] = [
     documents: DOCS_VERIFIED,
   },
   {
-    id: 'c12', contributorId: 'CON250612', name: 'Meena Iyer', photoUrl: 'https://i.pravatar.cc/150?img=56',
+    id: 'c12', contributorId: 'CON250612', organizationId: ORG, name: 'Meena Iyer', photoUrl: 'https://i.pravatar.cc/150?img=56',
     status: 'approved', contributorSource: 'CMS', contributorType: 'team_recruited', registrationSource: 'referral',
     mobile: '9654321098', email: 'meena.iyer@puralocal.in', dob: '29 Nov 1996 (29 Yrs)', gender: 'Female',
     occupation: 'Freelance Journalist', education: 'B.A. Journalism, Osmania University',

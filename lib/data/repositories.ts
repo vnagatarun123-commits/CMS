@@ -346,6 +346,56 @@ export interface DataBackend {
   content: ContentRepository
   notifications: NotificationRepository
   notificationTemplates: NotificationTemplateRepository
+  commissionRules: CommissionRuleRepository
+  reporters: ReporterRepository
+  contributors: ContributorRepository
+}
+
+// ── CommissionRule repository ─────────────────────────────────────────────────
+
+export interface CommissionRuleRepository {
+  list(organizationId: string): Promise<import('@/types/earnings').CommissionRule[]>
+  findById(id: string, organizationId: string): Promise<import('@/types/earnings').CommissionRule | null>
+  create(params: import('@/types/earnings').CommissionRule): Promise<import('@/types/earnings').CommissionRule>
+  update(id: string, organizationId: string, params: Partial<import('@/types/earnings').CommissionRule>): Promise<import('@/types/earnings').CommissionRule>
+  setDefault(id: string, organizationId: string): Promise<void>
+  delete(id: string, organizationId: string): Promise<void>
+}
+
+// ── Reporter repository ───────────────────────────────────────────────────────
+
+export interface ReporterListOptions {
+  status?: string
+  search?: string
+  limit?: number
+  offset?: number
+}
+
+export interface ReporterRepository {
+  list(organizationId: string, opts?: ReporterListOptions): Promise<import('@/types/reporter').Reporter[]>
+  findById(id: string, organizationId: string): Promise<import('@/types/reporter').Reporter | null>
+  create(params: Omit<import('@/types/reporter').Reporter, 'createdAt' | 'updatedAt'>): Promise<import('@/types/reporter').Reporter>
+  update(id: string, organizationId: string, params: Partial<import('@/types/reporter').Reporter>): Promise<import('@/types/reporter').Reporter>
+  updateStatus(id: string, organizationId: string, status: string): Promise<import('@/types/reporter').Reporter>
+  delete(id: string, organizationId: string): Promise<void>
+}
+
+// ── Contributor repository ────────────────────────────────────────────────────
+
+export interface ContributorListOptions {
+  status?: string
+  search?: string
+  limit?: number
+  offset?: number
+}
+
+export interface ContributorRepository {
+  list(organizationId: string, opts?: ContributorListOptions): Promise<import('@/lib/mock/contributors-store').Contributor[]>
+  findById(id: string, organizationId: string): Promise<import('@/lib/mock/contributors-store').Contributor | null>
+  create(params: Omit<import('@/lib/mock/contributors-store').Contributor, 'createdAt' | 'updatedAt'>): Promise<import('@/lib/mock/contributors-store').Contributor>
+  update(id: string, organizationId: string, params: Partial<import('@/lib/mock/contributors-store').Contributor>): Promise<import('@/lib/mock/contributors-store').Contributor>
+  updateStatus(id: string, organizationId: string, status: string, meta?: { approvedBy?: string; rejectedOn?: Date; remarks?: string }): Promise<import('@/lib/mock/contributors-store').Contributor>
+  delete(id: string, organizationId: string): Promise<void>
 }
 
 // ── Notification params ───────────────────────────────────────────────────────

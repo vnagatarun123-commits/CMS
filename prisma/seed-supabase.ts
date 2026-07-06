@@ -41,7 +41,11 @@ import {
   SEEDED_LANGUAGES,
   SEEDED_CONTENT,
   SEEDED_AUDIT_ENTRIES,
+  SEED_ROLE_DEFINITIONS,
+  SEEDED_NOTIFICATION_TEMPLATES,
 } from '../lib/mock/seed'
+import { COMMISSION_RULES, SEED_REPORTERS } from '../lib/mock/seed-reporters'
+import { INITIAL_SEED as SEED_CONTRIBUTORS } from '../lib/mock/contributors-store'
 
 // ── Bootstrap ─────────────────────────────────────────────────────────────────
 
@@ -280,6 +284,244 @@ async function seedAuditLog(orgAdminId: string) {
   console.log(`  ✓ audit log: ${entries.length} entries seeded`)
 }
 
+// ── New entity seeders ────────────────────────────────────────────────────────
+
+async function seedRoleDefinitions() {
+  for (const rd of SEED_ROLE_DEFINITIONS) {
+    await prisma.roleDefinition.upsert({
+      where: { id: rd.id },
+      update: { name: rd.name },
+      create: {
+        id: rd.id,
+        organizationId: SEEDED_ORG.id,
+        name: rd.name,
+        permissions: rd.permissions ?? [],
+        isSystem: rd.isSystem ?? false,
+      },
+    })
+  }
+  console.log(`  ✓ role definitions: ${SEED_ROLE_DEFINITIONS.length} seeded`)
+}
+
+async function seedNotificationTemplates() {
+  const existing = await prisma.notificationTemplate.count({ where: { organizationId: SEEDED_ORG.id } })
+  if (existing >= SEEDED_NOTIFICATION_TEMPLATES.length) {
+    console.log(`  ✓ notification templates: already seeded (${existing})`)
+    return
+  }
+  for (const t of SEEDED_NOTIFICATION_TEMPLATES) {
+    await prisma.notificationTemplate.upsert({
+      where: { id: t.id },
+      update: { title: t.title, body: t.body },
+      create: {
+        id: t.id,
+        organizationId: SEEDED_ORG.id,
+        name: t.name,
+        description: t.description ?? '',
+        title: t.title,
+        body: t.body,
+        channels: t.channels,
+        audience: t.audience,
+        priority: t.priority,
+        category: t.category ?? 'general',
+      },
+    })
+  }
+  console.log(`  ✓ notification templates: ${SEEDED_NOTIFICATION_TEMPLATES.length} seeded`)
+}
+
+async function seedCommissionRules() {
+  const existing = await prisma.commissionRule.count({ where: { organizationId: SEEDED_ORG.id } })
+  if (existing >= COMMISSION_RULES.length) {
+    console.log(`  ✓ commission rules: already seeded (${existing})`)
+    return
+  }
+  for (const rule of COMMISSION_RULES) {
+    await prisma.commissionRule.upsert({
+      where: { id: rule.id },
+      update: { name: rule.name, isDefault: rule.isDefault },
+      create: {
+        id: rule.id,
+        organizationId: SEEDED_ORG.id,
+        name: rule.name,
+        description: rule.description ?? null,
+        isDefault: rule.isDefault,
+        earningMode: rule.earningMode,
+        imagePostRateInr: rule.imagePostRateInr,
+        videoPostRateInr: rule.videoPostRateInr,
+        shortPostRateInr: rule.shortPostRateInr,
+        liveSessionRateInr: rule.liveSessionRateInr,
+        imageCpmInr: rule.imageCpmInr,
+        videoCpmInr: rule.videoCpmInr,
+        shortCpmInr: rule.shortCpmInr,
+        liveCpmInr: rule.liveCpmInr,
+        reachBonusThreshold: rule.reachBonusThreshold ?? undefined,
+        reachBonusAmountInr: rule.reachBonusAmountInr ?? undefined,
+        viralBonusThreshold: rule.viralBonusThreshold ?? undefined,
+        viralBonusAmountInr: rule.viralBonusAmountInr ?? undefined,
+        volumeBonusThreshold: rule.volumeBonusThreshold ?? undefined,
+        volumeBonusAmountInr: rule.volumeBonusAmountInr ?? undefined,
+        streakBonusMonths: rule.streakBonusMonths ?? undefined,
+        streakBonusAmountInr: rule.streakBonusAmountInr ?? undefined,
+        tdsApplicable: rule.tdsApplicable,
+        tdsThresholdInr: rule.tdsThresholdInr,
+        tdsRatePercent: rule.tdsRatePercent,
+        createdAt: rule.createdAt,
+        updatedAt: rule.updatedAt,
+      },
+    })
+  }
+  console.log(`  ✓ commission rules: ${COMMISSION_RULES.length} seeded`)
+}
+
+async function seedReporters() {
+  const existing = await prisma.reporter.count({ where: { organizationId: SEEDED_ORG.id } })
+  if (existing >= SEED_REPORTERS.length) {
+    console.log(`  ✓ reporters: already seeded (${existing})`)
+    return
+  }
+  for (const r of SEED_REPORTERS) {
+    await prisma.reporter.upsert({
+      where: { id: r.id },
+      update: { name: r.name, status: r.status },
+      create: {
+        id: r.id,
+        contributorId: r.contributorId,
+        organizationId: SEEDED_ORG.id,
+        name: r.name,
+        photoUrl: r.photoUrl ?? null,
+        mobile: r.mobile,
+        email: r.email,
+        designation: r.designation,
+        district: r.district,
+        state: r.state,
+        reporterType: r.reporterType,
+        language: r.language,
+        coverageAreas: r.coverageAreas,
+        newsGenres: r.newsGenres,
+        status: r.status,
+        approvedAt: r.approvedAt,
+        approvedBy: r.approvedBy,
+        commissionRuleId: r.commissionRuleId,
+        payment: r.payment as unknown as import('@prisma/client').Prisma.InputJsonValue,
+        stats: r.stats as unknown as import('@prisma/client').Prisma.InputJsonValue,
+        lifetimeEarnedInr: r.lifetimeEarnedInr,
+        lifetimeSettledInr: r.lifetimeSettledInr,
+        pendingEarningsInr: r.pendingEarningsInr,
+        currentMonthEarningsInr: r.currentMonthEarningsInr,
+        annualEarnedInr: r.annualEarnedInr,
+        tdsDeductedInr: r.tdsDeductedInr,
+        adminNotes: r.adminNotes ?? null,
+        flaggedForReview: r.flaggedForReview,
+        createdAt: r.createdAt,
+        updatedAt: r.updatedAt,
+      },
+    })
+  }
+  console.log(`  ✓ reporters: ${SEED_REPORTERS.length} seeded`)
+}
+
+async function seedContributors() {
+  const existing = await prisma.contributor.count({ where: { organizationId: SEEDED_ORG.id } })
+  if (existing >= SEED_CONTRIBUTORS.length) {
+    console.log(`  ✓ contributors: already seeded (${existing})`)
+    return
+  }
+  for (const c of SEED_CONTRIBUTORS) {
+    await prisma.contributor.upsert({
+      where: { id: c.id },
+      update: { name: c.name, status: c.status },
+      create: {
+        id: c.id,
+        contributorId: c.contributorId,
+        organizationId: SEEDED_ORG.id,
+        name: c.name,
+        photoUrl: c.photoUrl ?? null,
+        status: c.status,
+        contributorSource: c.contributorSource,
+        mobile: c.mobile,
+        alternateMobile: c.alternateMobile ?? null,
+        email: c.email,
+        dob: c.dob ?? null,
+        gender: c.gender ?? null,
+        occupation: c.occupation ?? null,
+        education: c.education ?? null,
+        language: c.language ?? null,
+        languagesKnown: c.languagesKnown ?? [],
+        bio: c.bio ?? null,
+        address: c.address ?? null,
+        houseNumber: c.houseNumber ?? null,
+        street: c.street ?? null,
+        area: c.area ?? null,
+        village: c.village ?? null,
+        mandal: c.mandal ?? null,
+        district: c.district,
+        state: c.state ?? null,
+        pincode: c.pincode ?? null,
+        designation: c.designation,
+        reporterType: c.reporterType,
+        experience: c.experience ?? null,
+        contributorType: c.contributorType ?? null,
+        registrationSource: c.registrationSource ?? null,
+        source: c.source ?? null,
+        recruitedBy: c.recruitedBy ?? null,
+        referralBy: c.referralBy ?? null,
+        referralCode: c.referralCode ?? null,
+        registrationDate: c.registrationDate ?? null,
+        appliedOn: c.appliedOn,
+        approvedOn: c.approvedOn ?? null,
+        approvedBy: c.approvedBy ?? null,
+        rejectedOn: c.rejectedOn ?? null,
+        remarks: c.remarks ?? null,
+        verificationStatus: c.verificationStatus ?? null,
+        verifiedBy: c.verifiedBy ?? null,
+        verificationDate: c.verificationDate ?? null,
+        aadhaarMasked: c.aadhaarMasked ?? null,
+        panMasked: c.panMasked ?? null,
+        coverageAreas: c.coverageAreas ?? [],
+        newsGenres: c.newsGenres ?? [],
+        assignedMandal: c.assignedMandal ?? null,
+        assignedVillage: c.assignedVillage ?? null,
+        coveragePriorityLevel: c.coveragePriorityLevel ?? null,
+        accountHolderName: c.accountHolderName ?? null,
+        bankName: c.bankName ?? null,
+        accountNumberMasked: c.accountNumberMasked ?? null,
+        ifscCode: c.ifscCode ?? null,
+        branch: c.branch ?? null,
+        upiId: c.upiId ?? null,
+        paymentMethod: c.preferredPaymentMethod ?? null,
+        deviceInfo: {
+          devicePlatform: c.devicePlatform, deviceManufacturer: c.deviceManufacturer,
+          deviceModel: c.deviceModel, deviceOsVersion: c.deviceOsVersion,
+          deviceAppVersion: c.deviceAppVersion, networkType: c.networkType,
+          connectionType: c.connectionType, isp: c.isp,
+          pushNotificationEnabled: c.pushNotificationEnabled,
+          cameraPermission: c.cameraPermission, micPermission: c.micPermission,
+          storagePermission: c.storagePermission, locationPermission: c.locationPermission,
+          loginCount: c.loginCount, lastLogin: c.lastLogin?.toISOString(),
+          appInstallDate: c.appInstallDate?.toISOString(), crashCount: c.crashCount,
+          isOnline: c.isOnline, lastActive: c.lastActive?.toISOString(),
+          preferredPaymentMethod: c.preferredPaymentMethod, payoutStatus: c.payoutStatus,
+          totalEarnings: c.totalEarnings, currentMonthEarnings: c.currentMonthEarnings,
+          pendingEarnings: c.pendingEarnings, lastPaymentAmount: c.lastPaymentAmount,
+          totalContentSubmitted: c.totalContentSubmitted, contentPublished: c.contentPublished,
+          pendingStories: c.pendingStories, rejectedStories: c.rejectedStories,
+          draftStories: c.draftStories, imageStories: c.imageStories,
+          videoStories: c.videoStories, liveSessions: c.liveSessions,
+          avgApprovalTime: c.avgApprovalTime,
+          lastStoryPublished: c.lastStoryPublished?.toISOString(),
+          mostActiveCategory: c.mostActiveCategory, contentViews: c.contentViews,
+          totalLikes: c.totalLikes, totalShares: c.totalShares,
+          totalComments: c.totalComments, followers: c.followers,
+          avgStoryReach: c.avgStoryReach, accuracyRate: c.accuracyRate,
+          adminNotes: c.adminNotes, tags: c.tags, documents: c.documents,
+        },
+      },
+    })
+  }
+  console.log(`  ✓ contributors: ${SEED_CONTRIBUTORS.length} seeded`)
+}
+
 // ── Main ──────────────────────────────────────────────────────────────────────
 
 async function main() {
@@ -301,12 +543,21 @@ async function main() {
   await seedCategories()
   await seedLocations()
   await seedLanguages()
+  await seedRoleDefinitions()
+  await seedNotificationTemplates()
+
+  console.log('\nCommission rules:')
+  await seedCommissionRules()
 
   console.log('\nContent:')
   await seedContent(userIdMap)
 
   console.log('\nAudit log:')
   await seedAuditLog(orgAdminId)
+
+  console.log('\nReporters & contributors:')
+  await seedReporters()
+  await seedContributors()
 
   console.log('\n✅ Done.')
 }

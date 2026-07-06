@@ -12,6 +12,9 @@ import {
   MockContentRepository,
   MockNotificationRepository,
   MockNotificationTemplateRepository,
+  MockCommissionRuleRepository,
+  MockReporterRepository,
+  MockContributorRepository,
 } from './mock-repositories'
 import {
   SEEDED_ORG,
@@ -26,6 +29,8 @@ import {
   SEEDED_AUDIT_ENTRIES,
 } from './seed'
 import { RECENT_CONTENT } from './seed-recent'
+import { COMMISSION_RULES, SEED_REPORTERS } from './seed-reporters'
+import { getStoredContributors } from './contributors-store'
 
 export function createMockBackend(): Backend {
   const users = structuredClone(SEEDED_USERS)
@@ -44,6 +49,9 @@ export function createMockBackend(): Backend {
       content: new MockContentRepository(structuredClone([...RECENT_CONTENT, ...SEEDED_CONTENT])),
       notifications: new MockNotificationRepository(structuredClone(SEEDED_NOTIFICATIONS)),
       notificationTemplates: new MockNotificationTemplateRepository(structuredClone(SEEDED_NOTIFICATION_TEMPLATES)),
+      commissionRules: new MockCommissionRuleRepository(structuredClone(COMMISSION_RULES)),
+      reporters: new MockReporterRepository(structuredClone(SEED_REPORTERS)),
+      contributors: new MockContributorRepository(structuredClone(getStoredContributors())),
     },
   }
 }

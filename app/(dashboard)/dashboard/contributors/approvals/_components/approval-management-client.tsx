@@ -402,7 +402,7 @@ function Row({ icon: Icon, label, value }: { icon: React.ElementType; label: str
 
 // ── Main component ────────────────────────────────────────────────────────────
 
-const PAGE_SIZE = 10
+const PAGE_SIZE_OPTIONS = [10, 20, 50, 100]
 
 export function ApprovalManagementClient() {
   const router = useRouter()
@@ -413,6 +413,7 @@ export function ApprovalManagementClient() {
   const [districtFilter, setDistrictFilter]       = useState('all')
   const [typeFilter, setTypeFilter]               = useState('all')
   const [page, setPage]                           = useState(1)
+  const [pageSize, setPageSize]                   = useState(10)
   const [selected, setSelected]                   = useState<Contributor | null>(null)
   const [rejectTarget, setRejectTarget]           = useState<string | null>(null)
   const [bulkSelected, setBulkSelected]           = useState<Set<string>>(new Set())
@@ -433,9 +434,9 @@ export function ApprovalManagementClient() {
     })
   }, [contributors, activeTab, search, designationFilter, districtFilter, typeFilter])
 
-  const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
+  const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize))
   const safePage  = Math.min(page, pageCount)
-  const paginated = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE)
+  const paginated = filtered.slice((safePage - 1) * pageSize, safePage * pageSize)
 
   const counts = useMemo(() => {
     const m: Record<string, number> = { pending: 0, approved: 0, rejected: 0 }
@@ -513,15 +514,15 @@ export function ApprovalManagementClient() {
   return (
     <div className="flex flex-col">
       {/* Header */}
-      <div className="flex items-start justify-between mb-6 px-1">
+      <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-foreground">Contributor Requests</h1>
-          <p className="text-[14px] text-muted-foreground mt-1">Review, approve and manage contributor applications</p>
+          <p className="text-[13px] text-muted-foreground mt-0.5">Review, approve and manage contributor applications</p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" className="h-9 gap-1.5 rounded-lg text-[13px]"
+          <Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs font-semibold rounded-lg bg-background cursor-pointer"
             onClick={() => toast.info('Export coming soon')}>
-            <Download className="h-4 w-4" />Export
+            <Download className="h-3.5 w-3.5" /> Export
           </Button>
         </div>
       </div>
@@ -529,63 +530,72 @@ export function ApprovalManagementClient() {
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
         {[
-          { label: 'Pending Review',     value: counts['pending'] ?? 0,  color: 'text-amber-600 dark:text-amber-400',     icon: Clock },
-          { label: 'Rejected Requests',  value: counts['rejected'] ?? 0, color: 'text-red-600 dark:text-red-400',         icon: X },
-          { label: 'Total Approved',     value: counts['approved'] ?? 0, color: 'text-emerald-600 dark:text-emerald-400', icon: Check },
-          { label: 'Applied This Month', value: thisMonth,               color: 'text-blue-600 dark:text-blue-400',       icon: Calendar },
-        ].map(s => (
-          <div key={s.label} className="rounded-2xl border bg-card ring-1 ring-border/50 px-4 py-3.5">
-            <div className="flex items-center justify-between">
-              <p className="text-[11px] text-muted-foreground uppercase tracking-wide">{s.label}</p>
-              <s.icon className={`h-4 w-4 ${s.color}`} />
+          { label: 'Pending Review',     value: counts['pending'] ?? 0,  color: 'text-amber-600 dark:text-amber-400',     icon: Clock,         bg: 'bg-amber-50 dark:bg-amber-500/10' },
+          { label: 'Rejected Requests',  value: counts['rejected'] ?? 0, color: 'text-red-600 dark:text-red-400',         icon: X,             bg: 'bg-red-50 dark:bg-red-500/10' },
+          { label: 'Total Approved',     value: counts['approved'] ?? 0, color: 'text-emerald-600 dark:text-emerald-400', icon: Check,         bg: 'bg-emerald-50 dark:bg-emerald-500/10' },
+          { label: 'Applied This Month', value: thisMonth,               color: 'text-blue-600 dark:text-blue-400',       icon: Calendar,      bg: 'bg-blue-50 dark:bg-blue-500/10' },
+        ].map(s => {
+          const Icon = s.icon
+          return (
+            <div key={s.label} className="rounded-xl border border-border bg-card px-3 py-3 flex items-center gap-2">
+              <div className={`h-8 w-8 rounded-lg flex items-center justify-center shrink-0 ${s.bg}`}>
+                <Icon className={`h-4 w-4 ${s.color}`} />
+              </div>
+              <div className="min-w-0">
+                <p className="text-[10px] text-muted-foreground truncate">{s.label}</p>
+                <p className="text-lg font-bold text-foreground leading-tight">{s.value}</p>
+              </div>
             </div>
-            <p className={`text-2xl font-bold tracking-tight mt-1 tabular-nums ${s.color}`}>{s.value}</p>
-          </div>
-        ))}
+          )
+        })}
       </div>
 
       <div className="flex gap-4 min-h-0">
-        <div className="flex-1 flex flex-col rounded-2xl border bg-card ring-1 ring-border/50 overflow-hidden">
+        <div className="flex-1 flex flex-col rounded-xl border border-border bg-card overflow-hidden">
 
           {/* Toolbar */}
-          <div className="flex items-center gap-2.5 px-4 py-3 border-b border-border flex-wrap">
-            <div className="relative flex-1 min-w-[200px] max-w-xs">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input placeholder="Search name, mobile, email…" value={search}
+          <div className="flex items-center gap-3 px-4 py-3 border-b border-border flex-wrap">
+            <div className="relative flex-1 max-w-xs">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
+              <input
+                value={search}
                 onChange={e => { setSearch(e.target.value); setPage(1) }}
-                className="pl-9 h-9 text-[13px] rounded-lg" />
+                placeholder="Search name, mobile, email…"
+                className="h-8 w-full rounded-lg border border-border bg-background pl-8 pr-3 text-xs outline-none focus:ring-1 focus:ring-foreground/20"
+              />
             </div>
+
             <Select value={designationFilter} onValueChange={v => { setDesignationFilter(v || 'all'); setPage(1) }}>
-              <SelectTrigger aria-label="Filter by designation" className="h-9 w-40 rounded-lg text-[13px] bg-background text-foreground border-border">
+              <SelectTrigger aria-label="Filter by designation" className="h-8 w-40 rounded-lg text-xs bg-background text-foreground border-border px-2.5">
                 <SelectValue placeholder="All designations" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent side="top">
                 <SelectItem value="all">All designations</SelectItem>
                 {DESIGNATIONS.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
               </SelectContent>
             </Select>
 
             <Select value={districtFilter} onValueChange={v => { setDistrictFilter(v || 'all'); setPage(1) }}>
-              <SelectTrigger aria-label="Filter by district" className="h-9 w-36 rounded-lg text-[13px] bg-background text-foreground border-border">
+              <SelectTrigger aria-label="Filter by district" className="h-8 w-36 rounded-lg text-xs bg-background text-foreground border-border px-2.5">
                 <SelectValue placeholder="All districts" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent side="top">
                 <SelectItem value="all">All districts</SelectItem>
                 {DISTRICTS.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
               </SelectContent>
             </Select>
 
             <Select value={typeFilter} onValueChange={v => { setTypeFilter(v || 'all'); setPage(1) }}>
-              <SelectTrigger aria-label="Filter by reporter type" className="h-9 w-32 rounded-lg text-[13px] bg-background text-foreground border-border">
+              <SelectTrigger aria-label="Filter by reporter type" className="h-8 w-32 rounded-lg text-xs bg-background text-foreground border-border px-2.5">
                 <SelectValue placeholder="All types" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent side="top">
                 <SelectItem value="all">All types</SelectItem>
                 {REPORTER_TYPES.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
               </SelectContent>
             </Select>
             <button onClick={resetFilters} title="Reset filters"
-              className="h-9 px-3 rounded-lg border border-border text-[13px] text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors flex items-center gap-1.5">
+              className="h-8 px-3 rounded-lg border border-border text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors flex items-center gap-1.5 cursor-pointer">
               <RotateCcw className="h-3.5 w-3.5" />Reset
             </button>
           </div>
@@ -598,7 +608,7 @@ export function ApprovalManagementClient() {
               return (
                 <button key={tab.value} onClick={() => { setActiveTab(tab.value); setPage(1); setBulkSelected(new Set()) }}
                   className={`flex items-center gap-1.5 px-4 py-2.5 text-xs font-medium border-b-2 -mb-px transition-colors
-                    ${active ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>
+                    ${active ? 'border-primary text-primary font-semibold' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>
                   {tab.label}
                   {count > 0 && (
                     <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold leading-none
@@ -613,9 +623,9 @@ export function ApprovalManagementClient() {
 
           {/* Bulk action bar */}
           {bulkSelected.size > 0 && activeTab === 'pending' && (
-            <div className="flex items-center gap-3 px-4 py-2.5 bg-primary/10 border-b border-primary/20">
+            <div className="flex items-center gap-3 px-4 py-2 bg-primary/10 border-b border-primary/20">
               <span className="text-xs font-medium text-primary">{bulkSelected.size} selected</span>
-              <Button size="sm" className="h-7 text-[11px] gap-1 bg-emerald-600 hover:bg-emerald-700 text-white"
+              <Button size="sm" className="h-7 text-xs gap-1 bg-emerald-600 hover:bg-emerald-700 text-white"
                 onClick={handleBulkApprove}>
                 <Check className="h-3 w-3" />Approve All
               </Button>
@@ -626,10 +636,10 @@ export function ApprovalManagementClient() {
           {/* Table */}
           <div className="flex-1 overflow-x-auto">
             <table className="w-full text-sm min-w-[860px]">
-              <thead className="sticky top-0 z-10">
-                <tr className="border-b border-border bg-muted/40">
+              <thead>
+                <tr className="border-b border-border bg-muted/30">
                   {activeTab === 'pending' && (
-                    <th className="h-12 px-4 w-8">
+                    <th className="py-3 px-3 w-8 text-center">
                       <button onClick={toggleAllPage} title={allPageSelected ? 'Deselect all on page' : 'Select all on page'}
                         aria-label={allPageSelected ? 'Deselect all on page' : 'Select all on page'}
                         className="flex items-center justify-center">
@@ -638,14 +648,14 @@ export function ApprovalManagementClient() {
                     </th>
                   )}
                   {['Contributor', 'ID', 'Contact', 'Designation', 'District', 'Type', 'Docs', 'Applied', ''].map((h, i) => (
-                    <th key={h || `col-${i}`} className="h-12 px-5 text-left text-[13px] font-medium text-muted-foreground whitespace-nowrap">{h}</th>
+                    <th key={h || `col-${i}`} className={`py-3 px-3 text-[11px] font-semibold text-muted-foreground uppercase tracking-wide whitespace-nowrap ${h === 'Docs' ? 'text-center' : 'text-left'}`}>{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
                 {paginated.length === 0 ? (
                   <tr>
-                    <td colSpan={10} className="py-16 text-center">
+                    <td colSpan={activeTab === 'pending' ? 10 : 9} className="py-16 text-center">
                       <div className="flex flex-col items-center gap-3">
                         <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center">
                           <Inbox className="h-6 w-6 text-muted-foreground" />
@@ -672,66 +682,65 @@ export function ApprovalManagementClient() {
                     onClick={() => setSelected(selected?.id === c.id ? null : c)}>
 
                     {activeTab === 'pending' && (
-                      <td className="py-3 px-4" onClick={e => e.stopPropagation()}>
+                      <td className="py-3 px-3 align-middle text-center w-8" onClick={e => e.stopPropagation()}>
                         <button onClick={() => toggleBulk(c.id)}>
                           {bulkSelected.has(c.id) ? <CheckSquare className="h-4 w-4 text-primary" /> : <Square className="h-4 w-4 text-muted-foreground" />}
                         </button>
                       </td>
                     )}
 
-                    <td className="py-3 px-3">
+                    <td className="py-3 px-3 align-middle">
                       <div className="flex items-center gap-2.5">
                         <Avatar name={c.name} photoUrl={c.photoUrl} size="sm" />
-                        <span className="text-xs font-semibold text-foreground">{c.name}</span>
+                        <span className="text-xs font-semibold text-foreground truncate max-w-[120px]">{c.name}</span>
                       </div>
                     </td>
 
-                    <td className="py-3 px-3">
-                      <span className="text-[11px] font-mono text-foreground">{c.contributorId}</span>
+                    <td className="py-3 px-3 align-middle">
+                      <span className="text-[10px] font-mono text-muted-foreground">{c.contributorId}</span>
                     </td>
 
-                    <td className="py-3 px-3">
-                      <p className="text-[11px] text-foreground">{c.mobile}</p>
-                      <p className="text-[10px] text-muted-foreground truncate max-w-[140px]">{c.email}</p>
-                    </td>
-
-                    <td className="py-3 px-3">
-                      <span className="text-xs text-foreground">{c.designation || '—'}</span>
-                    </td>
-
-                    <td className="py-3 px-3">
-                      <div className="flex items-center gap-1">
-                        <MapPin className="h-3 w-3 text-muted-foreground" />
-                        <span className="text-xs text-foreground">{c.district}</span>
+                    <td className="py-3 px-3 align-middle">
+                      <div className="min-w-0">
+                        <p className="text-xs text-foreground font-mono tabular-nums">{c.mobile}</p>
+                        <p className="text-[10px] text-muted-foreground truncate max-w-[140px] mt-0.5">{c.email}</p>
                       </div>
                     </td>
 
-                    <td className="py-3 px-3">
+                    <td className="py-3 px-3 align-middle text-xs text-foreground">
+                      {c.designation || '—'}
+                    </td>
+
+                    <td className="py-3 px-3 align-middle text-xs text-foreground">
+                      {c.district}
+                    </td>
+
+                    <td className="py-3 px-3 align-middle">
                       <TypeBadge type={c.reporterType} />
                     </td>
 
-                    <td className="py-3 px-3">
+                    <td className="py-3 px-3 align-middle text-center">
                       <DocCount docs={c.documents} />
                     </td>
 
-                    <td className="py-3 px-3">
+                    <td className="py-3 px-3 align-middle">
                       <DaysPendingBadge days={daysSince(c.appliedOn)} />
                     </td>
 
-                    <td className="py-3 px-3" onClick={e => e.stopPropagation()}>
-                      <div className="flex items-center gap-1">
+                    <td className="py-3 px-3 text-right" onClick={e => e.stopPropagation()}>
+                      <div className="flex items-center justify-end gap-0.5">
                         <button onClick={() => setSelected(selected?.id === c.id ? null : c)}
-                          className="h-7 w-7 flex items-center justify-center rounded-md text-muted-foreground hover:bg-muted">
+                          className="h-7 w-7 flex items-center justify-center rounded-md text-muted-foreground hover:bg-muted transition-colors">
                           <Eye className="h-3.5 w-3.5" />
                         </button>
                         {c.status === 'pending' && (
                           <>
                             <button onClick={() => { setSelected(c); toast.info('Assign a designation in the side panel, then approve') }}
-                              className="h-7 w-7 flex items-center justify-center rounded-md text-muted-foreground hover:bg-emerald-50 hover:text-emerald-600">
+                              className="h-7 w-7 flex items-center justify-center rounded-md text-muted-foreground hover:bg-emerald-50 hover:text-emerald-600 transition-colors">
                               <Check className="h-3.5 w-3.5" />
                             </button>
                             <button onClick={() => setRejectTarget(c.id)}
-                              className="h-7 w-7 flex items-center justify-center rounded-md text-muted-foreground hover:bg-red-50 hover:text-red-600">
+                              className="h-7 w-7 flex items-center justify-center rounded-md text-muted-foreground hover:bg-red-50 hover:text-red-600 transition-colors">
                               <X className="h-3.5 w-3.5" />
                             </button>
                           </>
@@ -746,28 +755,51 @@ export function ApprovalManagementClient() {
           </div>
 
           {/* Pagination */}
-          <div className="flex items-center justify-between px-4 py-3 border-t border-border">
-            <p className="text-xs text-muted-foreground">
-              {filtered.length === 0 ? 'No results' : `${Math.min((safePage - 1) * PAGE_SIZE + 1, filtered.length)}–${Math.min(safePage * PAGE_SIZE, filtered.length)} of ${filtered.length}`}
-            </p>
-            {pageCount > 1 && (
-              <div className="flex items-center gap-1">
-                <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={safePage === 1}
-                  className="h-7 w-7 flex items-center justify-center rounded-md border border-border text-muted-foreground hover:bg-muted disabled:opacity-40">
-                  <ChevronLeft className="h-3.5 w-3.5" />
-                </button>
-                {Array.from({ length: pageCount }, (_, i) => i + 1).map(p => (
-                  <button key={p} onClick={() => setPage(p)}
-                    className={`h-7 w-7 rounded-md text-xs font-medium ${safePage === p ? 'bg-primary text-primary-foreground' : 'border border-border text-muted-foreground hover:bg-muted'}`}>
-                    {p}
-                  </button>
-                ))}
-                <button onClick={() => setPage(p => Math.min(pageCount, p + 1))} disabled={safePage === pageCount}
-                  className="h-7 w-7 flex items-center justify-center rounded-md border border-border text-muted-foreground hover:bg-muted disabled:opacity-40">
-                  <ChevronRight className="h-3.5 w-3.5" />
-                </button>
+          <div className="flex items-center justify-between px-4 py-3 border-t border-border bg-muted/20">
+            <div className="flex items-center gap-3">
+              <p className="text-xs text-muted-foreground">
+                Showing{' '}
+                <span className="font-medium text-foreground">
+                  {filtered.length === 0 ? 0 : (safePage - 1) * pageSize + 1}–{Math.min(safePage * pageSize, filtered.length)}
+                </span>{' '}
+                of <span className="font-medium text-foreground">{filtered.length}</span>
+              </p>
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs text-muted-foreground">Rows</span>
+                <Select value={String(pageSize)} onValueChange={v => { setPageSize(Number(v)); setPage(1) }}>
+                  <SelectTrigger className="h-7 w-[70px] min-w-0 text-xs text-foreground font-medium rounded-md bg-background border-input px-2">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent side="top">
+                    {PAGE_SIZE_OPTIONS.map(n => <SelectItem key={n} value={String(n)}>{n}</SelectItem>)}
+                  </SelectContent>
+                </Select>
               </div>
-            )}
+            </div>
+            <div className="flex items-center gap-1">
+              <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={safePage === 1} title="Previous"
+                className="h-7 w-7 flex items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+                <ChevronLeft className="h-3.5 w-3.5" />
+              </button>
+              {Array.from({ length: pageCount }, (_, i) => i + 1)
+                .filter(p => p === 1 || p === pageCount || Math.abs(p - safePage) <= 1)
+                .reduce<(number | '…')[]>((acc, p, i, arr) => {
+                  if (i > 0 && p - (arr[i - 1] as number) > 1) acc.push('…')
+                  acc.push(p); return acc
+                }, [])
+                .map((p, i) => p === '…'
+                  ? <span key={`e${i}`} className="px-1 text-xs text-muted-foreground">…</span>
+                  : <button key={p} onClick={() => setPage(p as number)}
+                      className={`h-7 w-7 rounded-md text-xs font-medium transition-colors
+                        ${safePage === p ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-muted hover:text-foreground'}`}>
+                      {p}
+                    </button>
+                )}
+              <button onClick={() => setPage(p => Math.min(pageCount, p + 1))} disabled={safePage === pageCount} title="Next"
+                className="h-7 w-7 flex items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+                <ChevronRight className="h-3.5 w-3.5" />
+              </button>
+            </div>
           </div>
         </div>
 

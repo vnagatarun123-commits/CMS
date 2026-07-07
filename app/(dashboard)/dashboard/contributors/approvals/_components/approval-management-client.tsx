@@ -636,10 +636,10 @@ export function ApprovalManagementClient() {
           {/* Table */}
           <div className="flex-1 overflow-x-auto">
             <table className="w-full text-sm min-w-[860px]">
-              <thead>
-                <tr className="border-b border-border bg-muted/30">
+              <thead className="sticky top-0 z-10">
+                <tr className="border-b border-border">
                   {activeTab === 'pending' && (
-                    <th className="py-3 px-3 w-8 text-center">
+                    <th className="py-3 px-3 w-8 text-center bg-muted/30 backdrop-blur-sm rounded-tl-xl">
                       <button onClick={toggleAllPage} title={allPageSelected ? 'Deselect all on page' : 'Select all on page'}
                         aria-label={allPageSelected ? 'Deselect all on page' : 'Select all on page'}
                         className="flex items-center justify-center">
@@ -647,9 +647,20 @@ export function ApprovalManagementClient() {
                       </button>
                     </th>
                   )}
-                  {['Contributor', 'ID', 'Contact', 'Designation', 'District', 'Type', 'Docs', 'Applied', ''].map((h, i) => (
-                    <th key={h || `col-${i}`} className={`py-3 px-3 text-[11px] font-semibold text-muted-foreground uppercase tracking-wide whitespace-nowrap ${h === 'Docs' ? 'text-center' : 'text-left'}`}>{h}</th>
-                  ))}
+                  {['Contributor', 'ID', 'Contact', 'Designation', 'District', 'Type', 'Docs', 'Applied', ''].map((h, i) => {
+                    const isFirst = activeTab !== 'pending' && i === 0
+                    const isLast = i === 8
+                    return (
+                      <th key={h || `col-${i}`}
+                        className={`py-3 px-3 text-[11px] font-semibold text-muted-foreground uppercase tracking-wide whitespace-nowrap bg-muted/30 backdrop-blur-sm
+                          ${h === 'Docs' ? 'text-center' : 'text-left'}
+                          ${isFirst ? 'rounded-tl-xl' : ''}
+                          ${isLast ? 'rounded-tr-xl' : ''}
+                        `}>
+                        {h}
+                      </th>
+                    )
+                  })}
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">

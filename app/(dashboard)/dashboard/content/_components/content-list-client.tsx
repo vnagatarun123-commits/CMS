@@ -1267,24 +1267,32 @@ export function ContentListClient({ initialContent, categories, locations, langu
             <div className="overflow-x-auto rounded-t-2xl">
               <table className="min-w-full text-sm">
                 <thead>
-                  <tr className="border-b border-border bg-muted/40">
-                    {columns.filter(c => c.visible).map(col => {
-                      const base = 'sticky top-0 z-10 bg-muted/40 backdrop-blur-sm h-12 px-5 text-left text-[13px] font-medium text-muted-foreground whitespace-nowrap'
-                      switch (col.id) {
-                        case 'sno':       return <th key={col.id} className={`${base} text-center w-12`}>S.No</th>
-                        case 'content':   return <th key={col.id} className={base} style={{ minWidth: 380 }}>Content</th>
-                        case 'type':      return <th key={col.id} className={base}>Type</th>
-                        case 'category':  return <th key={col.id} className={base}>Category</th>
-                        case 'location':  return <th key={col.id} className={base}>Location</th>
-                        case 'contributor': return <th key={col.id} className={base}>Contributor</th>
-                        case 'status':    return <th key={col.id} className={base}>Status</th>
-                        case 'reason':    return <th key={col.id} className={base}>Reason</th>
-                        case 'scheduled': return <th key={col.id} className={base}>Scheduled At</th>
-                        case 'uploaded':  return <th key={col.id} className={base}>Uploaded</th>
-                        case 'actions':   return <th key={col.id} className={base} style={{ minWidth: 96, width: 96 }}>Actions</th>
-                        default: return null
-                      }
-                    })}
+                  <tr className="border-b border-border">
+                    {(() => {
+                      const visibleCols = columns.filter(c => c.visible)
+                      return visibleCols.map((col, idx) => {
+                        const isFirst = idx === 0
+                        const isLast = idx === visibleCols.length - 1
+                        const base = `sticky top-0 z-10 bg-muted/40 backdrop-blur-sm h-12 px-5 text-left text-[13px] font-medium text-muted-foreground whitespace-nowrap
+                          ${isFirst ? 'rounded-tl-2xl' : ''}
+                          ${isLast ? 'rounded-tr-2xl' : ''}
+                        `
+                        switch (col.id) {
+                          case 'sno':       return <th key={col.id} className={`${base} text-center w-12`}>S.No</th>
+                          case 'content':   return <th key={col.id} className={base} style={{ minWidth: 380 }}>Content</th>
+                          case 'type':      return <th key={col.id} className={base}>Type</th>
+                          case 'category':  return <th key={col.id} className={base}>Category</th>
+                          case 'location':  return <th key={col.id} className={base}>Location</th>
+                          case 'contributor': return <th key={col.id} className={base}>Contributor</th>
+                          case 'status':    return <th key={col.id} className={base}>Status</th>
+                          case 'reason':    return <th key={col.id} className={base}>Reason</th>
+                          case 'scheduled': return <th key={col.id} className={base}>Scheduled At</th>
+                          case 'uploaded':  return <th key={col.id} className={base}>Uploaded</th>
+                          case 'actions':   return <th key={col.id} className={base} style={{ minWidth: 96, width: 96 }}>Actions</th>
+                          default: return null
+                        }
+                      })
+                    })()}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">

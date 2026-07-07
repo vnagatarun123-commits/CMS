@@ -760,7 +760,7 @@ export function NotificationsClient({ initialNotifications, initialStats, initia
             </div>
           ) : (
             <div className="rounded-xl border border-border bg-card overflow-hidden">
-              <div className="overflow-x-auto">
+              <div className="overflow-x-auto rounded-t-xl">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-border bg-muted/30">

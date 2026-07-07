@@ -353,7 +353,7 @@ export function AdsClient() {
 
           {/* Ads List Table */}
           <div className="rounded-xl border border-border bg-card overflow-hidden">
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto rounded-t-xl">
               <table className="w-full text-xs">
                 <thead>
                   <tr className="bg-muted/30 border-b border-border text-muted-foreground text-left">

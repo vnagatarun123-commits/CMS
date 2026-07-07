@@ -81,7 +81,8 @@ export default function FinancePage() {
       <div className="space-y-2">
         <p className="text-sm font-medium">Recent Transactions</p>
         <div className="rounded-md border overflow-hidden">
-          <table className="w-full text-sm">
+          <div className="overflow-x-auto rounded-t-md">
+            <table className="w-full text-sm">
             <thead>
               <tr className="bg-muted/40 border-b text-xs text-muted-foreground">
                 <th className="px-4 py-2.5 text-left font-medium">Transaction ID</th>
@@ -110,6 +111,7 @@ export default function FinancePage() {
             </tbody>
           </table>
         </div>
+      </div>
       </div>
 
       <div className="flex items-center gap-2 rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">

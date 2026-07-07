@@ -1264,7 +1264,7 @@ export function ContentListClient({ initialContent, categories, locations, langu
           </div>
         ) : (
           <div className="rounded-2xl border border-border bg-card ring-1 ring-border/50 overflow-hidden">
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto rounded-t-2xl">
               <table className="min-w-full text-sm">
                 <thead>
                   <tr className="border-b border-border bg-muted/40">

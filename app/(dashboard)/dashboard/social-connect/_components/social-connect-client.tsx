@@ -844,7 +844,8 @@ export function SocialConnectClient() {
           </div>
 
           <div className="rounded-xl border border-border bg-card overflow-hidden">
-            <table className="w-full text-sm">
+            <div className="overflow-x-auto rounded-t-xl">
+              <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border bg-muted/30">
                   {['Account', 'Platform', 'Type', 'Followers', 'Status', 'Auto-publish', 'Active', 'Connected', 'Actions'].map(h => (
@@ -920,6 +921,7 @@ export function SocialConnectClient() {
               </tbody>
             </table>
           </div>
+        </div>
         </div>
       )}
 

@@ -283,7 +283,7 @@ export function AllContributorsClient() {
 
       {/* Table */}
       <div className="rounded-xl border border-border bg-card overflow-hidden">
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto rounded-t-xl">
           <table className="w-full text-sm min-w-[1100px]">
             <thead>
               <tr className="border-b border-border bg-muted/30">

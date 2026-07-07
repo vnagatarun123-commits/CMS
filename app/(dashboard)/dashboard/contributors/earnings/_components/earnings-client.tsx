@@ -719,7 +719,7 @@ export function EarningsClient() {
 
           {/* Settlements table */}
           <div className="rounded-2xl border border-border bg-card overflow-hidden">
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto rounded-t-2xl">
               <table className="w-full text-sm min-w-[1000px]">
                 <thead>
                   <tr className="border-b border-border bg-muted/20">
@@ -828,7 +828,8 @@ export function EarningsClient() {
       {activeTab === 'redemptions' && (
         <>
           <div className="rounded-2xl border border-border bg-card overflow-hidden">
-            <table className="w-full text-sm">
+            <div className="overflow-x-auto rounded-t-2xl">
+              <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border bg-muted/20">
                   {['Reporter', 'Requested', 'Period', 'Amount', 'Available Balance', 'Note', 'Status', ''].map(h => (
@@ -889,6 +890,7 @@ export function EarningsClient() {
               </tbody>
             </table>
           </div>
+        </div>
 
           <div className="mt-4 flex items-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-4 py-2.5">
             <Info className="h-3.5 w-3.5 text-blue-500 shrink-0" />

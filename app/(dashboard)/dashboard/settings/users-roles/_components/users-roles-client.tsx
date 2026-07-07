@@ -336,7 +336,8 @@ function RolesTab({
       </div>
 
       <div className="rounded-md border overflow-hidden">
-        <table className="w-full text-sm">
+        <div className="overflow-x-auto rounded-t-md">
+          <table className="w-full text-sm">
           <thead>
             <tr className="bg-muted/40 border-b text-xs text-muted-foreground">
               <th className="px-4 py-2.5 text-left font-medium">Name</th>
@@ -381,6 +382,7 @@ function RolesTab({
           </tbody>
         </table>
       </div>
+    </div>
 
       <RoleDialog
         open={dialogOpen}
@@ -489,7 +491,8 @@ function UsersTab({
       </div>
 
       <div className="rounded-md border overflow-hidden">
-        <table className="w-full text-sm">
+        <div className="overflow-x-auto rounded-t-md">
+          <table className="w-full text-sm">
           <thead>
             <tr className="bg-muted/40 border-b text-xs text-muted-foreground">
               <th className="px-4 py-2.5 text-left font-medium">Name</th>
@@ -537,6 +540,7 @@ function UsersTab({
           </tbody>
         </table>
       </div>
+    </div>
 
       <Dialog open={inviteOpen} onOpenChange={v => { if (!v) setInviteOpen(false) }}>
         <DialogContent className="max-w-md">

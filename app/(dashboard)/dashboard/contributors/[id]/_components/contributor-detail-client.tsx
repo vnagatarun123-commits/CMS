@@ -585,7 +585,7 @@ export function ContributorDetailClient({ id }: { id: string }) {
 
               <Section label="Payout history" />
               <div className="rounded-2xl border bg-card ring-1 ring-border/50 overflow-hidden">
-                <div className="overflow-x-auto">
+                <div className="overflow-x-auto rounded-t-2xl">
                   <table className="w-full">
                     <thead>
                       <tr className="border-b border-border bg-muted/40">

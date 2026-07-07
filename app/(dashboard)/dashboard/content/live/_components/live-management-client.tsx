@@ -254,10 +254,14 @@ function TableShell({ headers, children, footer }: { headers: { label: string; a
       <div className="overflow-x-auto max-h-[640px] overflow-y-auto rounded-t-2xl">
         <table className="w-full text-sm">
           <thead className="sticky top-0 z-10">
-            <tr className="bg-muted/40 backdrop-blur-sm border-b border-border">
-              {headers.map(h => (
+            <tr className="border-b border-border">
+              {headers.map((h, idx) => (
                 <th key={h.label}
-                  className={`h-12 px-5 text-[13px] font-medium text-muted-foreground whitespace-nowrap ${h.align === 'right' ? 'text-right' : 'text-left'}`}>
+                  className={`h-12 px-5 text-[13px] font-medium text-muted-foreground bg-muted/40 backdrop-blur-sm whitespace-nowrap
+                    ${h.align === 'right' ? 'text-right' : 'text-left'}
+                    ${idx === 0 ? 'rounded-tl-2xl' : ''}
+                    ${idx === headers.length - 1 ? 'rounded-tr-2xl' : ''}
+                  `}>
                   {h.label}
                 </th>
               ))}

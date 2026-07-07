@@ -251,7 +251,7 @@ function SelectField({ value, onChange, options, placeholder }: { value: string;
 function TableShell({ headers, children, footer }: { headers: { label: string; align?: 'left' | 'right' }[]; children: React.ReactNode; footer?: React.ReactNode }) {
   return (
     <div className="rounded-2xl border bg-card ring-1 ring-border/50 overflow-hidden">
-      <div className="overflow-x-auto max-h-[640px] overflow-y-auto">
+      <div className="overflow-x-auto max-h-[640px] overflow-y-auto rounded-t-2xl">
         <table className="w-full text-sm">
           <thead className="sticky top-0 z-10">
             <tr className="bg-muted/40 backdrop-blur-sm border-b border-border">

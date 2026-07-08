@@ -296,7 +296,7 @@ export function AdsClient() {
             className={[
               'px-5 py-3 text-xs font-semibold border-b-2 -mb-px transition-all duration-150 cursor-pointer',
               tab === t
-                ? 'border-foreground text-foreground font-bold'
+                ? 'border-primary text-primary font-bold'
                 : 'border-transparent text-muted-foreground hover:text-foreground',
             ].join(' ')}
           >

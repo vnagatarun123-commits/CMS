@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useTransition, useRef } from 'react'
 import { Camera, Loader2, Mail, Phone, Building2, CalendarDays, Clock, Languages, Check } from 'lucide-react'
 import type { UserWithRole } from '@/types/domain'
 import type { User } from '@/types/auth'
@@ -92,7 +92,31 @@ export function ProfileClient({ profile, currentUser }: Props) {
   const [bio, setBio]           = useState(profile.bio ?? '')
   const [timezone, setTimezone] = useState(profile.timezone ?? 'Asia/Kolkata')
   const [language, setLanguage] = useState(profile.language ?? 'en')
+  const [photoUrl, setPhotoUrl] = useState<string | null>(profile.photoUrl ?? null)
   const [isPending, startTransition] = useTransition()
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = (ev) => {
+      const img = new Image()
+      img.onload = () => {
+        const SIZE = 256
+        const canvas = document.createElement('canvas')
+        canvas.width = SIZE; canvas.height = SIZE
+        const ctx = canvas.getContext('2d')!
+        const scale = Math.max(SIZE / img.width, SIZE / img.height)
+        const w = img.width * scale, h = img.height * scale
+        ctx.drawImage(img, (SIZE - w) / 2, (SIZE - h) / 2, w, h)
+        setPhotoUrl(canvas.toDataURL('image/jpeg', 0.85))
+      }
+      img.src = ev.target!.result as string
+    }
+    reader.readAsDataURL(file)
+    e.target.value = ''
+  }
 
   function handleSave() {
     startTransition(async () => {
@@ -102,6 +126,7 @@ export function ProfileClient({ profile, currentUser }: Props) {
         bio: bio.trim() || null,
         timezone,
         language,
+        photoUrl,
       })
       if (result.ok) toast.success('Profile updated successfully')
       else toast.error(result.error.message)
@@ -113,7 +138,8 @@ export function ProfileClient({ profile, currentUser }: Props) {
     (phone.trim() || null) !== (profile.phone ?? null) ||
     (bio.trim() || null) !== (profile.bio ?? null) ||
     timezone !== (profile.timezone ?? 'Asia/Kolkata') ||
-    language !== (profile.language ?? 'en')
+    language !== (profile.language ?? 'en') ||
+    photoUrl !== (profile.photoUrl ?? null)
 
   const memberSince = profile.joinedAt ?? profile.invitedAt
   const memberSinceLabel = memberSince
@@ -157,14 +183,21 @@ export function ProfileClient({ profile, currentUser }: Props) {
           <div className="px-6 pb-6 -mt-12">
             <div className="relative inline-block">
               <Avatar className="h-24 w-24 ring-4 ring-card shadow-sm">
-                {profile.photoUrl && <AvatarImage src={profile.photoUrl} alt={profile.name} />}
+                {photoUrl && <AvatarImage src={photoUrl} alt={profile.name} />}
                 <AvatarFallback className="text-2xl font-semibold bg-primary/15 text-primary">
                   {initials(profile.name)}
                 </AvatarFallback>
               </Avatar>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handlePhotoChange}
+              />
               <button
                 type="button"
-                onClick={() => toast.info('Photo upload requires Supabase Storage — coming in Phase 2')}
+                onClick={() => fileInputRef.current?.click()}
                 className="absolute bottom-0 right-0 flex h-8 w-8 items-center justify-center rounded-full border-2 border-card bg-primary text-primary-foreground shadow-sm hover:bg-primary/90 transition-colors"
                 aria-label="Upload photo"
               >

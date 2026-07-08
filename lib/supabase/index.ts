@@ -6,8 +6,9 @@ import type {
   NotificationListOptions, CreateNotificationParams,
   CommissionRuleRepository, ReporterRepository, ContributorRepository,
   ReporterListOptions, ContributorListOptions,
+  TagRepository, CreateTagParams, UpdateTagParams,
 } from '@/lib/data/repositories'
-import type { RoleDefinition, NotificationRecord, NotificationTemplate, NotificationStats, NotificationStatus } from '@/types/domain'
+import type { RoleDefinition, NotificationRecord, NotificationTemplate, NotificationStats, NotificationStatus, Tag } from '@/types/domain'
 import type { CommissionRule } from '@/types/earnings'
 import type { Reporter } from '@/types/reporter'
 import type { Contributor } from '@/lib/mock/contributors-store'
@@ -640,6 +641,19 @@ class SupabaseContributorRepository implements ContributorRepository {
   }
 }
 
+// ── SupabaseTagRepository (stub — implemented when Prisma Tag model lands) ────
+
+class SupabaseTagRepository implements TagRepository {
+  constructor(private readonly prisma: PrismaClient) {}
+
+  async list(_organizationId: string): Promise<Tag[]> { return [] }
+  async findById(_id: string, _organizationId: string): Promise<Tag | null> { return null }
+  async create(_params: CreateTagParams): Promise<Tag> { throw new Error('Tags not yet implemented in Supabase backend') }
+  async update(_id: string, _organizationId: string, _params: UpdateTagParams): Promise<Tag> { throw new Error('Tags not yet implemented in Supabase backend') }
+  async toggleActive(_id: string, _organizationId: string): Promise<Tag> { throw new Error('Tags not yet implemented in Supabase backend') }
+  async softDelete(_id: string, _organizationId: string): Promise<Tag> { throw new Error('Tags not yet implemented in Supabase backend') }
+}
+
 // ── Backend factory ───────────────────────────────────────────────────────────
 
 export function createSupabaseBackend(): Backend {
@@ -660,6 +674,7 @@ export function createSupabaseBackend(): Backend {
       categories: new SupabaseCategoryRepository(prisma),
       locations: new SupabaseLocationRepository(prisma),
       languages: new SupabaseLanguageRepository(prisma),
+      tags: new SupabaseTagRepository(prisma),
       content: new SupabaseContentRepository(prisma),
       notifications: new SupabaseNotificationRepository(prisma),
       notificationTemplates: new SupabaseNotificationTemplateRepository(prisma),

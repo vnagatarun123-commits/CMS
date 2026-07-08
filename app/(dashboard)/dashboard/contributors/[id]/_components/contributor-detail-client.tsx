@@ -77,7 +77,7 @@ function Row({ label, value }: { label: string; value: React.ReactNode }) {
 }
 
 /** Thin progress bar */
-function Bar({ pct, accent = 'bg-foreground' }: { pct: number; accent?: string }) {
+function Bar({ pct, accent = 'bg-primary' }: { pct: number; accent?: string }) {
   return (
     <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
       <div

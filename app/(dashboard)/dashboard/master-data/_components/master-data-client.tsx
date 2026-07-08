@@ -12,35 +12,14 @@ import {
   Upload, X, ImageIcon, Globe, Building2, Home, Dot,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import type { Category, Location, Language } from '@/types/domain'
+import type { Category, Location, Language, Tag as TagRecord } from '@/types/domain'
 import { LocationLevel, LOCATION_LEVEL_LABELS } from '@/types/domain'
 import {
   createCategory, updateCategory, toggleCategory, deleteCategory,
   createLocation, updateLocation, toggleLocation, deleteLocation,
   createLanguage, updateLanguage, toggleLanguage, deleteLanguage,
+  createTag, updateTag, toggleTag, deleteTag,
 } from '@/app/actions/ref-data'
-
-// ── Local-state-only types (tags — server actions deferred) ──
-
-interface ContentTag { id: string; name: string; slug: string; usageCount: number; active: boolean }
-
-const SEED_TAGS: ContentTag[] = [
-  { id: 't1',  name: 'Hyderabad',       slug: 'hyderabad',       usageCount: 48, active: true  },
-  { id: 't2',  name: 'Telangana',       slug: 'telangana',       usageCount: 42, active: true  },
-  { id: 't3',  name: 'GHMC',            slug: 'ghmc',            usageCount: 18, active: true  },
-  { id: 't4',  name: 'Monsoon',         slug: 'monsoon',         usageCount: 24, active: true  },
-  { id: 't5',  name: 'IPL',             slug: 'ipl',             usageCount: 12, active: true  },
-  { id: 't6',  name: 'TSRTC',           slug: 'tsrtc',           usageCount: 9,  active: true  },
-  { id: 't7',  name: 'Elections',       slug: 'elections',       usageCount: 31, active: true  },
-  { id: 't8',  name: 'Real Estate',     slug: 'real-estate',     usageCount: 15, active: true  },
-  { id: 't9',  name: 'Outer Ring Road', slug: 'outer-ring-road', usageCount: 7,  active: true  },
-  { id: 't10', name: 'IT Sector',       slug: 'it-sector',       usageCount: 22, active: true  },
-  { id: 't11', name: 'Musi River',      slug: 'musi-river',      usageCount: 6,  active: true  },
-  { id: 't12', name: 'Old City',        slug: 'old-city',        usageCount: 11, active: true  },
-  { id: 't13', name: 'Karimnagar',      slug: 'karimnagar',      usageCount: 8,  active: true  },
-  { id: 't14', name: 'Warangal',        slug: 'warangal',        usageCount: 10, active: true  },
-  { id: 't15', name: 'Flood Relief',    slug: 'flood-relief',    usageCount: 5,  active: false },
-]
 
 // ── Shared sub-components ─────────────────────────────────────────────────────
 
@@ -850,12 +829,13 @@ function LanguagesTab({ initial }: { initial: Language[] }) {
 
 function slugify(s: string) { return s.toLowerCase().trim().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') }
 
-function TagsTab() {
-  const [items, setItems] = useState<ContentTag[]>(SEED_TAGS)
+function TagsTab({ initial }: { initial: TagRecord[] }) {
+  const [items, setItems] = useState<TagRecord[]>(initial)
   const [search, setSearch] = useState('')
   const [open, setOpen] = useState(false)
-  const [editing, setEditing] = useState<ContentTag | null>(null)
+  const [editing, setEditing] = useState<TagRecord | null>(null)
   const [name, setName] = useState('')
+  const [pending, startTx] = useTransition()
   const [err, setErr] = useState('')
 
   const visible = useMemo(() => items
@@ -864,21 +844,38 @@ function TagsTab() {
   , [items, search])
 
   function openAdd() { setEditing(null); setName(''); setErr(''); setOpen(true) }
-  function openEdit(t: ContentTag) { setEditing(t); setName(t.name); setErr(''); setOpen(true) }
+  function openEdit(t: TagRecord) { setEditing(t); setName(t.name); setErr(''); setOpen(true) }
 
   function save() {
     if (!name.trim()) { setErr('Tag name is required'); return }
     setErr('')
-    if (editing) {
-      setItems(prev => prev.map(t => t.id === editing.id ? { ...t, name: name.trim(), slug: slugify(name) } : t))
-    } else {
-      setItems(prev => [...prev, { id: `t${Date.now()}`, name: name.trim(), slug: slugify(name), usageCount: 0, active: true }])
-    }
-    setOpen(false)
+    startTx(async () => {
+      if (editing) {
+        const r = await updateTag(editing.id, { name: name.trim() })
+        if (!r.ok) { setErr(r.error.message); return }
+        setItems(prev => prev.map(t => t.id === editing.id ? r.data : t))
+      } else {
+        const r = await createTag({ name: name.trim() })
+        if (!r.ok) { setErr(r.error.message); return }
+        setItems(prev => [...prev, r.data])
+      }
+      setOpen(false)
+    })
   }
 
-  function toggle(t: ContentTag) { setItems(prev => prev.map(x => x.id === t.id ? { ...x, active: !x.active } : x)) }
-  function remove(t: ContentTag) { setItems(prev => prev.filter(x => x.id !== t.id)) }
+  function toggle(t: TagRecord) {
+    startTx(async () => {
+      const r = await toggleTag(t.id)
+      if (r.ok) setItems(prev => prev.map(x => x.id === t.id ? { ...x, active: !x.active } : x))
+    })
+  }
+
+  function remove(t: TagRecord) {
+    startTx(async () => {
+      const r = await deleteTag(t.id)
+      if (r.ok) setItems(prev => prev.filter(x => x.id !== t.id))
+    })
+  }
 
   const totalUses = items.reduce((s, t) => s + t.usageCount, 0)
 
@@ -940,7 +937,7 @@ function TagsTab() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-            <Button onClick={save}>{editing ? 'Save Changes' : 'Add Tag'}</Button>
+            <Button onClick={save} disabled={pending}>{pending ? 'Saving…' : editing ? 'Save Changes' : 'Add Tag'}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -956,16 +953,17 @@ interface MasterDataClientProps {
   categories: Category[]
   locations: Location[]
   languages: Language[]
+  tags: TagRecord[]
 }
 
-export function MasterDataClient({ categories, locations, languages }: MasterDataClientProps) {
+export function MasterDataClient({ categories, locations, languages, tags }: MasterDataClientProps) {
   const [tab, setTab] = useState<TabId>('categories')
 
   const TABS: { id: TabId; label: string; icon: React.ReactNode; count: number; description: string }[] = [
     { id: 'categories', label: 'Categories',   icon: <Layers className="w-4 h-4" />,   count: categories.length, description: 'Content categories displayed in the app menu' },
     { id: 'locations',  label: 'Locations',    icon: <MapPin className="w-4 h-4" />,    count: locations.length,  description: 'India geography hierarchy — State › District › Mandal › Village' },
     { id: 'languages',  label: 'Languages',    icon: <Languages className="w-4 h-4" />, count: languages.length,  description: 'Supported content languages for publishing and the app UI' },
-    { id: 'tags',       label: 'Content Tags', icon: <Tag className="w-4 h-4" />,       count: SEED_TAGS.length,  description: 'Curated tag pool for consistent content tagging' },
+    { id: 'tags',       label: 'Content Tags', icon: <Tag className="w-4 h-4" />,       count: tags.length,       description: 'Curated tag pool for consistent content tagging' },
   ]
 
   const current = TABS.find(t => t.id === tab)!
@@ -1032,7 +1030,7 @@ export function MasterDataClient({ categories, locations, languages }: MasterDat
       {tab === 'categories' && <CategoriesTab initial={categories} />}
       {tab === 'locations'  && <LocationsTab initial={locations} />}
       {tab === 'languages'  && <LanguagesTab initial={languages} />}
-      {tab === 'tags'       && <TagsTab />}
+      {tab === 'tags'       && <TagsTab initial={tags} />}
     </div>
   )
 }

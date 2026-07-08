@@ -28,6 +28,21 @@ export class SupabaseAuthProvider implements AuthProvider {
     await supabase.auth.signOut()
   }
 
+  async requestPasswordReset(email: string): Promise<void> {
+    const supabase = await createSupabaseServerClient()
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${siteUrl}/auth/callback?next=/login/reset-password`,
+    })
+    if (error) throw new Error(error.message)
+  }
+
+  async updatePassword(newPassword: string): Promise<void> {
+    const supabase = await createSupabaseServerClient()
+    const { error } = await supabase.auth.updateUser({ password: newPassword })
+    if (error) throw new Error(error.message)
+  }
+
   async getCurrentUser(): Promise<User | null> {
     const session = await this.getSession()
     return session?.user ?? null

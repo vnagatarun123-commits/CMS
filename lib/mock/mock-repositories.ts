@@ -7,6 +7,7 @@ import type {
   CategoryRepository,
   LocationRepository,
   LanguageRepository,
+  TagRepository,
   ContentRepository,
   NotificationRepository,
   NotificationTemplateRepository,
@@ -26,6 +27,8 @@ import type {
   CreateLocationParams,
   CreateLanguageParams,
   UpdateLanguageParams,
+  CreateTagParams,
+  UpdateTagParams,
   UpdateRefItemParams,
   ContentListOptions,
   CreateContentParams,
@@ -45,6 +48,7 @@ import type {
   Category,
   Location,
   Language,
+  Tag,
   Content,
   ContentTransition,
   ContentStatus,
@@ -545,6 +549,76 @@ export class MockLanguageRepository implements LanguageRepository {
     const updated = { ...item, deletedAt: null }
     this.items.set(id, updated)
     return updated
+  }
+}
+
+// ── MockTagRepository ─────────────────────────────────────────────────────────
+
+export class MockTagRepository implements TagRepository {
+  private items: Map<string, Tag>
+  private nextSeq = 1
+
+  constructor(items: Tag[]) {
+    this.items = new Map(items.map(i => [i.id, i]))
+  }
+
+  async list(organizationId: string, opts?: RefListOptions): Promise<Tag[]> {
+    assertOrg(organizationId)
+    let all = [...this.items.values()].filter(i => i.organizationId === organizationId)
+    if (opts?.activeOnly) all = all.filter(i => i.active)
+    if (!opts?.includeDeleted) all = all.filter(i => !('deletedAt' in i && (i as { deletedAt: unknown }).deletedAt))
+    return all.sort((a, b) => a.name.localeCompare(b.name))
+  }
+
+  async findById(id: string, organizationId: string): Promise<Tag | null> {
+    assertOrg(organizationId)
+    const item = this.items.get(id) ?? null
+    if (!item || item.organizationId !== organizationId) return null
+    return item
+  }
+
+  async create(params: CreateTagParams): Promise<Tag> {
+    assertOrg(params.organizationId)
+    const item: Tag = {
+      id: `tag_${this.nextSeq++}`,
+      organizationId: params.organizationId,
+      name: params.name,
+      slug: params.slug,
+      active: true,
+      usageCount: 0,
+      createdAt: new Date(),
+    }
+    this.items.set(item.id, item)
+    return item
+  }
+
+  async update(id: string, organizationId: string, params: UpdateTagParams): Promise<Tag> {
+    assertOrg(organizationId)
+    const item = this.items.get(id)
+    if (!item) throw new NotFoundError('Tag')
+    if (item.organizationId !== organizationId) throw new WrongOrgError()
+    const updated = { ...item, ...params }
+    this.items.set(id, updated)
+    return updated
+  }
+
+  async toggleActive(id: string, organizationId: string): Promise<Tag> {
+    assertOrg(organizationId)
+    const item = this.items.get(id)
+    if (!item) throw new NotFoundError('Tag')
+    if (item.organizationId !== organizationId) throw new WrongOrgError()
+    const updated = { ...item, active: !item.active }
+    this.items.set(id, updated)
+    return updated
+  }
+
+  async softDelete(id: string, organizationId: string): Promise<Tag> {
+    assertOrg(organizationId)
+    const item = this.items.get(id)
+    if (!item) throw new NotFoundError('Tag')
+    if (item.organizationId !== organizationId) throw new WrongOrgError()
+    this.items.delete(id)
+    return item
   }
 }
 

@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { getStoredContributors, saveStoredContributors } from '@/lib/mock/contributors-store'
+import { downloadCsv } from '@/lib/utils'
 import type { Contributor, ReporterType, ContributorStatus } from '@/lib/mock/contributors-store'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -217,7 +218,7 @@ function DetailPanel({ contributor, onClose, onApprove, onRejectClick }: {
         {(['overview', 'documents', 'activity'] as DetailTab[]).map(t => (
           <button key={t} onClick={() => setTab(t)}
             className={`px-3 py-2.5 text-xs font-medium border-b-2 -mb-px transition-colors capitalize
-              ${tab === t ? 'border-foreground text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>
+              ${tab === t ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>
             {t === 'activity' ? 'Activity' : t.charAt(0).toUpperCase() + t.slice(1)}
             {t === 'documents' && !allDocsOk && (
               <span className="ml-1 inline-block h-1.5 w-1.5 rounded-full bg-amber-500" />
@@ -504,6 +505,25 @@ export function ApprovalManagementClient() {
 
   function resetFilters() { setSearch(''); setDesignationFilter('all'); setDistrictFilter('all'); setTypeFilter('all'); setPage(1) }
 
+  function exportCsv() {
+    const rows = filtered.map(c => ({
+      'Contributor ID': c.contributorId,
+      'Name':           c.name,
+      'Status':         c.status,
+      'Mobile':         c.mobile,
+      'Email':          c.email,
+      'Designation':    c.designation ?? '',
+      'District':       c.district,
+      'State':          c.state ?? '',
+      'Type':           c.reporterType,
+      'Applied On':     c.appliedOn.toISOString(),
+      'Approved On':    c.approvedOn ? c.approvedOn.toISOString() : '',
+      'Rejected On':    c.rejectedOn ? c.rejectedOn.toISOString() : '',
+      'Remarks':        c.remarks ?? '',
+    }))
+    downloadCsv(`contributor-requests-${activeTab}.csv`, rows)
+  }
+
   const allPageSelected = paginated.length > 0 && paginated.every(c => bulkSelected.has(c.id))
 
   function toggleAllPage() {
@@ -521,7 +541,7 @@ export function ApprovalManagementClient() {
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs font-semibold rounded-lg bg-background cursor-pointer"
-            onClick={() => toast.info('Export coming soon')}>
+            onClick={exportCsv}>
             <Download className="h-3.5 w-3.5" /> Export
           </Button>
         </div>

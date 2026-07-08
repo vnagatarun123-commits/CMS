@@ -1,6 +1,6 @@
 'use server'
 
-import type { Category, Location, Language } from '@/types/domain'
+import type { Category, Location, Language, Tag } from '@/types/domain'
 import { withAuth } from '@/lib/auth/with-auth'
 import { Permission } from '@/lib/rbac/permissions'
 import { getBackend } from '@/lib/backend'
@@ -13,6 +13,8 @@ import {
   UpdateLocationInput,
   CreateLanguageInput,
   UpdateLanguageInput,
+  CreateTagInput,
+  UpdateTagInput,
 } from '@/lib/content/validation'
 import type { LocationListOptions } from '@/lib/data/repositories'
 
@@ -367,6 +369,112 @@ export const deleteLanguage = withAuth(
       actorName: session.user.name,
       action: 'language.deleted',
       targetType: 'language',
+      targetId: id,
+      targetLabel: existing.name,
+    })
+
+    return item
+  },
+)
+
+// ── Tags ──────────────────────────────────────────────────────────────────────
+
+export const listTags = withAuth(
+  Permission.CONTENT_EDIT,
+  async (session): Promise<Tag[]> => {
+    return getBackend().data.tags.list(session.orgContext.organizationId)
+  },
+)
+
+export const createTag = withAuth(
+  Permission.ORG_CONFIGURE,
+  async (session, input: unknown): Promise<Tag> => {
+    const parsed = CreateTagInput.safeParse(input)
+    if (!parsed.success) throw new ValidationError(parsed.error.message)
+
+    const backend = getBackend()
+    const orgId = session.orgContext.organizationId
+    const item = await backend.data.tags.create({
+      organizationId: orgId,
+      name: parsed.data.name,
+      slug: parsed.data.slug ?? toSlug(parsed.data.name),
+    })
+
+    await backend.data.auditLog.append({
+      organizationId: orgId,
+      actorId: session.user.id,
+      actorName: session.user.name,
+      action: 'tag.created',
+      targetType: 'tag',
+      targetId: item.id,
+      targetLabel: item.name,
+    })
+
+    return item
+  },
+)
+
+export const updateTag = withAuth(
+  Permission.ORG_CONFIGURE,
+  async (session, id: string, input: unknown): Promise<Tag> => {
+    const parsed = UpdateTagInput.safeParse(input)
+    if (!parsed.success) throw new ValidationError(parsed.error.message)
+
+    const backend = getBackend()
+    const orgId = session.orgContext.organizationId
+    const item = await backend.data.tags.update(id, orgId, parsed.data)
+
+    await backend.data.auditLog.append({
+      organizationId: orgId,
+      actorId: session.user.id,
+      actorName: session.user.name,
+      action: 'tag.updated',
+      targetType: 'tag',
+      targetId: id,
+      targetLabel: item.name,
+    })
+
+    return item
+  },
+)
+
+export const toggleTag = withAuth(
+  Permission.ORG_CONFIGURE,
+  async (session, id: string): Promise<Tag> => {
+    const backend = getBackend()
+    const orgId = session.orgContext.organizationId
+    const item = await backend.data.tags.toggleActive(id, orgId)
+
+    await backend.data.auditLog.append({
+      organizationId: orgId,
+      actorId: session.user.id,
+      actorName: session.user.name,
+      action: 'tag.toggled',
+      targetType: 'tag',
+      targetId: id,
+      targetLabel: item.name,
+      metadata: { active: item.active },
+    })
+
+    return item
+  },
+)
+
+export const deleteTag = withAuth(
+  Permission.ORG_CONFIGURE,
+  async (session, id: string): Promise<Tag> => {
+    const backend = getBackend()
+    const orgId = session.orgContext.organizationId
+    const existing = await backend.data.tags.findById(id, orgId)
+    if (!existing) throw new NotFoundError('Tag')
+    const item = await backend.data.tags.softDelete(id, orgId)
+
+    await backend.data.auditLog.append({
+      organizationId: orgId,
+      actorId: session.user.id,
+      actorName: session.user.name,
+      action: 'tag.deleted',
+      targetType: 'tag',
       targetId: id,
       targetLabel: existing.name,
     })

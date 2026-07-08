@@ -1,4 +1,4 @@
-import type { Organization, UserWithRole, RoleDefinition, Category, Location, Language, Content, NotificationRecord, NotificationTemplate, AuditEntry } from '@/types/domain'
+import type { Organization, UserWithRole, RoleDefinition, Category, Location, Language, Tag, Content, NotificationRecord, NotificationTemplate, AuditEntry } from '@/types/domain'
 import { Role, ROLE_PERMISSIONS, expandPermissions } from '@/lib/rbac/permissions'
 import { ContentType, ContentStatus, ContentSource, LocationLevel, NotificationChannel, NotificationAudience, NotificationStatus, NotificationPriority } from '@/types/domain'
 
@@ -1055,3 +1055,24 @@ export const SEEDED_AUDIT_ENTRIES: AuditEntry[] = [
   { id: 'a074', organizationId: PURALOCAL_ORG_ID, actorId: 'user_org_admin', actorName: 'Org Admin', action: 'language.created', targetType: 'language', targetId: 'lang_tamil', targetLabel: 'Tamil (தமிழ்)', metadata: { code: 'ta', locale: 'ta-IN' }, createdAt: d(18, 11, 0) },
   { id: 'a075', organizationId: PURALOCAL_ORG_ID, actorId: 'user_org_admin', actorName: 'Org Admin', action: 'language.toggled', targetType: 'language', targetId: 'lang_french', targetLabel: 'French', metadata: { active: false }, createdAt: d(25, 10, 0) },
 ]
+
+// ── Tags ──────────────────────────────────────────────────────────────────────
+
+export const SEEDED_TAGS: Tag[] = [
+  { id: 'tag_001', organizationId: PURALOCAL_ORG_ID, name: 'Hyderabad',       slug: 'hyderabad',       active: true,  usageCount: 48, createdAt: d(60, 9, 0) },
+  { id: 'tag_002', organizationId: PURALOCAL_ORG_ID, name: 'Telangana',       slug: 'telangana',       active: true,  usageCount: 42, createdAt: d(60, 9, 0) },
+  { id: 'tag_003', organizationId: PURALOCAL_ORG_ID, name: 'GHMC',            slug: 'ghmc',            active: true,  usageCount: 18, createdAt: d(55, 10, 0) },
+  { id: 'tag_004', organizationId: PURALOCAL_ORG_ID, name: 'Monsoon',         slug: 'monsoon',         active: true,  usageCount: 24, createdAt: d(50, 11, 0) },
+  { id: 'tag_005', organizationId: PURALOCAL_ORG_ID, name: 'IPL',             slug: 'ipl',             active: true,  usageCount: 12, createdAt: d(45, 10, 0) },
+  { id: 'tag_006', organizationId: PURALOCAL_ORG_ID, name: 'TSRTC',           slug: 'tsrtc',           active: true,  usageCount: 9,  createdAt: d(45, 10, 0) },
+  { id: 'tag_007', organizationId: PURALOCAL_ORG_ID, name: 'Elections',       slug: 'elections',       active: true,  usageCount: 31, createdAt: d(40, 9, 0) },
+  { id: 'tag_008', organizationId: PURALOCAL_ORG_ID, name: 'Real Estate',     slug: 'real-estate',     active: true,  usageCount: 15, createdAt: d(35, 11, 0) },
+  { id: 'tag_009', organizationId: PURALOCAL_ORG_ID, name: 'Outer Ring Road', slug: 'outer-ring-road', active: true,  usageCount: 7,  createdAt: d(30, 10, 0) },
+  { id: 'tag_010', organizationId: PURALOCAL_ORG_ID, name: 'IT Sector',       slug: 'it-sector',       active: true,  usageCount: 22, createdAt: d(28, 9, 0) },
+  { id: 'tag_011', organizationId: PURALOCAL_ORG_ID, name: 'Musi River',      slug: 'musi-river',      active: true,  usageCount: 6,  createdAt: d(25, 10, 0) },
+  { id: 'tag_012', organizationId: PURALOCAL_ORG_ID, name: 'Old City',        slug: 'old-city',        active: true,  usageCount: 11, createdAt: d(20, 11, 0) },
+  { id: 'tag_013', organizationId: PURALOCAL_ORG_ID, name: 'Karimnagar',      slug: 'karimnagar',      active: true,  usageCount: 8,  createdAt: d(15, 9, 0) },
+  { id: 'tag_014', organizationId: PURALOCAL_ORG_ID, name: 'Warangal',        slug: 'warangal',        active: true,  usageCount: 10, createdAt: d(10, 10, 0) },
+  { id: 'tag_015', organizationId: PURALOCAL_ORG_ID, name: 'Flood Relief',    slug: 'flood-relief',    active: false, usageCount: 5,  createdAt: d(8, 9, 0) },
+]
+

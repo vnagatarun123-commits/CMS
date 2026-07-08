@@ -13,4 +13,6 @@ export interface AuthProvider {
   // Optional — mock uses globalThis; Supabase refreshes via JWT automatically
   changePassword?(userId: string, currentPassword: string, newPassword: string): Promise<void>
   patchSessionUser?(patch: Partial<Pick<User, 'name' | 'photoUrl'>>): Promise<void>
+  requestPasswordReset?(email: string): Promise<void>
+  updatePassword?(newPassword: string): Promise<void>
 }

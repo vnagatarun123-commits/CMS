@@ -764,7 +764,7 @@ export function SocialConnectClient() {
           <h1 className="text-xl font-semibold text-foreground">Social Connect</h1>
           <p className="text-sm text-muted-foreground mt-0.5">Connect social accounts to auto-publish content from the CMS</p>
         </div>
-        <Button size="sm" className="h-8 gap-1.5 bg-foreground text-background hover:bg-foreground/90"
+        <Button size="sm" className="h-8 gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90"
           onClick={() => setShowPicker(true)}>
           <Plus className="h-3.5 w-3.5" />Connect Account
         </Button>
@@ -797,7 +797,7 @@ export function SocialConnectClient() {
       <div className="flex border-b border-border mb-5">
         {([{ id: 'overview' as const, label: 'Overview' }, { id: 'accounts' as const, label: 'All Accounts' }]).map(tab => (
           <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-            className={`px-5 py-3 text-sm font-medium border-b-2 -mb-px transition-colors whitespace-nowrap ${activeTab === tab.id ? 'border-foreground text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>
+            className={`px-5 py-3 text-sm font-medium border-b-2 -mb-px transition-colors whitespace-nowrap ${activeTab === tab.id ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>
             {tab.label}
             {tab.id === 'accounts' && <span className="ml-1.5 rounded-full bg-muted text-muted-foreground text-[10px] font-bold px-1.5 py-0.5">{accounts.length}</span>}
           </button>
@@ -821,12 +821,12 @@ export function SocialConnectClient() {
               <span className="text-xs text-muted-foreground shrink-0">Platform:</span>
               <div className="flex items-center gap-1 flex-wrap">
                 <button onClick={() => setFP('all')}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-medium border transition-colors ${filterPlatform === 'all' ? 'bg-foreground text-background border-foreground' : 'border-border text-muted-foreground hover:border-foreground/40'}`}>
+                  className={`px-2.5 py-1 rounded-lg text-xs font-medium border transition-colors ${filterPlatform === 'all' ? 'bg-primary text-primary-foreground border-primary' : 'border-border text-muted-foreground hover:border-foreground/40'}`}>
                   All
                 </button>
                 {PLATFORMS.map(p => (
                   <button key={p.id} onClick={() => setFP(p.id)}
-                    className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium border transition-colors ${filterPlatform === p.id ? 'bg-foreground text-background border-foreground' : 'border-border text-muted-foreground hover:border-foreground/40'}`}>
+                    className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium border transition-colors ${filterPlatform === p.id ? 'bg-primary text-primary-foreground border-primary' : 'border-border text-muted-foreground hover:border-foreground/40'}`}>
                     <PlatformIcon id={p.id} size={12} />{p.name}
                   </button>
                 ))}
@@ -836,7 +836,7 @@ export function SocialConnectClient() {
               <span className="text-xs text-muted-foreground shrink-0">Status:</span>
               {STATUS_FILTERS.map(f => (
                 <button key={f.value} onClick={() => setFS(f.value)}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-medium border transition-colors ${filterStatus === f.value ? 'bg-foreground text-background border-foreground' : 'border-border text-muted-foreground hover:border-foreground/40'}`}>
+                  className={`px-2.5 py-1 rounded-lg text-xs font-medium border transition-colors ${filterStatus === f.value ? 'bg-primary text-primary-foreground border-primary' : 'border-border text-muted-foreground hover:border-foreground/40'}`}>
                   {f.label}
                 </button>
               ))}

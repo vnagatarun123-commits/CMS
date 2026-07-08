@@ -127,6 +127,18 @@ export const UpdateLanguageInput = z.object({
 })
 export type UpdateLanguageInput = z.infer<typeof UpdateLanguageInput>
 
+export const CreateTagInput = z.object({
+  name: z.string().min(1, 'Name is required').max(100),
+  slug: slugSchema.optional(),
+})
+export type CreateTagInput = z.infer<typeof CreateTagInput>
+
+export const UpdateTagInput = z.object({
+  name: z.string().min(1).max(100).optional(),
+  slug: slugSchema.optional(),
+})
+export type UpdateTagInput = z.infer<typeof UpdateTagInput>
+
 // ── Generic (kept for compatibility) ─────────────────────────────────────────
 
 export const CreateRefItemInput = z.object({

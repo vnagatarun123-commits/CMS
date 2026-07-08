@@ -101,6 +101,10 @@ export type AuditAction =
   | 'language.toggled'
   | 'language.deleted'
   | 'language.restored'
+  | 'tag.created'
+  | 'tag.updated'
+  | 'tag.toggled'
+  | 'tag.deleted'
 
 export type AuditTargetType =
   | 'auth'
@@ -113,6 +117,7 @@ export type AuditTargetType =
   | 'category'
   | 'location'
   | 'language'
+  | 'tag'
 
 // ── Reference data ────────────────────────────────────────────────────────────
 
@@ -173,6 +178,16 @@ export interface Language {
   nativeName?: string    // e.g. 'తెలుగు' for Telugu
   direction?: 'ltr' | 'rtl'
   sortOrder?: number     // app language picker display order
+}
+
+export interface Tag {
+  id: string
+  organizationId: string
+  name: string
+  slug: string
+  active: boolean
+  usageCount: number
+  createdAt: Date
 }
 
 // ── Content ───────────────────────────────────────────────────────────────────

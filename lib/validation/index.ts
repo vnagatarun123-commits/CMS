@@ -40,8 +40,23 @@ export const UpdateProfileInput = z.object({
   bio: z.string().max(280).nullable().optional(),
   timezone: z.string().max(60).nullable().optional(),
   language: z.string().max(10).nullable().optional(),
+  photoUrl: z.string().max(2_000_000).nullable().optional(),
 })
 export type UpdateProfileInput = z.infer<typeof UpdateProfileInput>
+
+export const ForgotPasswordInput = z.object({
+  email: z.string().email('Invalid email address'),
+})
+export type ForgotPasswordInput = z.infer<typeof ForgotPasswordInput>
+
+export const ResetPasswordInput = z.object({
+  password: z.string().min(8, 'Password must be at least 8 characters'),
+  confirmPassword: z.string().min(1, 'Please confirm your new password'),
+}).refine(d => d.password === d.confirmPassword, {
+  message: 'Passwords do not match',
+  path: ['confirmPassword'],
+})
+export type ResetPasswordInput = z.infer<typeof ResetPasswordInput>
 
 export const ChangePasswordInput = z.object({
   currentPassword: z.string().min(1, 'Current password is required'),

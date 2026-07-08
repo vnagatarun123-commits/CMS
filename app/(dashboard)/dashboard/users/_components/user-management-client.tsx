@@ -16,6 +16,7 @@ import type {
   AppUser, AppUserStatus, SubscriptionPlan,
   DevicePlatform, ConnectionType, UserType,
 } from '@/types/app-user'
+import { downloadCsv } from '@/lib/utils'
 
 const PAGE_SIZE_OPTIONS = [10, 20, 50, 100]
 
@@ -266,7 +267,7 @@ function UserDetailPanel({ user, onClose, onStatusChange }: {
           {TABS.map(t => (
             <button key={t.id} onClick={() => setTab(t.id)}
               className={`px-3 py-2.5 text-[11px] font-medium border-b-2 -mb-px whitespace-nowrap transition-colors
-                ${tab === t.id ? 'border-foreground text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>
+                ${tab === t.id ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>
               {t.label}
             </button>
           ))}
@@ -560,6 +561,33 @@ export function UserManagementClient() {
     k !== 'search' && v !== 'all' && v !== false,
   ).length + (filters.search ? 1 : 0)
 
+  function exportCsv() {
+    const rows = filtered.map(u => ({
+      'ID':              u.id,
+      'Name':            u.name ?? '',
+      'Phone':           u.phone ?? '',
+      'Type':            u.userType,
+      'Status':          u.status,
+      'City':            u.location.city,
+      'State':           u.location.state,
+      'Platform':        u.device.platform,
+      'Device Model':    u.device.model,
+      'Connection':      u.network.connectionType,
+      'ISP':             u.network.isp,
+      'Auth Method':     u.authMethod,
+      'Plan':            u.monetization.subscriptionPlan,
+      'Total Sessions':  u.engagement.totalSessions,
+      'Avg Session (min)': u.engagement.avgSessionDurationMin,
+      'Content Completion %': u.streaming.contentCompletionRate,
+      'Avg Buffering (s)': u.streaming.avgBufferingTimeSec,
+      'Flagged':         u.flaggedForReview ? 'Yes' : 'No',
+      'Online':          u.isOnline ? 'Yes' : 'No',
+      'Last Active':     u.engagement.lastActive ? u.engagement.lastActive.toISOString() : '',
+      'Joined':          (u.signedUpAt ?? u.guestSince)?.toISOString() ?? '',
+    }))
+    downloadCsv('users.csv', rows)
+  }
+
   return (
     <div className="flex flex-col">
       {/* Header */}
@@ -570,8 +598,8 @@ export function UserManagementClient() {
             App users — guests watching without account, and registered users signed up via phone OTP
           </p>
         </div>
-        <Button size="sm" className="h-8 gap-1.5 bg-foreground text-background hover:bg-foreground/90"
-          onClick={() => toast.info('Export coming soon')}>
+        <Button size="sm" className="h-8 gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90"
+          onClick={exportCsv}>
           <Download className="h-3.5 w-3.5" />Export CSV
         </Button>
       </div>
@@ -627,7 +655,7 @@ export function UserManagementClient() {
 
         <button onClick={() => setShowFilters(p => !p)}
           className={`h-8 flex items-center gap-1.5 px-3 rounded-lg border text-xs font-medium transition-colors
-            ${showFilters || activeFilters > 0 ? 'bg-foreground text-background border-foreground' : 'border-border text-muted-foreground hover:border-foreground/40'}`}>
+            ${showFilters || activeFilters > 0 ? 'bg-primary text-primary-foreground border-primary' : 'border-border text-muted-foreground hover:border-foreground/40'}`}>
           <Filter className="h-3.5 w-3.5" />More filters
           {activeFilters > 0 && <span className="ml-0.5 h-4 w-4 rounded-full bg-background text-foreground text-[10px] font-bold flex items-center justify-center">{activeFilters}</span>}
         </button>
@@ -654,7 +682,7 @@ export function UserManagementClient() {
               {opts.map(([val, lbl]) => (
                 <button key={val} onClick={() => setFilter(key, val as never)}
                   className={`px-2 py-1 rounded-md text-[11px] font-medium border transition-colors
-                    ${(filters[key] as string) === val ? 'bg-foreground text-background border-foreground' : 'border-border text-muted-foreground hover:border-foreground/30'}`}>
+                    ${(filters[key] as string) === val ? 'bg-primary text-primary-foreground border-primary' : 'border-border text-muted-foreground hover:border-foreground/30'}`}>
                   {lbl}
                 </button>
               ))}

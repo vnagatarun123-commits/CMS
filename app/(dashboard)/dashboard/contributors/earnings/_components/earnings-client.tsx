@@ -15,6 +15,7 @@ import {
 } from '@/lib/mock/seed-reporters'
 import type { Reporter } from '@/types/reporter'
 import type { Settlement, SettlementStatus, RedemptionRequest, MonthlyEarningBreakdown } from '@/types/earnings'
+import { downloadCsv } from '@/lib/utils'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -368,7 +369,7 @@ function DetailPanel({ reporter, settlements, onClose, onEdit }: {
           {TABS.map(t => (
             <button key={t.id} onClick={() => setTab(t.id)}
               className={`px-3 py-2.5 text-[11px] font-medium border-b-2 -mb-px whitespace-nowrap transition-colors
-                ${tab === t.id ? 'border-foreground text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>
+                ${tab === t.id ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>
               {t.label}
             </button>
           ))}
@@ -632,6 +633,41 @@ export function EarningsClient() {
     else setModalTarget({ s, action })
   }
 
+  function exportCsv() {
+    if (activeTab === 'settlements') {
+      const rows = filteredSettlements.map(s => ({
+        'Reporter':       s.reporterName,
+        'Period':         s.period,
+        'Image Posts':    s.breakdown.imagePosts,
+        'Video Posts':    s.breakdown.videoPosts,
+        'Short Posts':    s.breakdown.shortPosts,
+        'Live Sessions':  s.breakdown.liveSessions,
+        'Gross (₹)':      s.breakdown.grossEarningsInr.toFixed(2),
+        'Bonus (₹)':      (s.breakdown.reachBonusInr + s.breakdown.viralBonusInr + s.breakdown.volumeBonusInr + s.breakdown.streakBonusInr).toFixed(2),
+        'Adjustment (₹)': s.manualAdjustmentInr.toFixed(2),
+        'TDS (₹)':        s.tdsDeductedInr.toFixed(2),
+        'Net Payable (₹)':s.netPayableInr.toFixed(2),
+        'Status':         s.status,
+        'Payment Ref':    s.paymentReference ?? '',
+        'Paid At':        s.paidAt ? s.paidAt.toISOString() : '',
+      }))
+      downloadCsv(`settlements-${currentMonth.period}.csv`, rows)
+    } else {
+      const rows = redemptions.map(r => ({
+        'Reporter':           r.reporterName,
+        'Requested At':       r.requestedAt.toISOString(),
+        'Period':             r.period,
+        'Amount (₹)':         r.amountRequestedInr.toFixed(2),
+        'Available Balance (₹)': r.availableBalanceInr.toFixed(2),
+        'Note':               r.reporterNote ?? '',
+        'Status':             r.status,
+        'Reviewed At':        r.reviewedAt ? r.reviewedAt.toISOString() : '',
+        'Admin Note':         r.adminNote ?? '',
+      }))
+      downloadCsv(`redemptions-${currentMonth.period}.csv`, rows)
+    }
+  }
+
   return (
     <div className="flex flex-col">
       {/* Header */}
@@ -641,7 +677,7 @@ export function EarningsClient() {
           <p className="text-[14px] text-muted-foreground mt-1">Track earnings, manage settlements, and process payouts — all in ₹</p>
         </div>
         <Button variant="outline" size="sm" className="h-9 rounded-lg gap-1.5 text-[13px]"
-          onClick={() => toast.info('Export coming soon')}>
+          onClick={exportCsv}>
           <Download className="h-3.5 w-3.5" />Export CSV
         </Button>
       </div>
@@ -651,7 +687,7 @@ export function EarningsClient() {
         {([['settlements', 'Monthly Settlements'], ['redemptions', 'Redemption Requests']] as [MainTab, string][]).map(([id, label]) => (
           <button key={id} onClick={() => setActiveTab(id)}
             className={`flex items-center gap-1.5 px-5 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors
-              ${activeTab === id ? 'border-foreground text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>
+              ${activeTab === id ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>
             {label}
             {id === 'redemptions' && pendingRedemptions.length > 0 && (
               <span className="h-5 w-5 rounded-full bg-amber-500 text-white text-[10px] font-bold flex items-center justify-center">

@@ -183,7 +183,7 @@ export function AllContributorsClient() {
           <Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs font-semibold rounded-lg bg-background cursor-pointer">
             <Download className="h-3.5 w-3.5" /> Export
           </Button>
-          <Button size="sm" className="h-8 gap-1.5 text-xs font-semibold rounded-lg cursor-pointer bg-foreground text-background hover:bg-foreground/90"
+          <Button size="sm" className="h-8 gap-1.5 text-xs font-semibold rounded-lg cursor-pointer bg-primary text-primary-foreground hover:bg-primary/90"
             onClick={() => router.push('/dashboard/contributors/add')}>
             <Plus className="h-3.5 w-3.5" /> Add Contributor
           </Button>
@@ -321,7 +321,7 @@ export function AllContributorsClient() {
                           <X className="h-3.5 w-3.5" /> Clear filters
                         </Button>
                       ) : (
-                        <Button size="sm" className="mt-1 gap-1.5 text-xs h-8 rounded-lg cursor-pointer bg-foreground text-background hover:bg-foreground/90 font-medium"
+                        <Button size="sm" className="mt-1 gap-1.5 text-xs h-8 rounded-lg cursor-pointer bg-primary text-primary-foreground hover:bg-primary/90 font-medium"
                           onClick={() => router.push('/dashboard/contributors/add')}>
                           <Plus className="h-3.5 w-3.5" /> Add Contributor
                         </Button>

@@ -14,6 +14,7 @@ import type {
   ContentType,
   ContentSource,
   LocationLevel,
+  Tag,
   NotificationRecord,
   NotificationTemplate,
   NotificationStats,
@@ -100,6 +101,15 @@ export interface LanguageRepository {
   restore(id: string, organizationId: string): Promise<Language>
 }
 
+export interface TagRepository {
+  list(organizationId: string, opts?: RefListOptions): Promise<Tag[]>
+  findById(id: string, organizationId: string): Promise<Tag | null>
+  create(params: CreateTagParams): Promise<Tag>
+  update(id: string, organizationId: string, params: UpdateTagParams): Promise<Tag>
+  toggleActive(id: string, organizationId: string): Promise<Tag>
+  softDelete(id: string, organizationId: string): Promise<Tag>
+}
+
 // ── Phase 1: Content repository ──────────────────────────────────────────────
 
 export interface ContentRepository {
@@ -149,7 +159,7 @@ export interface AppendAuditParams {
   actorId: string
   actorName: string
   action: AuditAction
-  targetType: 'user' | 'organization' | 'category' | 'location' | 'language' | 'content'
+  targetType: 'user' | 'organization' | 'category' | 'location' | 'language' | 'tag' | 'content'
   targetId: string
   targetLabel: string
   metadata?: Record<string, unknown>
@@ -220,6 +230,17 @@ export interface CreateLanguageParams {
 
 export interface UpdateLanguageParams {
   code?: string
+  name?: string
+  slug?: string
+}
+
+export interface CreateTagParams {
+  organizationId: string
+  name: string
+  slug: string
+}
+
+export interface UpdateTagParams {
   name?: string
   slug?: string
 }
@@ -343,6 +364,7 @@ export interface DataBackend {
   categories: CategoryRepository
   locations: LocationRepository
   languages: LanguageRepository
+  tags: TagRepository
   content: ContentRepository
   notifications: NotificationRepository
   notificationTemplates: NotificationTemplateRepository
